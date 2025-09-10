@@ -625,8 +625,9 @@ class G1_23_JointIndex(IntEnum):
     kNotUsedJoint5 = 34
 
 class H1_2_ArmController:
-    def __init__(self, simulation_mode = False):
+    def __init__(self, motion_mode = False, simulation_mode = False):
         self.simulation_mode = simulation_mode
+        self.motion_mode = motion_mode
         
         logger_mp.info("Initialize H1_2_ArmController...")
         self.q_target = np.zeros(14)
@@ -652,7 +653,11 @@ class H1_2_ArmController:
             ChannelFactoryInitialize(1)
         else:
             ChannelFactoryInitialize(0)
-        self.lowcmd_publisher = ChannelPublisher(kTopicLowCommand_Debug, hg_LowCmd)
+
+        if self.motion_mode:
+            self.lowcmd_publisher = ChannelPublisher(kTopicLowCommand_Motion, hg_LowCmd)
+        else:
+            self.lowcmd_publisher = ChannelPublisher(kTopicLowCommand_Debug, hg_LowCmd)
         self.lowcmd_publisher.Init()
         self.lowstate_subscriber = ChannelSubscriber(kTopicLowState, hg_LowState)
         self.lowstate_subscriber.Init()
@@ -726,6 +731,9 @@ class H1_2_ArmController:
         return cliped_arm_q_target
 
     def _ctrl_motor_state(self):
+        if self.motion_mode:
+            self.msg.motor_cmd[H1_2_JointIndex.kNotUsedJoint0].q = 1.0;
+
         while True:
             start_time = time.time()
 
@@ -791,6 +799,10 @@ class H1_2_ArmController:
         while current_attempts < max_attempts:
             current_q = self.get_current_dual_arm_q()
             if np.all(np.abs(current_q) < tolerance):
+                if self.motion_mode:
+                    for weight in np.linspace(1, 0, num=101):
+                        self.msg.motor_cmd[H1_2_JointIndex.kNotUsedJoint0].q = weight;
+                        time.sleep(0.02)
                 logger_mp.info("[H1_2_ArmController] both arms have reached the home position.")
                 break
             current_attempts += 1
