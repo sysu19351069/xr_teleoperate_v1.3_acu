@@ -212,6 +212,9 @@ if __name__ == '__main__':
 
             if not args.headless:
                 tv_resized_image = cv2.resize(tv_img_array, (tv_img_shape[1] // 2, tv_img_shape[0] // 2))
+                if args.sim:
+                    wrist_resized_image = cv2.resize(wrist_img_array, (wrist_img_shape[1] // 2, wrist_img_shape[0] // 2))
+                    tv_resized_image = np.concatenate([tv_resized_image, wrist_resized_image], axis=1)
                 cv2.imshow("record image", tv_resized_image)
                 key = cv2.waitKey(1) & 0xFF
                 if key == ord('q'):
