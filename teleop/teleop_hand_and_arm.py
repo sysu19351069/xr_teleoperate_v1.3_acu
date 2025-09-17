@@ -145,7 +145,7 @@ if __name__ == '__main__':
         arm_ctrl = G1_23_ArmController(motion_mode=args.motion, simulation_mode=args.sim)
     elif args.arm == "H1_2":
         arm_ik = H1_2_ArmIK()
-        arm_ctrl = H1_2_ArmController(simulation_mode=args.sim)
+        arm_ctrl = H1_2_ArmController(motion_mode=args.motion, simulation_mode=args.sim)
     elif args.arm == "H1":
         arm_ik = H1_ArmIK()
         arm_ctrl = H1_ArmController(simulation_mode=args.sim)
