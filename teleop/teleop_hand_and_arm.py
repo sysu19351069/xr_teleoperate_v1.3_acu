@@ -90,7 +90,7 @@ if __name__ == '__main__':
     parser.add_argument('--affinity', action = 'store_true', help = 'Enable high priority and set CPU affinity')
     parser.add_argument('--ipc', action = 'store_true', help = 'Enable high priority and set CPU affinity')
     parser.add_argument('--record', action = 'store_true', help = 'Enable data recording')
-    parser.add_argument('--task-dir', type = str, default = '../../data/', help = 'path to save data')
+    parser.add_argument('--task-dir', type = str, default = './utils/data/', help = 'path to save data')
     parser.add_argument('--task-name', type = str, default = 'pick cube', help = 'task name for recording')
     parser.add_argument('--task-desc', type = str, default = 'e.g. pick the red cube on the table.', help = 'task goal for recording')
 
