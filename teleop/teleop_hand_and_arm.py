@@ -34,11 +34,11 @@ def publish_reset_category(category: int,publisher): # Scene Reset signal
     logger_mp.info(f"published reset category: {category}")
 
 # state transition
-START = False
-STOP = False
-RECORD_TOGGLE = False
-RECORD_RUNNING = False
-RECORD_READY = True
+START          = False  # Enable to start robot following VR user motion  
+STOP           = False  # Enable to begin system exit procedure
+RECORD_TOGGLE  = False  # [Ready] ⇄ [Recording] ⟶ [AutoSave] ⟶ [Ready]         (⇄ manual) (⟶ auto)
+RECORD_RUNNING = False  # True if [Recording]
+RECORD_READY   = True   # True if [Ready], False if [Recording] / [AutoSave]
 # task info
 TASK_NAME = None
 TASK_DESC = None
@@ -71,9 +71,6 @@ def get_state() -> dict:
         "RECORD_RUNNING": RECORD_RUNNING,
         "RECORD_READY": RECORD_READY,
     }
-# sshkeyboard communication
-listen_keyboard_thread = threading.Thread(target=listen_keyboard, kwargs={"on_press": on_press, "until": None, "sequential": False,}, daemon=True)
-listen_keyboard_thread.start()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -88,7 +85,7 @@ if __name__ == '__main__':
     parser.add_argument('--headless', action='store_true', help='Enable headless mode (no display)')
     parser.add_argument('--sim', action = 'store_true', help = 'Enable isaac simulation mode')
     parser.add_argument('--affinity', action = 'store_true', help = 'Enable high priority and set CPU affinity')
-    parser.add_argument('--ipc', action = 'store_true', help = 'Enable high priority and set CPU affinity')
+    parser.add_argument('--ipc', action = 'store_true', help = 'Enable IPC server to handle input; otherwise enable sshkeyboard')
     parser.add_argument('--record', action = 'store_true', help = 'Enable data recording')
     parser.add_argument('--task-dir', type = str, default = './utils/data/', help = 'path to save data')
     parser.add_argument('--task-name', type = str, default = 'pick cube', help = 'task name for recording')
@@ -98,10 +95,14 @@ if __name__ == '__main__':
     logger_mp.info(f"args: {args}")
 
     try:
-        # ipc communication
+        # ipc communication. client usage: see utils/ipc.py
         if args.ipc:
             ipc_server = IPC_Server(on_press=on_press, on_info=on_info, get_state=get_state)
             ipc_server.start()
+        # sshkeyboard communication
+        else:
+            listen_keyboard_thread = threading.Thread(target=listen_keyboard, kwargs={"on_press": on_press, "until": None, "sequential": False,}, daemon=True)
+            listen_keyboard_thread.start()
 
         # image client: img_config should be the same as the configuration in image_server.py (of Robot's development computing unit)
         if args.sim:
@@ -466,8 +467,14 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         logger_mp.info("KeyboardInterrupt, exiting program...")
     finally:
-        stop_listening()
         arm_ctrl.ctrl_dual_arm_go_home()
+
+        if args.ipc:
+            ipc_server.stop()
+        else:
+            stop_listening()
+            listen_keyboard_thread.join()
+
         if args.sim:
             sim_state_subscriber.stop_subscribe()
         tv_img_shm.close()
@@ -475,10 +482,8 @@ if __name__ == '__main__':
         if WRIST:
             wrist_img_shm.close()
             wrist_img_shm.unlink()
+
         if args.record:
             recorder.close()
-        if args.ipc:
-            ipc_server.stop()
-        listen_keyboard_thread.join()
         logger_mp.info("Finally, exiting program.")
         exit(0)

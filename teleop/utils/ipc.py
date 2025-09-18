@@ -3,7 +3,6 @@ import zmq
 import time
 import threading
 import logging_mp
-logging_mp.basic_config(level=logging_mp.INFO)
 logger_mp = logging_mp.get_logger(__name__)
 
 """
