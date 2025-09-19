@@ -3,7 +3,7 @@ import zmq
 import time
 import threading
 import logging_mp
-logger_mp = logging_mp.get_logger(__name__)
+logger_mp = logging_mp.get_logger(__name__, level=logging_mp.INFO)
 
 """
 # Client → Server (Request)

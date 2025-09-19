@@ -34,41 +34,17 @@
 </p>
 
 
-# 🔖 版本说明
+# 🔖 [版本说明](CHANGELOG_zh-CN.md)
 
-## 🏷️ v1.2
+## 🏷️ v1.3
 
-1. 升级Dex1_1夹爪控制代码，匹配 [dex1_1 service](https://github.com/unitreerobotics/dex1_1_service) 驱动
+- 添加 [![Unitree LOGO](https://camo.githubusercontent.com/ff307b29fe96a9b115434a450bb921c2a17d4aa108460008a88c58a67d68df4e/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f4769744875622d57696b692d3138313731373f6c6f676f3d676974687562)](https://github.com/unitreerobotics/xr_teleoperate/wiki) [![Unitree LOGO](https://camo.githubusercontent.com/6f5253a8776090a1f89fa7815e7543488a9ec200d153827b4bc7c3cb5e1c1555/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d446973636f72642d3538363546323f7374796c653d666c6174266c6f676f3d446973636f7264266c6f676f436f6c6f723d7768697465)](https://discord.gg/ZwcVwxv5rq)
 
-## 🏷️ v1.1
+- 支持 **IPC 模式**，默认使用 SSHKeyboard 进行输入控制。  
+- 合并 **H1_2** 机器人新增运动模式支持。  
+- 合并 **G1_23** 机械臂新增运动模式支持。  
 
-1. 末端执行器类型新增'brainco'，这是[强脑科技第二代灵巧手](https://www.brainco-hz.com/docs/revolimb-hand/)
-2. 为避免与实机部署时发生冲突，将仿真模式下的 dds 通道的domain id修改为1
-3. 修复默认频率过高的问题
-
-## 🏷️ v1.0 (newvuer)
-
-1. 升级 [Vuer](https://github.com/vuer-ai/vuer) 库至 v0.0.60 版本，XR设备支持模式扩展为**手部跟踪**和**控制器跟踪**两种。为更准确反映功能范围，项目由 **avp_teleoperate** 更名为 **xr_teleoperate**。
-
-   测试设备包括： Apple Vision Pro，Meta Quest 3（含手柄） 与 PICO 4 Ultra Enterprise（含手柄）。
-
-2. 对部分功能进行了**模块化**拆分，并通过 Git 子模块（git submodule）方式进行管理和加载，提升代码结构的清晰度与维护性。
-
-3. 新增**无头**、**运控**及**仿真**模式，优化启动参数配置（详见第2.2节），提升使用便捷性。**仿真**模式的加入，方便了环境验证和硬件故障排查。
-
-4. 将默认手部映射算法从 Vector 切换为 **DexPilot**，优化了指尖捏合的精度与交互体验。
-
-5. 其他一些优化
-
-## 🏷️ v0.5 (oldvuer)
-
-1. 该版本曾经命名为 `avp_teleoperate`
-2. 支持 'G1_29', 'G1_23', 'H1_2', 'H1' 机器人类型
-3. 支持 'dex3', 'gripper', 'inspire1' 末端执行器类型
-4. 仅支持 XR 设备的手部跟踪模式（ [Vuer](https://github.com/vuer-ai/vuer) 版本为 v0.0.32RC7），不支持控制器模式
-5. 支持数据录制模式
-
-
+- ···
 
 # 0. 📖 介绍
 
@@ -486,84 +462,7 @@ xr_teleoperate/
 
 # 5. 🛠️ 硬件
 
-## 5.1 📋 清单
-
-|           项目            | 数量 |                             链接                             |                             备注                             |
-| :-----------------------: | :--: | :----------------------------------------------------------: | :----------------------------------------------------------: |
-| **宇树通用人形机器人 G1** |  1   |                https://www.unitree.com/cn/g1                 |                    需选配开发计算单元版本                    |
-|        **XR 设备**        |  1   | https://www.apple.com.cn/apple-vision-pro/<br />https://www.meta.com/quest/quest-3<br />https://www.picoxr.com/products/pico4-ultra-enterprise |                                                              |
-|          路由器           |  1   |                                                              |                 常规模式必须，无线模式不需要                 |
-|       **用户电脑**        |  1   |                                                              | 仿真模式下请使用[官方推荐](https://docs.isaacsim.omniverse.nvidia.com/4.5.0/installation/requirements.html)的硬件资源进行部署使用 |
-|     **头部双目相机**      |  1   |  [仅供参考] http://e.tb.cn/h.TaZxgkpfWkNCakg?tk=KKz03Kyu04u  |                      用于机器人头部视野                      |
-|     **头部相机支架**      |  1   | https://github.com/unitreerobotics/xr_teleoperate/blob/g1/hardware/head_stereo_camera_mount.STEP |                       用于装配头部相机                       |
-| 英特尔 RealSense D405相机 |  2   |      https://www.intelrealsense.com/depth-camera-d405/       |                     用于腕部灵巧操作视野                     |
-|     腕部相机环形支架      |  2   | https://github.com/unitreerobotics/xr_teleoperate/blob/g1/hardware/wrist_ring_mount.STEP |                    与腕部相机支架搭配使用                    |
-|       左腕相机支架        |  1   | https://github.com/unitreerobotics/xr_teleoperate/blob/g1/hardware/left_wrist_D405_camera_mount.STEP |                     用于装配左腕D405相机                     |
-|       右腕相机支架        |  1   | https://github.com/unitreerobotics/xr_teleoperate/blob/g1/hardware/right_wrist_D405_camera_mount.STEP |                     用于装配右腕D405相机                     |
-|       M3-1 六角螺母       |  4   |              [仅供参考] https://a.co/d/gQaLtHD               |                        用于腕部紧固件                        |
-|        M3x12 螺钉         |  4   |            [仅供参考] https://amzn.asia/d/aU9NHSf            |                        用于腕部紧固件                        |
-|         M3x6 螺钉         |  4   |            [仅供参考] https://amzn.asia/d/0nEz5dJ            |                        用于腕部紧固件                        |
-|      **M4x14 螺钉**       |  2   |            [仅供参考] https://amzn.asia/d/cfta55x            |                        用于头部紧固件                        |
-|     **M2x4 自攻螺钉**     |  4   |            [仅供参考] https://amzn.asia/d/1msRa5B            |                        用于头部紧固件                        |
-
-> 注意：加粗项目是进行遥操作任务时的必需设备，其余项目是录制[数据集](https://huggingface.co/unitreerobotics)时的可选设备。
-
-## 5.2 🔨 安装示意图
-
-<table>
-    <tr>
-        <th align="center">项目</th>
-        <th align="center" colspan="2">仿真</th>
-        <th align="center" colspan="2">实物</th>
-    </tr>
-    <tr>
-        <td align="center">头部</td>
-        <td align="center">
-            <p align="center">
-                <img src="./img/head_camera_mount.png" alt="head" width="100%">
-                <figcaption>头部支架</figcaption>
-            </p>
-        </td>
-        <td align="center">
-            <p align="center">
-                <img src="./img/head_camera_mount_install.png" alt="head" width="80%">
-                <figcaption>装配侧视</figcaption>
-            </p>
-        </td>
-        <td align="center" colspan="2">
-            <p align="center">
-                <img src="./img/real_head.jpg" alt="head" width="20%">
-                <figcaption>装配正视</figcaption>
-            </p>
-        </td>
-    </tr>
-    <tr>
-        <td align="center">腕部</td>
-        <td align="center" colspan="2">
-            <p align="center">
-                <img src="./img/wrist_and_ring_mount.png" alt="wrist" width="100%">
-                <figcaption>腕圈及相机支架</figcaption>
-            </p>
-        </td>
-        <td align="center">
-            <p align="center">
-                <img src="./img/real_left_hand.jpg" alt="wrist" width="50%">
-                <figcaption>装配左手</figcaption>
-            </p>
-        </td>
-        <td align="center">
-            <p align="center">
-                <img src="./img/real_right_hand.jpg" alt="wrist" width="50%">
-                <figcaption>装配右手</figcaption>
-            </p>
-        </td>
-    </tr>
-</table>
-
-
-> 注意：如图中红圈所示，腕圈支架与机器人手腕接缝对齐。
-
-
+请查看 [硬件文档](Device_zh-CN.md).
 
 # 6. 🙏 鸣谢
 

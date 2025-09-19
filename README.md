@@ -34,43 +34,17 @@
 </p>
 
 
-# 🔖 Release Note
+# 🔖[Release Note](CHANGELOG.md)
 
-## 🏷️ v1.2
+## 🏷️ v1.3
 
-1. Upgrade the Dex1_1 gripper control code to be compatible with the [dex1_1 service](https://github.com/unitreerobotics/dex1_1_service) driver.
+- add [![Unitree LOGO](https://camo.githubusercontent.com/ff307b29fe96a9b115434a450bb921c2a17d4aa108460008a88c58a67d68df4e/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f4769744875622d57696b692d3138313731373f6c6f676f3d676974687562)](https://github.com/unitreerobotics/xr_teleoperate/wiki) [![Unitree LOGO](https://camo.githubusercontent.com/6f5253a8776090a1f89fa7815e7543488a9ec200d153827b4bc7c3cb5e1c1555/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d446973636f72642d3538363546323f7374796c653d666c6174266c6f676f3d446973636f7264266c6f676f436f6c6f723d7768697465)](https://discord.gg/ZwcVwxv5rq)
 
-## 🏷️ v1.1
+- Support **IPC mode**, defaulting to use SSHKeyboard for input control.
+- Merged motion mode support for H1_2 robot.
+- Merged motion mode support for the G1_23 robot arm.
 
-1. Added support for a new end-effector type: **`brainco`**, which refers to the [Brain Hand](https://www.brainco-hz.com/docs/revolimb-hand/) developed by [BrainCo](https://www.brainco.cn/#/product/dexterous).
-2. Changed the **DDS domain ID** to `1` in **simulation mode** to prevent conflicts during physical deployment.
-3. Fixed an issue where the default frequency was set too high.
-
-## 🏷️ v1.0 (newvuer)
-
-1. Upgraded the [Vuer](https://github.com/vuer-ai/vuer) library to version **v0.0.60**, expanding XR device support to two modes: **hand tracking** and **controller tracking**. The project has been renamed from **`avp_teleoperate`** to **`xr_teleoperate`** to better reflect its broader capabilities.
-
-   Devices tested include: Apple Vision Pro, Meta Quest 3 (with controllers), and PICO 4 Ultra Enterprise (with controllers).
-
-2. Modularized parts of the codebase and integrated **Git submodules** (`git submodule`) to improve code clarity and maintainability.
-
-3. Introduced **headless**, **motion control**, and **simulation** modes. Startup parameter configuration has been streamlined for ease of use (see Section 2.2).
-   The **simulation** mode enables environment validation and hardware failure diagnostics.
-
-4. Changed the default hand retargeting algorithm from *Vector* to **DexPilot**, enhancing the precision and intuitiveness of fingertip pinching interactions.
-
-5. Various other improvements and optimizations.
-
-## 🏷️ v0.5 (oldvuer)
-
-1. The repository was named **`avp_teleoperate`** in this version.
-2. Supported robot included: `G1_29`, `G1_23`, `H1_2`, and `H1`.
-3. Supported end-effectors included: `dex3`, `dex1(gripper)`, and `inspire1`.
-4. Only supported **hand tracking mode** for XR devices (using [Vuer](https://github.com/vuer-ai/vuer) version **v0.0.32RC7**).
-   **Controller tracking mode** was **not** supported. 
-5. Data recording mode was available.
-
-
+- ···
 
 # 0. 📖 Introduction
 
@@ -452,81 +426,7 @@ xr_teleoperate/
 
 # 5. 🛠️ Hardware
 
-## 5.1 📋 Parts List
-
-|             Item             | Quantity |                           Link(s)                            |                           Remarks                            |
-| :--------------------------: | :------: | :----------------------------------------------------------: | :----------------------------------------------------------: |
-|      **humanoid robot**      |    1     |                   https://www.unitree.com                    |               With development computing unit                |
-|        **XR device**         |    1     | https://www.apple.com/apple-vision-pro/<br/>https://www.meta.com/quest/quest-3<br/>https://www.picoxr.com/products/pico4-ultra-enterprise |                                                              |
-|          **Router**          |    1     |                                                              |  Required for **default mode**; **wireless mode** not need.  |
-|         **User PC**          |    1     |                                                              | In **simulation mode**, please use the [officially recommended](https://docs.isaacsim.omniverse.nvidia.com/4.5.0/installation/requirements.html) hardware resources for deployment. |
-|    **Head stereo camera**    |    1     | [For reference only] http://e.tb.cn/h.TaZxgkpfWkNCakg?tk=KKz03Kyu04u |                     For robot head view                      |
-|    **Head camera mount**     |    1     | https://github.com/unitreerobotics/xr_teleoperate/blob/g1/hardware/head_stereo_camera_mount.STEP |               For mounting head stereo camera                |
-| Intel RealSense D405 camera  |    2     |      https://www.intelrealsense.com/depth-camera-d405/       |                          For wrist                           |
-|       Wrist ring mount       |    2     | https://github.com/unitreerobotics/xr_teleoperate/blob/g1/hardware/wrist_ring_mount.STEP |                 Used with wrist camera mount                 |
-|    Left wrist D405 mount     |    1     | https://github.com/unitreerobotics/xr_teleoperate/blob/g1/hardware/left_wrist_D405_camera_mount.STEP |        For mounting left wrist RealSense D405  camera        |
-|    Right wrist D405 mount    |    1     | https://github.com/unitreerobotics/xr_teleoperate/blob/g1/hardware/right_wrist_D405_camera_mount.STEP |       For mounting right wrist RealSense D405  camera        |
-|        M3-1 hex nuts         |    4     |         [For reference only] https://a.co/d/1opqtOr          |                      For Wrist fastener                      |
-|         M3x12 screws         |    4     |       [For reference only] https://amzn.asia/d/aU9NHSf       |                      For Wrist fastener                      |
-|         M3x6 screws          |    4     |       [For reference only] https://amzn.asia/d/0nEz5dJ       |                      For Wrist fastener                      |
-|       **M4x14 screws**       |    2     |       [For reference only] https://amzn.asia/d/cfta55x       |                      For head fastener                       |
-| **M2x4 self‑tapping screws** |    4     |       [For reference only] https://amzn.asia/d/1msRa5B       |                      For head fastener                       |
-
-> Note: The bolded items are essential equipment for teleoperation tasks, while the other items are optional equipment for recording [datasets](https://huggingface.co/unitreerobotics).
-
-## 5.2 🔨 Mounting Diagrams
-
-<table>
-    <tr>
-        <th align="center">Item</th>
-        <th align="center" colspan="2">Simulation</th>
-        <th align="center" colspan="2">Real</th>
-    </tr>
-    <tr>
-        <td align="center">Head</td>
-        <td align="center">
-            <p align="center">
-                <img src="./img/head_camera_mount.png" alt="head" width="100%">
-                <figcaption>Head Mount</figcaption>
-            </p>
-        </td>
-        <td align="center">
-            <p align="center">
-                <img src="./img/head_camera_mount_install.png" alt="head" width="80%">
-                <figcaption>Side View of Assembly</figcaption>
-            </p>
-        </td>
-        <td align="center" colspan="2">
-            <p align="center">
-                <img src="./img/real_head.jpg" alt="head" width="20%">
-                <figcaption>Front View of Assembly</figcaption>
-            </p>
-        </td>
-    </tr>
-    <tr>
-        <td align="center">Wrist</td>
-        <td align="center" colspan="2">
-            <p align="center">
-                <img src="./img/wrist_and_ring_mount.png" alt="wrist" width="100%">
-                <figcaption>Wrist Ring and Camera Mount</figcaption>
-            </p>
-        </td>
-        <td align="center">
-            <p align="center">
-                <img src="./img/real_left_hand.jpg" alt="wrist" width="50%">
-                <figcaption>Left Hand Assembly</figcaption>
-            </p>
-        </td>
-        <td align="center">
-            <p align="center">
-                <img src="./img/real_right_hand.jpg" alt="wrist" width="50%">
-                <figcaption>Right Hand Assembly</figcaption>
-            </p>
-        </td>
-    </tr>
-</table>
-
-> Note: The wrist ring mount should align with the seam of the robot's wrist, as shown by the red circle in the image.
+please see [Device document](Device.md).
 
 
 
