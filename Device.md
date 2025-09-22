@@ -85,7 +85,7 @@
 | :---------------: | :------: | :----------------------------------------------------------: | :----------------------------------------------------------: |
 | Stereo RGB Camera |    1     | [60FPS, 125°FOV, 60mm baseline](https://e.tb.cn/h.S2zMNwiUzC9I2H1) |                  For robot head perspective                  |
 |  M4x16mm Screws   |    2     |           [Reference](https://amzn.asia/d/cfta55x)           |                 For fastening camera bracket                 |
-| M2x5mm/6mm Screws |    8     |           [Reference](https://amzn.asia/d/1msRa5B)           | For fastening (camera - camera mount) and (camera mount - camera cover) |
+| M2x5mm/6mm Screws |    8     |           [Reference](https://amzn.asia/d/1msRa5B)           | For fastening (camera - camera bracket) and (camera bracket - camera cover) |
 
 - 3D Printing Parts
 
@@ -134,7 +134,7 @@
 | :---------------: | :------: | :----------------------------------------------------------: | :----------------------------------------------------------: |
 |   Stereo Camera   |    1     | [30FPS, 125°FOV, 60mm baseline](http://e.tb.cn/h.TaZxgkpfWkNCakg) |                  For robot head perspective                  |
 |  M4x16mm Screws   |    2     |           [Reference](https://amzn.asia/d/cfta55x)           |                 For fastening camera bracket                 |
-| M2x5mm/6mm Screws |    8     |           [Reference](https://amzn.asia/d/1msRa5B)           | For fastening (camera - camera mount) and (camera mount - camera cover) |
+| M2x5mm/6mm Screws |    8     |           [Reference](https://amzn.asia/d/1msRa5B)           | For fastening (camera - camera bracket) and (camera bracket - camera cover) |
 
 - 3D Printing Parts
 
@@ -189,9 +189,9 @@
 
 |           Item           | Quantity |            Remarks             |                        Download Link                         |
 | :----------------------: | :------: | :----------------------------: | :----------------------------------------------------------: |
-|     D405 Wrist Ring      |    2     |  To be used with wrist mount   | [📥 STEP](https://github.com/unitreerobotics/xr_teleoperate/blob/g1/hardware/wrist_ring_mount.STEP) |
-| Left Wrist Camera Mount  |    1     | For mounting left D405 camera  | [📥 STEP](https://github.com/unitreerobotics/xr_teleoperate/blob/g1/hardware/left_wrist_D405_camera_mount.STEP) |
-| Right Wrist Camera Mount |    1     | For mounting right D405 camera | [📥 STEP](https://github.com/unitreerobotics/xr_teleoperate/blob/g1/hardware/right_wrist_D405_camera_mount.STEP) |
+|     D405 Wrist Ring      |    2     |  To be used with wrist bracket   | [📥 STEP](https://github.com/unitreerobotics/xr_teleoperate/blob/g1/hardware/wrist_ring_mount.STEP) |
+| Left Wrist Camera Bracket  |    1     | For mounting left D405 camera  | [📥 STEP](https://github.com/unitreerobotics/xr_teleoperate/blob/g1/hardware/left_wrist_D405_camera_mount.STEP) |
+| Right Wrist Camera Bracket |    1     | For mounting right D405 camera | [📥 STEP](https://github.com/unitreerobotics/xr_teleoperate/blob/g1/hardware/right_wrist_D405_camera_mount.STEP) |
 
 ### 5.2.4 G1 Wrist Monocular Camera
 
@@ -202,7 +202,7 @@
 | Monocular Camera  |    2     | [60FPS, 160° FOV](https://e.tb.cn/h.S2YWUJan6ZP8Wqv?tk=MqHK4uvWlLk) |   For G1 robot wrist (M4010 motors) left & right   |
 |    USB3.0 Hub     |    1     | [Reference](https://e.tb.cn/h.S2QB8hVuKbNfqb9?tk=XsBL4uwn2Ch) |          For connecting two wrist cameras          |
 |   M3-1 Hex Nut    |    4     |             [Reference](https://a.co/d/gQaLtHD)              |                For wrist fastening                 |
-|    M3x12 Screw    |    4     |           [Reference](https://amzn.asia/d/aU9NHSf)           |         For fastening wrist mount and ring         |
+|    M3x12 Screw    |    4     |           [Reference](https://amzn.asia/d/aU9NHSf)           |         For fastening wrist bracket and ring         |
 |   M2.5x5 Screw    |    4     |           [Reference](https://amzn.asia/d/0nEz5dJ)           |     For fastening cable clip and wrist bracket     |
 | M2x5mm/6mm Screws |    8     |           [Reference](https://amzn.asia/d/1msRa5B)           | For fastening (camera-bracket) and (bracket-cover) |
 
@@ -211,7 +211,7 @@
 <table border="1" cellspacing="0" cellpadding="5" style="border-collapse: collapse; width: 100%; text-align: center;">
   <tr>
     <th>End-Effector</th>
-    <th>Camera Mount</th>
+    <th>Camera Bracket</th>
     <th>Wrist Ring</th>
     <th>Camera Cover Plate</th>
     <th>Cable Clip</th>
@@ -281,7 +281,7 @@
         <td align="center" colspan="2">
             <p align="center">
                 <img src="./img/wrist_and_ring_mount.png" alt="wrist" width="100%">
-                <figcaption>Wrist Ring & Camera Mount</figcaption>
+                <figcaption>Wrist Ring & Camera bracket</figcaption>
             </p>
         </td>
         <td align="center">
