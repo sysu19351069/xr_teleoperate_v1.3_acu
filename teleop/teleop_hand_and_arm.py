@@ -48,6 +48,7 @@ def on_press(key):
     if key == 'r':
         START = True
     elif key == 'q':
+        START = False
         STOP = True
     elif key == 's' and START == True:
         RECORD_TOGGLE = True
@@ -268,6 +269,7 @@ if __name__ == '__main__':
                 # opencv GUI communication
                 key = cv2.waitKey(1) & 0xFF
                 if key == ord('q'):
+                    START = False
                     STOP = True
                     if args.sim:
                         publish_reset_category(2, reset_pose_publisher)
@@ -313,6 +315,7 @@ if __name__ == '__main__':
             if args.xr_mode == "controller" and args.motion:
                 # quit teleoperate
                 if tele_data.tele_state.right_aButton:
+                    START = False
                     STOP = True
                 # command robot to enter damping mode. soft emergency stop function
                 if tele_data.tele_state.left_thumbstick_state and tele_data.tele_state.right_thumbstick_state:
