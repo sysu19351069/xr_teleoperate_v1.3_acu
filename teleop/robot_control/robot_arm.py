@@ -11,12 +11,19 @@ from unitree_sdk2py.utils.crc import CRC
 from unitree_sdk2py.idl.unitree_go.msg.dds_ import ( LowCmd_  as go_LowCmd, LowState_ as go_LowState)  # idl for h1
 from unitree_sdk2py.idl.default import unitree_go_msg_dds__LowCmd_
 
+from unitree_sdk2py.idl.unitree_hg.msg.dds_ import ( LowCmdAcu_  as Acu_LowCmd, LowStateAcu_ as Acu_LowState) # idl for Acupuncture robot
+from unitree_sdk2py.idl.default import unitree_Acu_msg_dds__LowCmd_
+
 import logging_mp
 logger_mp = logging_mp.get_logger(__name__)
 
-kTopicLowCommand_Debug  = "rt/lowcmd"
+kTopicLowCommand_Debug  = "rt/acu_lowcmd"
 kTopicLowCommand_Motion = "rt/arm_sdk"
-kTopicLowState = "rt/lowstate"
+kTopicLowState = "rt/acu_lowstate"
+
+# kTopicLowCommand_Debug  = "rt/lowcmd"
+# kTopicLowCommand_Motion = "rt/arm_sdk"
+# kTopicLowState = "rt/lowstate"
 
 G1_29_Num_Motors = 35
 G1_23_Num_Motors = 35
@@ -1135,6 +1142,264 @@ class H1_JointIndex(IntEnum):
     kLeftShoulderRoll = 17
     kLeftShoulderYaw = 18
     kLeftElbow = 19
+
+
+# --------- Acupuncture robot (针灸机器人) controller (8 DOF) ----------
+Acu_Num_Motors = 8
+
+class Acu_8_LowState:
+    def __init__(self):
+        self.motor_state = [MotorState() for _ in range(Acu_Num_Motors)]
+
+class Acu_ArmController:
+    """Controller wrapper for the custom 8-DOF acupuncture robot.
+    Provides the same public API as other ArmController classes used by teleop.
+    第七个关节（索引6）是传动关节，其它为旋转关节。
+    """
+    def __init__(self, motion_mode=False, simulation_mode=False):
+        logger_mp.info("Initialize Acu_ArmController (8-DOF acupuncture robot)...")
+        self.simulation_mode = simulation_mode
+        self.motion_mode = motion_mode
+
+        self.q_target = np.zeros(8)
+        self.tauff_target = np.zeros(8)
+
+        # Gains (tune for your hardware)
+        self.kp_high = 200.0
+        self.kd_high = 5.0
+        self.kp_low = 80.0
+        self.kd_low = 3.0
+        # lighter gains for transmission joint
+        self.kp_trans = 40.0
+        self.kd_trans = 1.0
+
+        self.all_motor_q = None
+        self.arm_velocity_limit = 10.0
+        self.control_dt = 1.0 / 250.0
+
+        self._speed_gradual_max = False
+        self._gradual_start_time = None
+        self._gradual_time = None
+
+        # initialize dds factory & channels (kept consistent with other controllers)
+        ChannelFactoryInitialize(1)
+        if self.motion_mode:
+            self.lowcmd_publisher = ChannelPublisher(kTopicLowCommand_Motion, Acu_LowCmd)
+        else:
+            self.lowcmd_publisher = ChannelPublisher(kTopicLowCommand_Debug, Acu_LowCmd)
+        self.lowcmd_publisher.Init()
+        self.lowstate_subscriber = ChannelSubscriber(kTopicLowState, Acu_LowState)
+        self.lowstate_subscriber.Init()
+        self.lowstate_buffer = DataBuffer()
+
+        # subscribe thread
+        self.subscribe_thread = threading.Thread(target=self._subscribe_motor_state)
+        self.subscribe_thread.daemon = True
+        self.subscribe_thread.start()
+
+        while not self.lowstate_buffer.GetData():
+            time.sleep(0.1)
+            logger_mp.warning("[Acu_ArmController] Waiting to subscribe dds...")
+        logger_mp.info("[Acu_ArmController] Subscribe dds ok.")
+
+        # initialize lowcmd message (reuse hg lowcmd structure)
+        self.crc = CRC()
+        self.msg = unitree_Acu_msg_dds__LowCmd_()
+        self.msg.mode_pr = 0
+        # attempt to read and forward mode machine from lowstate
+        try:
+            self.msg.mode_machine = self.get_mode_machine()
+        except Exception:
+            self.msg.mode_machine = 0
+            logger_mp.debug("Could not read mode_machine from lowstate; set to 0.")
+
+        # cache current motor q
+        self.all_motor_q = self.get_current_motor_q()
+        logger_mp.info(f"Current all body motor state q:\n{self.all_motor_q} \n")
+        logger_mp.info("Lock all joints (set initial gains and q)...")
+
+        arm_indices = set(member.value for member in Acu_JointArmIndex)
+        for id in Acu_JointIndex:
+            self.msg.motor_cmd[id].mode = 1
+            if id.value in arm_indices:
+                if self._Is_transmission_motor(id):
+                    self.msg.motor_cmd[id].kp = self.kp_trans
+                    self.msg.motor_cmd[id].kd = self.kd_trans
+                else:
+                    self.msg.motor_cmd[id].kp = self.kp_low
+                    self.msg.motor_cmd[id].kd = self.kd_low
+            else:
+                # no other parts for this robot; default to high gains
+                self.msg.motor_cmd[id].kp = self.kp_high
+                self.msg.motor_cmd[id].kd = self.kd_high
+            try:
+                self.msg.motor_cmd[id].q = self.all_motor_q[id]
+            except Exception:
+                self.msg.motor_cmd[id].q = 0.0
+        logger_mp.info("Lock OK!")
+
+        # publish thread
+        self.publish_thread = threading.Thread(target=self._ctrl_motor_state)
+        self.ctrl_lock = threading.Lock()
+        self.publish_thread.daemon = True
+        self.publish_thread.start()
+
+        logger_mp.info("Initialize Acu_ArmController OK!")
+
+    def _subscribe_motor_state(self):
+        while True:
+            msg = self.lowstate_subscriber.Read()
+            if msg is not None:
+                lowstate = Acu_8_LowState()
+                # only read available motor entries
+                for id in range(Acu_Num_Motors):
+                    try:
+                        lowstate.motor_state[id].q = msg.motor_state[id].q
+                        lowstate.motor_state[id].dq = msg.motor_state[id].dq
+                    except Exception:
+                        lowstate.motor_state[id].q = 0.0
+                        lowstate.motor_state[id].dq = 0.0
+                self.lowstate_buffer.SetData(lowstate)
+            time.sleep(0.002)
+
+    def clip_arm_q_target(self, target_q, velocity_limit):
+        current_q = self.get_current_dual_arm_q()
+        delta = target_q - current_q
+        motion_scale = np.max(np.abs(delta)) / (velocity_limit * self.control_dt)
+        cliped_arm_q_target = current_q + delta / max(motion_scale, 1.0)
+        return cliped_arm_q_target
+
+    def _ctrl_motor_state(self):
+        # no diagnostic writes to unused joints for Acu - all 8 motors are active
+
+        while True:
+            start_time = time.time()
+            with self.ctrl_lock:
+                arm_q_target = self.q_target
+                arm_tauff_target = self.tauff_target
+
+            if self.simulation_mode:
+                cliped_arm_q_target = arm_q_target
+            else:
+                cliped_arm_q_target = self.clip_arm_q_target(arm_q_target, velocity_limit=self.arm_velocity_limit)
+
+            for idx, id in enumerate(Acu_JointArmIndex):
+                # write only up to available indices
+                try:
+                    self.msg.motor_cmd[id].q = cliped_arm_q_target[idx]
+                    self.msg.motor_cmd[id].dq = 0
+                    self.msg.motor_cmd[id].tau = arm_tauff_target[idx]
+                except Exception:
+                    pass
+
+            # # Pad motor_cmd to 35 entries for CRC computation
+            # while len(self.msg.motor_cmd) < 35:
+            #     dummy_motor = type('DummyMotor', (object,), {'q': 0, 'dq': 0, 'tau': 0, 'kp': 0, 'kd': 0, 'mode': 0})()
+            #     self.msg.motor_cmd.append(dummy_motor)
+
+            try:
+                self.msg.crc = self.crc.Crc(self.msg)
+            except Exception as e:
+                # CRC packing expects specific IDL message layouts (e.g. hg=35 motors).
+                # If using a custom smaller message for Acu (8 motors) the CRC packer
+                # may IndexError. Fall back to zero CRC and log a warning.
+                # logger_mp.warning(f"Failed to compute CRC for message: {e}. Setting crc=0 for compatibility.")
+                try:
+                    self.msg.crc = 0
+                except Exception:
+                    pass
+
+            self.lowcmd_publisher.Write(self.msg)
+
+            if self._speed_gradual_max is True:
+                t_elapsed = start_time - self._gradual_start_time
+                self.arm_velocity_limit = 10.0 + (10.0 * min(1.0, t_elapsed / 5.0))
+
+            current_time = time.time()
+            all_t_elapsed = current_time - start_time
+            sleep_time = max(0, (self.control_dt - all_t_elapsed))
+            time.sleep(sleep_time)
+
+    def ctrl_dual_arm(self, q_target, tauff_target):
+        with self.ctrl_lock:
+            self.q_target = q_target
+            self.tauff_target = tauff_target
+
+    def get_mode_machine(self):
+        return self.lowstate_subscriber.Read().mode_machine
+
+    def get_current_motor_q(self):
+        # return array of length Acu_Num_Motors
+        data = self.lowstate_buffer.GetData()
+        if not data:
+            return np.zeros(Acu_Num_Motors)
+        # Only return the first Acu_Num_Motors entries to avoid indexing beyond the list
+        return np.array([data.motor_state[i].q for i in range(Acu_Num_Motors)])
+
+    def get_current_dual_arm_q(self):
+        # for this robot, all joints are part of the (single) arm
+        data = self.lowstate_buffer.GetData()
+        if not data:
+            return np.zeros(8)
+        return np.array([data.motor_state[id].q for id in Acu_JointArmIndex])
+
+    def get_current_dual_arm_dq(self):
+        data = self.lowstate_buffer.GetData()
+        if not data:
+            return np.zeros(8)
+        return np.array([data.motor_state[id].dq for id in Acu_JointArmIndex])
+
+    def ctrl_dual_arm_go_home(self):
+        logger_mp.info("[Acu_ArmController] ctrl_dual_arm_go_home start...")
+        max_attempts = 100
+        current_attempts = 0
+        with self.ctrl_lock:
+            self.q_target = np.zeros(8)
+        tolerance = 0.02
+        while current_attempts < max_attempts:
+            current_q = self.get_current_dual_arm_q()
+            if np.all(np.abs(current_q) < tolerance):
+                logger_mp.info("[Acu_ArmController] arm has reached the home position.")
+                break
+            current_attempts += 1
+            time.sleep(0.05)
+
+    def speed_gradual_max(self, t=5.0):
+        self._gradual_start_time = time.time()
+        self._gradual_time = t
+        self._speed_gradual_max = True
+
+    def speed_instant_max(self):
+        self.arm_velocity_limit = 20.0
+
+    def _Is_transmission_motor(self, motor_index):
+        # 第七个关节（1-based） -> index 6 (0-based)
+        return motor_index.value == Acu_JointIndex.kJoint6.value
+
+    def _Is_weak_motor(self, motor_index):
+        # mark elbow/other small motors as weak if needed; default none
+        return False
+
+class Acu_JointArmIndex(IntEnum):
+    kJoint0 = 0
+    kJoint1 = 1
+    kJoint2 = 2
+    kJoint3 = 3
+    kJoint4 = 4
+    kJoint5 = 5
+    kJoint6 = 6  # transmission joint
+    kJoint7 = 7
+
+class Acu_JointIndex(IntEnum):
+    kJoint0 = 0
+    kJoint1 = 1
+    kJoint2 = 2
+    kJoint3 = 3
+    kJoint4 = 4
+    kJoint5 = 5
+    kJoint6 = 6
+    kJoint7 = 7
+    # All 8 motors are used; no unused joint index
 
 if __name__ == "__main__":
     from robot_arm_ik import G1_29_ArmIK, G1_23_ArmIK, H1_2_ArmIK, H1_ArmIK

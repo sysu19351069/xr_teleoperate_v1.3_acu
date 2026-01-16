@@ -15,8 +15,8 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
 from televuer import TeleVuerWrapper
-from teleop.robot_control.robot_arm import G1_29_ArmController, G1_23_ArmController, H1_2_ArmController, H1_ArmController
-from teleop.robot_control.robot_arm_ik import G1_29_ArmIK, G1_23_ArmIK, H1_2_ArmIK, H1_ArmIK
+from teleop.robot_control.robot_arm import G1_29_ArmController, G1_23_ArmController, H1_2_ArmController, H1_ArmController, Acu_ArmController
+from teleop.robot_control.robot_arm_ik import G1_29_ArmIK, G1_23_ArmIK, H1_2_ArmIK, H1_ArmIK, Acu_ArmIK
 from teleop.robot_control.robot_hand_unitree import Dex3_1_Controller, Dex1_1_Gripper_Controller
 from teleop.robot_control.robot_hand_inspire import Inspire_Controller
 from teleop.robot_control.robot_hand_brainco import Brainco_Controller
@@ -79,7 +79,7 @@ if __name__ == '__main__':
 
     # basic control parameters
     parser.add_argument('--xr-mode', type=str, choices=['hand', 'controller'], default='hand', help='Select XR device tracking source')
-    parser.add_argument('--arm', type=str, choices=['G1_29', 'G1_23', 'H1_2', 'H1'], default='G1_29', help='Select arm controller')
+    parser.add_argument('--arm', type=str, choices=['G1_29', 'G1_23', 'H1_2', 'H1', 'ACU'], default='G1_29', help='Select arm controller')
     parser.add_argument('--ee', type=str, choices=['dex1', 'dex3', 'inspire1', 'brainco'], help='Select end effector controller')
     # mode flags
     parser.add_argument('--motion', action = 'store_true', help = 'Enable motion control mode')
@@ -165,9 +165,12 @@ if __name__ == '__main__':
         image_receive_thread.daemon = True
         image_receive_thread.start()
 
+        is_acu = (args.arm == 'ACU')
         # television: obtain hand pose data from the XR device and transmit the robot's head camera image to the XR device.
         tv_wrapper = TeleVuerWrapper(binocular=BINOCULAR, use_hand_tracking=args.xr_mode == "hand", img_shape=tv_img_shape, img_shm_name=tv_img_shm.name, 
-                                    return_state_data=True, return_hand_rot_data = False)
+                                    return_state_data=True, return_hand_rot_data = False,
+                                    # enable Acu controller teleop mapping only for Acu + controller tracking
+                                    use_acu_controller_teleop=(is_acu and args.xr_mode == 'controller'),)
 
         # arm
         if args.arm == "G1_29":
@@ -182,6 +185,13 @@ if __name__ == '__main__':
         elif args.arm == "H1":
             arm_ik = H1_ArmIK()
             arm_ctrl = H1_ArmController(simulation_mode=args.sim)
+        elif args.arm == "ACU":
+            # Acupuncture robot: single arm (8 DOF)
+            arm_ik = Acu_ArmIK()
+            arm_ctrl = Acu_ArmController(motion_mode=args.motion, simulation_mode=args.sim)
+        
+        current_lr_arm_q  = arm_ctrl.get_current_dual_arm_q()
+        arm_ik.reset_init_joint_pos(current_lr_arm_q)
 
         # end-effector
         if args.ee == "dex3":
@@ -260,6 +270,9 @@ if __name__ == '__main__':
             time.sleep(0.01)
         logger_mp.info("start program.")
         arm_ctrl.speed_gradual_max()
+
+        # For incremental Acu IK: cache last right wrist pose. The first iteration only records it.
+        right_wrist_pose_last = None
         while not STOP:
             start_time = time.time()
 
@@ -293,6 +306,14 @@ if __name__ == '__main__':
                         publish_reset_category(1, reset_pose_publisher)
             # get input data
             tele_data = tv_wrapper.get_motion_state_data()
+            # ACU incremental mode: first frame only records last pose and skips IK/control.
+            if args.arm == 'ACU' and right_wrist_pose_last is None:
+                right_wrist_pose_last = tele_data.right_arm_pose
+                # still allow recording/images/etc; just skip arm IK/control this cycle
+                time_elapsed = time.time() - start_time
+                sleep_time = max(0, (1 / args.frequency) - time_elapsed)
+                time.sleep(sleep_time)
+                continue
             if (args.ee == "dex3" or args.ee == "inspire1" or args.ee == "brainco") and args.xr_mode == "hand":
                 with left_hand_pos_array.get_lock():
                     left_hand_pos_array[:] = tele_data.left_hand_pos.flatten()
@@ -331,8 +352,20 @@ if __name__ == '__main__':
 
             # solve ik using motor data and wrist pose, then use ik results to control arms.
             time_ik_start = time.time()
-            sol_q, sol_tauff  = arm_ik.solve_ik(tele_data.left_arm_pose, tele_data.right_arm_pose, current_lr_arm_q, current_lr_arm_dq)
+            if args.arm == 'ACU':
+                sol_q, sol_tauff  = arm_ik.solve_ik(
+                    tele_data.left_arm_pose,
+                    tele_data.right_arm_pose,
+                    current_lr_arm_q,
+                    current_lr_arm_dq,
+                    right_wrist_last=right_wrist_pose_last,
+                )
+                right_wrist_pose_last = tele_data.right_arm_pose
+            else:
+                sol_q, sol_tauff  = arm_ik.solve_ik(tele_data.left_arm_pose, tele_data.right_arm_pose, current_lr_arm_q, current_lr_arm_dq)
             time_ik_end = time.time()
+            # print(sol_q)
+            # print(tele_data.right_arm_pose)
             logger_mp.debug(f"ik:\t{round(time_ik_end - time_ik_start, 6)}")
             arm_ctrl.ctrl_dual_arm(sol_q, sol_tauff)
 
@@ -387,10 +420,18 @@ if __name__ == '__main__':
                 if WRIST:
                     current_wrist_image = wrist_img_array.copy()
                 # arm state and action
-                left_arm_state  = current_lr_arm_q[:7]
-                right_arm_state = current_lr_arm_q[-7:]
-                left_arm_action = sol_q[:7]
-                right_arm_action = sol_q[-7:]
+                # arm state and action
+                if args.arm == 'ACU':
+                    # single arm: store in right_arm by convention (keep schema stable)
+                    left_arm_state = []
+                    left_arm_action = []
+                    right_arm_state = current_lr_arm_q.tolist()
+                    right_arm_action = sol_q.tolist() if sol_q is not None else []
+                else:
+                    left_arm_state  = current_lr_arm_q[:7]
+                    right_arm_state = current_lr_arm_q[-7:]
+                    left_arm_action = sol_q[:7]
+                    right_arm_action = sol_q[-7:]
                 if RECORD_RUNNING:
                     colors = {}
                     depths = {}
@@ -407,12 +448,12 @@ if __name__ == '__main__':
                             colors[f"color_{2}"] = current_wrist_image[:, wrist_img_shape[1]//2:]
                     states = {
                         "left_arm": {                                                                    
-                            "qpos":   left_arm_state.tolist(),    # numpy.array -> list
+                            "qpos":   left_arm_state if args.arm == 'ACU' else left_arm_state.tolist(),    # numpy.array -> list
                             "qvel":   [],                          
                             "torque": [],                        
                         }, 
                         "right_arm": {                                                                    
-                            "qpos":   right_arm_state.tolist(),       
+                            "qpos":   right_arm_state if args.arm == 'ACU' else right_arm_state.tolist(),       
                             "qvel":   [],                          
                             "torque": [],                         
                         },                        
@@ -432,12 +473,12 @@ if __name__ == '__main__':
                     }
                     actions = {
                         "left_arm": {                                   
-                            "qpos":   left_arm_action.tolist(),       
+                            "qpos":   left_arm_action if args.arm == 'ACU' else left_arm_action.tolist(),       
                             "qvel":   [],       
                             "torque": [],      
                         }, 
                         "right_arm": {                                   
-                            "qpos":   right_arm_action.tolist(),       
+                            "qpos":   right_arm_action if args.arm == 'ACU' else right_arm_action.tolist(),  
                             "qvel":   [],       
                             "torque": [],       
                         },                         
@@ -469,6 +510,8 @@ if __name__ == '__main__':
 
     except KeyboardInterrupt:
         logger_mp.info("KeyboardInterrupt, exiting program...")
+    except Exception as e:
+        logger_mp.error(f"main process exception: {e}")
     finally:
         arm_ctrl.ctrl_dual_arm_go_home()
 
