@@ -1,0 +1,222 @@
+\doxysection{iit\+::rbd Namespace Reference}
+\hypertarget{namespaceiit_1_1rbd}{}\label{namespaceiit_1_1rbd}\index{iit::rbd@{iit::rbd}}
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structiit_1_1rbd_1_1_basic_traits}{Basic\+Traits}}
+\item 
+struct \mbox{\hyperlink{structiit_1_1rbd_1_1_core}{Core}}
+\item 
+struct \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core}{CTransform\+Core}}
+\item 
+class \mbox{\hyperlink{classiit_1_1rbd_1_1_homogeneous_transform_base}{Homogeneous\+Transform\+Base}}
+\item 
+class \mbox{\hyperlink{classiit_1_1rbd_1_1_jacobian_base}{Jacobian\+Base}}
+\item 
+class \mbox{\hyperlink{classiit_1_1rbd_1_1_rotation_transform_base}{Rotation\+Transform\+Base}}
+\item 
+struct \mbox{\hyperlink{structiit_1_1rbd_1_1_scalar_traits}{Scalar\+Traits}}
+\item 
+struct \mbox{\hyperlink{structiit_1_1rbd_1_1_scalar_traits_commons}{Scalar\+Traits\+Commons}}
+\item 
+class \mbox{\hyperlink{classiit_1_1rbd_1_1_spatial_transform_base}{Spatial\+Transform\+Base}}
+\item 
+class \mbox{\hyperlink{classiit_1_1rbd_1_1_state_dependent_base}{State\+Dependent\+Base}}
+\item 
+class \mbox{\hyperlink{classiit_1_1rbd_1_1_state_dependent_matrix}{State\+Dependent\+Matrix}}
+\item 
+struct \mbox{\hyperlink{structiit_1_1rbd_1_1_transform_base}{Transform\+Base}}
+\item 
+class \mbox{\hyperlink{classiit_1_1rbd_1_1_utils}{Utils}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{namespaceiit_1_1rbd_a262b2c8d7f1ff6e7779596abeca48a13}\label{namespaceiit_1_1rbd_a262b2c8d7f1ff6e7779596abeca48a13} 
+using {\bfseries Inertia\+Matrix\+Dense} = \mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense}{tpl\+::\+Inertia\+Matrix\+Dense}}$<$double$>$
+\item 
+\Hypertarget{namespaceiit_1_1rbd_acc51c3b7e21215dfa1f9abdb6b3c6f35}\label{namespaceiit_1_1rbd_acc51c3b7e21215dfa1f9abdb6b3c6f35} 
+{\footnotesize template$<$typename S $>$ }\\using {\bfseries Inertia\+Mat} = \mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense}{tpl\+::\+Inertia\+Matrix\+Dense}}$<$S$>$
+\item 
+\Hypertarget{namespaceiit_1_1rbd_a702fee89b5d0bf6abb0371ff1bac600a}\label{namespaceiit_1_1rbd_a702fee89b5d0bf6abb0371ff1bac600a} 
+typedef \mbox{\hyperlink{structiit_1_1rbd_1_1_scalar_traits}{Scalar\+Traits}}$<$ double $>$ {\bfseries Double\+Traits}
+\item 
+\Hypertarget{namespaceiit_1_1rbd_a3c6a03abb5fa721d5f1d3e1e059be0ad}\label{namespaceiit_1_1rbd_a3c6a03abb5fa721d5f1d3e1e059be0ad} 
+typedef \mbox{\hyperlink{structiit_1_1rbd_1_1_scalar_traits}{Scalar\+Traits}}$<$ float $>$ {\bfseries Float\+Traits}
+\end{DoxyCompactItemize}
+\begin{Indent}\textbf{ General matrix types}\par
+\begin{DoxyCompactItemize}
+\item 
+{\footnotesize template$<$typename Derived $>$ }\\using {\bfseries Matrix\+Base} = Eigen\+::\+Matrix\+Base$<$ Derived $>$
+\item 
+{\footnotesize template$<$typename Scalar , int R, int C$>$ }\\using {\bfseries Plain\+Matrix} = Eigen\+::\+Matrix$<$ Scalar, R, C $>$
+\item 
+{\footnotesize template$<$typename Xpr\+Type , int R, int C$>$ }\\using {\bfseries Matrix\+Block} = Eigen\+::\+Block$<$ Xpr\+Type, R, C $>$
+\item 
+{\footnotesize template$<$typename Scalar $>$ }\\using {\bfseries Sparse\+Matrix} = Eigen\+::\+Sparse\+Matrix$<$Scalar$>$
+\item 
+{\footnotesize template$<$typename Scalar $>$ }\\using {\bfseries Sparse\+Vector} = Eigen\+::\+Sparse\+Vector$<$Scalar$>$
+\end{DoxyCompactItemize}
+\end{Indent}
+\begin{Indent}\textbf{ Generators of individual core types}\par
+{\em These aliases are useful when one or few types are needed, given a Scalar. }\begin{DoxyCompactItemize}
+\item 
+using {\bfseries Velocity} = typename \mbox{\hyperlink{structiit_1_1rbd_1_1_core}{Core}}$<$S$>$\+::\+Velocity\+Vector
+\item 
+using {\bfseries Force} = typename \mbox{\hyperlink{structiit_1_1rbd_1_1_core}{Core}}$<$S$>$\+::\+Force\+Vector
+\item 
+using {\bfseries Mat33} = typename \mbox{\hyperlink{structiit_1_1rbd_1_1_core}{Core}}$<$S$>$\+::\+Matrix33
+\item 
+using {\bfseries Mat66} = typename \mbox{\hyperlink{structiit_1_1rbd_1_1_core}{Core}}$<$S$>$\+::\+Matrix66
+\item 
+using {\bfseries Vec3} = typename \mbox{\hyperlink{structiit_1_1rbd_1_1_core}{Core}}$<$S$>$\+::\+Vector3
+\item 
+using {\bfseries Vec6} = typename \mbox{\hyperlink{structiit_1_1rbd_1_1_core}{Core}}$<$S$>$\+::\+Vector6
+\end{DoxyCompactItemize}
+\end{Indent}
+\doxysubsubsection*{Enumerations}
+\begin{Indent}\textbf{ Vector coordinates}\par
+{\em Constants to index either 6D or 3D coordinate vectors. }\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{group__rbd-core_gad2cb680ea27e496cdedb32836e6b3b2a}\label{group__rbd-core_gad2cb680ea27e496cdedb32836e6b3b2a} 
+enum {\bfseries Coords3D} \{ {\bfseries X} =0
+, {\bfseries Y}
+, {\bfseries Z}
+ \}
+\item 
+\Hypertarget{group__rbd-core_ga040191b0074ada049644bc2ddff593ef}\label{group__rbd-core_ga040191b0074ada049644bc2ddff593ef} 
+enum \mbox{\hyperlink{group__rbd-core_ga040191b0074ada049644bc2ddff593ef}{Coords6D}} \{ \newline
+{\bfseries AX} =0
+, {\bfseries AY}
+, {\bfseries AZ}
+, {\bfseries LX}
+, \newline
+{\bfseries LY}
+, {\bfseries LZ}
+ \}
+\begin{DoxyCompactList}\small\item\em To be used with 6D vectors. \textquotesingle{}A\textquotesingle{} stands for angular, \textquotesingle{}L\textquotesingle{} for linear. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\end{Indent}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\footnotesize template$<$typename Derived $>$ }\\Force$<$ DScalar $>$ \mbox{\hyperlink{group__robcogen__commons_ga02196b9e20192b598f542ac6472111a1}{vx\+Iv}} (const Velocity$<$ DScalar $>$ \&v, const Matrix\+Base$<$ Derived $>$ \&I)
+\item 
+{\footnotesize template$<$typename Derived $>$ }\\Force$<$ DScalar $>$ \mbox{\hyperlink{group__robcogen__commons_ga417f4d754ddff34ff1075bc396d7330f}{vx\+Iv}} (const DScalar \&omegaz, const Matrix\+Base$<$ Derived $>$ \&I)
+\item 
+{\footnotesize template$<$typename S  = double$>$ }\\void \mbox{\hyperlink{group__robcogen__commons_ga775fe0d9260ef0946b76da8531bfffc4}{motion\+Cross\+Product\+Mx}} (const Velocity$<$ S $>$ \&v, Mat66$<$ S $>$ \&vx)
+\item 
+{\footnotesize template$<$typename S  = double$>$ }\\void \mbox{\hyperlink{group__robcogen__commons_gaa77162e6aa47b2a52d8ef73c5d22e3c4}{force\+Cross\+Product\+Mx}} (const Velocity$<$ S $>$ \&v, Mat66$<$ S $>$ \&vx)
+\item 
+{\footnotesize template$<$typename S  = double$>$ }\\void {\bfseries fill\+Inertia} (S mass, const Vec3$<$ S $>$ \&com, const \mbox{\hyperlink{structiit_1_1rbd_1_1internal_1_1_symm_mat3x3_coefficients}{internal\+::\+Symm\+Mat3x3\+Coefficients}}$<$ S $>$ \&I3x3, \mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense}{Inertia\+Mat}}$<$ S $>$ \&I)
+\item 
+{\footnotesize template$<$typename Scalar  = double$>$ }\\void \mbox{\hyperlink{group__robcogen__commons_ga43b844382bdc866ffdf4b312aaa44a81}{transform\+Inertia}} (const \mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense}{Inertia\+Mat}}$<$ Scalar $>$ \&I\+\_\+A, const Mat66$<$ Scalar $>$ \&XF, \mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense}{Inertia\+Mat}}$<$ Scalar $>$ \&I\+\_\+B)
+\end{DoxyCompactItemize}
+\begin{Indent}\textbf{ Articulated inertia}\par
+{\em Functions to compute and do the coordinate transform of articulated inertia propagated across a joint. See chapter 7 of the RBDA book, §7.2.\+2, equation (7.\+23).
+
+Two specialized functions are available for the two cases of revolute and prismatic joint (which connects the subtree with the mass-\/less handle), since the inertia exhibits two different sparsity patterns.
+
+Structure of the matrix for a prismatic joint\+: 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{[ia1,\ \ ia2,\ \ ia3,\ |\ \ ia4,\ \ ia5,\ \ \ 0\ \ ]}
+\DoxyCodeLine{[ia2,\ \ ia6,\ \ ia7,\ |\ \ ia8,\ \ ia9,\ \ \ 0\ \ ]}
+\DoxyCodeLine{[ia3,\ \ ia7,\ \ ia10,|\ \ ia11,\ ia12,\ \ 0\ \ ]\ \ \ \ \ [\ \ I\ \ \ |\ \ C\ \ ]}
+\DoxyCodeLine{\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/|-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ \ \ \ =\ \ |\ -\/-\/-\/-\/-\/|-\/-\/-\/-\/\ |}
+\DoxyCodeLine{[ia4,\ \ ia8,\ \ ia11,|\ ia13,\ ia14,\ \ \ 0\ \ ]\ \ \ \ \ [\ \ C\string^T\ |\ \ M\ \ ]}
+\DoxyCodeLine{[ia5,\ \ ia9,\ \ ia12,|\ ia14,\ ia15,\ \ \ 0\ \ ]}
+\DoxyCodeLine{[0\ \ ,\ \ \ \ 0,\ \ \ \ 0,\ |\ \ 0,\ \ \ \ \ 0,\ \ \ \ 0\ \ ]}
+
+\end{DoxyCode}
+
+
+Structure of the matrix for a revolute joint\+: 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{[ia1,\ \ ia2,\ \ 0,\ |\ ia4,\ \ ia5,\ \ ia6\ ]}
+\DoxyCodeLine{[ia2,\ \ ia7,\ \ 0,\ |\ ia8,\ \ ia9,\ \ ia10]\ \ \ \ [\ \ I\ \ \ |\ \ C\ \ ]}
+\DoxyCodeLine{[0\ \ ,\ \ \ \ 0,\ \ 0,\ |\ \ \ 0,\ \ \ \ 0,\ \ \ \ 0\ ]\ \ =\ |\ -\/-\/-\/-\/-\/|-\/-\/-\/-\/-\/|}
+\DoxyCodeLine{[-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ |\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ ]\ \ \ \ [\ \ C\string^T\ |\ \ M\ \ ]}
+\DoxyCodeLine{[ia4,\ \ ia8,\ \ 0,\ |\ ia11,\ ia12,\ ia13]}
+\DoxyCodeLine{[ia5,\ \ ia9,\ \ 0,\ |\ ia12,\ ia14,\ ia15]}
+\DoxyCodeLine{[ia6,\ ia10,\ \ 0,\ |\ ia13,\ ia15,\ ia16]}
+
+\end{DoxyCode}
+ }\begin{DoxyCompactItemize}
+\item 
+{\footnotesize template$<$typename D1 , typename D2 , typename D3 $>$ }\\void \mbox{\hyperlink{group__robcogen__commons_gabf9d23d9d84faf49f6e7b051ad9b76db}{ctransform\+\_\+\+Ia\+\_\+revolute}} (const Matrix\+Base$<$ D1 $>$ \&Ia\+\_\+A, const Matrix\+Base$<$ D2 $>$ \&XM, const Matrix\+Base$<$ D3 $>$ \&Ia\+\_\+\+B\+\_\+const)
+\item 
+{\footnotesize template$<$typename D1 , typename D2 , typename D3 $>$ }\\void {\bfseries ctransform\+\_\+\+Ia\+\_\+prismatic} (const Matrix\+Base$<$ D1 $>$ \&Ia\+\_\+A, const Matrix\+Base$<$ D2 $>$ \&XM, const Matrix\+Base$<$ D3 $>$ \&Ia\+\_\+\+B\+\_\+const)
+\item 
+{\footnotesize template$<$typename D1 , typename D2 $>$ }\\void {\bfseries ctransform\+\_\+\+Ia\+\_\+revolute} (const Matrix\+Base$<$ D1 $>$ \&Ia\+\_\+child, const \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core}{CTransform\+Core}}$<$ typename D1\+::\+Scalar $>$ \&child\+\_\+ct\+\_\+parent, const Matrix\+Base$<$ D2 $>$ \&Ia\+\_\+parent\+\_\+const)
+\item 
+{\footnotesize template$<$typename D1 , typename D2 $>$ }\\void {\bfseries ctransform\+\_\+\+Ia\+\_\+prismatic} (const Matrix\+Base$<$ D1 $>$ \&Ia\+\_\+child, const \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core}{CTransform\+Core}}$<$ typename D1\+::\+Scalar $>$ \&child\+\_\+ct\+\_\+parent, const Matrix\+Base$<$ D2 $>$ \&Ia\+\_\+parent\+\_\+const)
+\item 
+{\footnotesize template$<$typename D1 , typename D2 $>$ }\\void \mbox{\hyperlink{group__robcogen__commons_gafac3a4b374a938576ddc3b8ad7625c91}{compute\+\_\+\+Ia\+\_\+revolute}} (const Matrix\+Base$<$ D1 $>$ \&IA, const Vec6$<$ typename D1\+::\+Scalar $>$ \&U, const typename D1\+::\+Scalar \&D, const Matrix\+Base$<$ D2 $>$ \&Ia\+\_\+const)
+\item 
+{\footnotesize template$<$typename D1 , typename D2 $>$ }\\void {\bfseries compute\+\_\+\+Ia\+\_\+prismatic} (const Matrix\+Base$<$ D1 $>$ \&IA, const Vec6$<$ typename D1\+::\+Scalar $>$ \&U, const typename D1\+::\+Scalar \&D, const Matrix\+Base$<$ D2 $>$ \&Ia\+\_\+const)
+\item 
+{\footnotesize template$<$typename D1 , typename D2 $>$ }\\void {\bfseries propagate\+\_\+\+IA\+\_\+across\+\_\+prismatic\+\_\+joint} (const Matrix\+Base$<$ D1 $>$ \&IA, const Matrix\+Base$<$ D2 $>$ \&Ia\+\_\+const)
+\item 
+{\footnotesize template$<$typename D1 , typename D2 $>$ }\\void {\bfseries propagate\+\_\+\+IA\+\_\+across\+\_\+revolute\+\_\+joint} (const Matrix\+Base$<$ D1 $>$ \&IA, const Matrix\+Base$<$ D2 $>$ \&Ia\+\_\+const)
+\end{DoxyCompactItemize}
+\end{Indent}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+constexpr double \mbox{\hyperlink{namespaceiit_1_1rbd_ad7a661c3d10f9e3a31bda29e3a2d957e}{g}} \{9.\+80665\}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Core types using double as scalar}
+Explicit instantiation of all the various matrix types using the standard {\ttfamily double} as the scalar type. These definitions are included for backward compatibility with client code using prior non-\/templated version of this library.
+
+See \doxylink{structiit_1_1rbd_1_1_core}{Core}. \begin{DoxyCompactItemize}
+\item 
+typedef \mbox{\hyperlink{structiit_1_1rbd_1_1_core}{Core}}$<$ double $>$ {\bfseries Cored}
+\item 
+using {\bfseries Matrix33d} = Cored\+::\+Matrix33
+\item 
+using {\bfseries Vector3d} = Cored\+::\+Vector3
+\item 
+using {\bfseries Matrix66d} = Cored\+::\+Matrix66
+\item 
+using {\bfseries Vector6d} = Cored\+::\+Vector6
+\item 
+using {\bfseries Vector6D} = Cored\+::\+Vector6D
+\item 
+using {\bfseries Velocity\+Vector} = Cored\+::\+Velocity\+Vector
+\item 
+using {\bfseries Force\+Vector} = Cored\+::\+Force\+Vector
+\item 
+using {\bfseries Part3D} = \mbox{\hyperlink{structiit_1_1rbd_1_1_core_aee12e2fc82e08ec7480375306824a405}{Cored\+::\+Part3D}}
+\item 
+using {\bfseries Part3\+DConst} = \mbox{\hyperlink{structiit_1_1rbd_1_1_core_a26507adb5f163ae41a2a1225b9ac33f6}{Cored\+::\+Part3\+DConst}}
+\item 
+using {\bfseries Column6d} = Cored\+::\+Column6D
+\item 
+using {\bfseries Sparse\+Matrixd} = Sparse\+Matrix$<$double$>$
+\item 
+using {\bfseries Sparse\+Columnd} = Sparse\+Vector$<$double$>$
+\item 
+Part3D {\bfseries angular\+Part} (Vector6D \&f)
+\item 
+Part3D {\bfseries linear\+Part} (Vector6D \&f)
+\item 
+Part3\+DConst {\bfseries angular\+Part} (const Vector6D \&f)
+\item 
+Part3\+DConst {\bfseries linear\+Part} (const Vector6D \&f)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+This namespace contains some basic types and functions related to spatial vectors and Rigid Body Dynamics (RBD).
+
+This code has been developed to provide basic types and general utilities to be used in turn by the C++ classes generated by the Robotics Code Generator (Rob\+Co\+Gen). That is, the code is just meant to be a common, generic facility for all the robot-\/specific code that Rob\+Co\+Gen can generate.
+
+In other words, the primary target of the {\ttfamily iit\+\_\+rbd} library is not to provide a comprehensive object-\/oriented implementation of concepts of rigid-\/body dynamics and spatial vectors, for end-\/user applications. Some of such concepts do appear in this software, although the implementation is relatively simple. However, the library may very well be used in custom code that needs e.\+g. a type for spatial vectors or for the spatial 6x6 inertia tensor. 
+
+\doxysubsection{Variable Documentation}
+\Hypertarget{namespaceiit_1_1rbd_ad7a661c3d10f9e3a31bda29e3a2d957e}\label{namespaceiit_1_1rbd_ad7a661c3d10f9e3a31bda29e3a2d957e} 
+\index{iit::rbd@{iit::rbd}!g@{g}}
+\index{g@{g}!iit::rbd@{iit::rbd}}
+\doxysubsubsection{\texorpdfstring{g}{g}}
+{\footnotesize\ttfamily constexpr double iit\+::rbd\+::g \{9.\+80665\}\hspace{0.3cm}{\ttfamily [constexpr]}}
+
+The Earth gravitational acceleration constant. This value should always be positive, so that an application chooses the sign according to its conventions. 

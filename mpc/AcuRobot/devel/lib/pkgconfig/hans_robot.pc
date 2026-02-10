@@ -1,0 +1,8 @@
+prefix=/home/ros/AcuRobot/devel
+
+Name: hans_robot
+Description: Description of hans_robot
+Version: 0.0.0
+Cflags: -I/home/ros/AcuRobot/src/hans_robot/inc
+Libs: -L${prefix}/lib 
+Requires: 

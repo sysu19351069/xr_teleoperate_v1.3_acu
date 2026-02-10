@@ -1,0 +1,80 @@
+ee_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4, q_j5, q_j6, q_j7, q_j8) := posVector(fr_base0_X_ee(q_j1, q_j2, q_j3, q_j4, q_j5, q_j6, q_j7, q_j8));
+fr_base0_J_ee(q_j1, q_j2, q_j3, q_j4, q_j5, q_j6, q_j7, q_j8) := addcol(matrix()
+	, GJacobianColumn(ee_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4, q_j5, q_j6, q_j7, q_j8), zaxis(fr_base0_X_fr_j1()), posVector(fr_base0_X_fr_j1()))
+	, GJacobianColumn(ee_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4, q_j5, q_j6, q_j7, q_j8), zaxis(fr_base0_X_fr_j2(q_j1)), posVector(fr_base0_X_fr_j2(q_j1)))
+	, GJacobianColumn(ee_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4, q_j5, q_j6, q_j7, q_j8), zaxis(fr_base0_X_fr_j3(q_j1, q_j2)), posVector(fr_base0_X_fr_j3(q_j1, q_j2)))
+	, GJacobianColumn(ee_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4, q_j5, q_j6, q_j7, q_j8), zaxis(fr_base0_X_fr_j4(q_j1, q_j2, q_j3)), posVector(fr_base0_X_fr_j4(q_j1, q_j2, q_j3)))
+	, GJacobianColumn(ee_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4, q_j5, q_j6, q_j7, q_j8), zaxis(fr_base0_X_fr_j5(q_j1, q_j2, q_j3, q_j4)), posVector(fr_base0_X_fr_j5(q_j1, q_j2, q_j3, q_j4)))
+	, GJacobianColumn(ee_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4, q_j5, q_j6, q_j7, q_j8), zaxis(fr_base0_X_fr_j6(q_j1, q_j2, q_j3, q_j4, q_j5)), posVector(fr_base0_X_fr_j6(q_j1, q_j2, q_j3, q_j4, q_j5)))
+	, GJacobianColumn_prism(zaxis(fr_base0_X_fr_j7(q_j1, q_j2, q_j3, q_j4, q_j5, q_j6)))
+	, GJacobianColumn(ee_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4, q_j5, q_j6, q_j7, q_j8), zaxis(fr_base0_X_fr_j8(q_j1, q_j2, q_j3, q_j4, q_j5, q_j6, q_j7)), posVector(fr_base0_X_fr_j8(q_j1, q_j2, q_j3, q_j4, q_j5, q_j6, q_j7)))
+);
+fr_link6_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4, q_j5, q_j6) := posVector(fr_base0_X_fr_link6(q_j1, q_j2, q_j3, q_j4, q_j5, q_j6));
+fr_base0_J_fr_link6(q_j1, q_j2, q_j3, q_j4, q_j5, q_j6) := addcol(matrix()
+	, GJacobianColumn(fr_link6_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4, q_j5, q_j6), zaxis(fr_base0_X_fr_j1()), posVector(fr_base0_X_fr_j1()))
+	, GJacobianColumn(fr_link6_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4, q_j5, q_j6), zaxis(fr_base0_X_fr_j2(q_j1)), posVector(fr_base0_X_fr_j2(q_j1)))
+	, GJacobianColumn(fr_link6_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4, q_j5, q_j6), zaxis(fr_base0_X_fr_j3(q_j1, q_j2)), posVector(fr_base0_X_fr_j3(q_j1, q_j2)))
+	, GJacobianColumn(fr_link6_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4, q_j5, q_j6), zaxis(fr_base0_X_fr_j4(q_j1, q_j2, q_j3)), posVector(fr_base0_X_fr_j4(q_j1, q_j2, q_j3)))
+	, GJacobianColumn(fr_link6_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4, q_j5, q_j6), zaxis(fr_base0_X_fr_j5(q_j1, q_j2, q_j3, q_j4)), posVector(fr_base0_X_fr_j5(q_j1, q_j2, q_j3, q_j4)))
+	, GJacobianColumn(fr_link6_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4, q_j5, q_j6), zaxis(fr_base0_X_fr_j6(q_j1, q_j2, q_j3, q_j4, q_j5)), posVector(fr_base0_X_fr_j6(q_j1, q_j2, q_j3, q_j4, q_j5)))
+);
+fr_link1_pos_wrt_fr_base0(q_j1) := posVector(fr_base0_X_fr_link1(q_j1));
+fr_base0_J_fr_link1(q_j1) := addcol(matrix()
+	, GJacobianColumn(fr_link1_pos_wrt_fr_base0(q_j1), zaxis(fr_base0_X_fr_j1()), posVector(fr_base0_X_fr_j1()))
+);
+link1_end_pos_wrt_fr_base0(q_j1) := posVector(fr_base0_X_link1_end(q_j1));
+fr_base0_J_link1_end(q_j1) := addcol(matrix()
+	, GJacobianColumn(link1_end_pos_wrt_fr_base0(q_j1), zaxis(fr_base0_X_fr_j1()), posVector(fr_base0_X_fr_j1()))
+);
+fr_link2_pos_wrt_fr_base0(q_j1, q_j2) := posVector(fr_base0_X_fr_link2(q_j1, q_j2));
+fr_base0_J_fr_link2(q_j1, q_j2) := addcol(matrix()
+	, GJacobianColumn(fr_link2_pos_wrt_fr_base0(q_j1, q_j2), zaxis(fr_base0_X_fr_j1()), posVector(fr_base0_X_fr_j1()))
+	, GJacobianColumn(fr_link2_pos_wrt_fr_base0(q_j1, q_j2), zaxis(fr_base0_X_fr_j2(q_j1)), posVector(fr_base0_X_fr_j2(q_j1)))
+);
+link2_end_pos_wrt_fr_base0(q_j1, q_j2) := posVector(fr_base0_X_link2_end(q_j1, q_j2));
+fr_base0_J_link2_end(q_j1, q_j2) := addcol(matrix()
+	, GJacobianColumn(link2_end_pos_wrt_fr_base0(q_j1, q_j2), zaxis(fr_base0_X_fr_j1()), posVector(fr_base0_X_fr_j1()))
+	, GJacobianColumn(link2_end_pos_wrt_fr_base0(q_j1, q_j2), zaxis(fr_base0_X_fr_j2(q_j1)), posVector(fr_base0_X_fr_j2(q_j1)))
+);
+fr_link3_pos_wrt_fr_base0(q_j1, q_j2, q_j3) := posVector(fr_base0_X_fr_link3(q_j1, q_j2, q_j3));
+fr_base0_J_fr_link3(q_j1, q_j2, q_j3) := addcol(matrix()
+	, GJacobianColumn(fr_link3_pos_wrt_fr_base0(q_j1, q_j2, q_j3), zaxis(fr_base0_X_fr_j1()), posVector(fr_base0_X_fr_j1()))
+	, GJacobianColumn(fr_link3_pos_wrt_fr_base0(q_j1, q_j2, q_j3), zaxis(fr_base0_X_fr_j2(q_j1)), posVector(fr_base0_X_fr_j2(q_j1)))
+	, GJacobianColumn(fr_link3_pos_wrt_fr_base0(q_j1, q_j2, q_j3), zaxis(fr_base0_X_fr_j3(q_j1, q_j2)), posVector(fr_base0_X_fr_j3(q_j1, q_j2)))
+);
+link3_end_pos_wrt_fr_base0(q_j1, q_j2, q_j3) := posVector(fr_base0_X_link3_end(q_j1, q_j2, q_j3));
+fr_base0_J_link3_end(q_j1, q_j2, q_j3) := addcol(matrix()
+	, GJacobianColumn(link3_end_pos_wrt_fr_base0(q_j1, q_j2, q_j3), zaxis(fr_base0_X_fr_j1()), posVector(fr_base0_X_fr_j1()))
+	, GJacobianColumn(link3_end_pos_wrt_fr_base0(q_j1, q_j2, q_j3), zaxis(fr_base0_X_fr_j2(q_j1)), posVector(fr_base0_X_fr_j2(q_j1)))
+	, GJacobianColumn(link3_end_pos_wrt_fr_base0(q_j1, q_j2, q_j3), zaxis(fr_base0_X_fr_j3(q_j1, q_j2)), posVector(fr_base0_X_fr_j3(q_j1, q_j2)))
+);
+fr_link4_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4) := posVector(fr_base0_X_fr_link4(q_j1, q_j2, q_j3, q_j4));
+fr_base0_J_fr_link4(q_j1, q_j2, q_j3, q_j4) := addcol(matrix()
+	, GJacobianColumn(fr_link4_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4), zaxis(fr_base0_X_fr_j1()), posVector(fr_base0_X_fr_j1()))
+	, GJacobianColumn(fr_link4_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4), zaxis(fr_base0_X_fr_j2(q_j1)), posVector(fr_base0_X_fr_j2(q_j1)))
+	, GJacobianColumn(fr_link4_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4), zaxis(fr_base0_X_fr_j3(q_j1, q_j2)), posVector(fr_base0_X_fr_j3(q_j1, q_j2)))
+	, GJacobianColumn(fr_link4_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4), zaxis(fr_base0_X_fr_j4(q_j1, q_j2, q_j3)), posVector(fr_base0_X_fr_j4(q_j1, q_j2, q_j3)))
+);
+link4_end_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4) := posVector(fr_base0_X_link4_end(q_j1, q_j2, q_j3, q_j4));
+fr_base0_J_link4_end(q_j1, q_j2, q_j3, q_j4) := addcol(matrix()
+	, GJacobianColumn(link4_end_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4), zaxis(fr_base0_X_fr_j1()), posVector(fr_base0_X_fr_j1()))
+	, GJacobianColumn(link4_end_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4), zaxis(fr_base0_X_fr_j2(q_j1)), posVector(fr_base0_X_fr_j2(q_j1)))
+	, GJacobianColumn(link4_end_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4), zaxis(fr_base0_X_fr_j3(q_j1, q_j2)), posVector(fr_base0_X_fr_j3(q_j1, q_j2)))
+	, GJacobianColumn(link4_end_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4), zaxis(fr_base0_X_fr_j4(q_j1, q_j2, q_j3)), posVector(fr_base0_X_fr_j4(q_j1, q_j2, q_j3)))
+);
+fr_link5_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4, q_j5) := posVector(fr_base0_X_fr_link5(q_j1, q_j2, q_j3, q_j4, q_j5));
+fr_base0_J_fr_link5(q_j1, q_j2, q_j3, q_j4, q_j5) := addcol(matrix()
+	, GJacobianColumn(fr_link5_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4, q_j5), zaxis(fr_base0_X_fr_j1()), posVector(fr_base0_X_fr_j1()))
+	, GJacobianColumn(fr_link5_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4, q_j5), zaxis(fr_base0_X_fr_j2(q_j1)), posVector(fr_base0_X_fr_j2(q_j1)))
+	, GJacobianColumn(fr_link5_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4, q_j5), zaxis(fr_base0_X_fr_j3(q_j1, q_j2)), posVector(fr_base0_X_fr_j3(q_j1, q_j2)))
+	, GJacobianColumn(fr_link5_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4, q_j5), zaxis(fr_base0_X_fr_j4(q_j1, q_j2, q_j3)), posVector(fr_base0_X_fr_j4(q_j1, q_j2, q_j3)))
+	, GJacobianColumn(fr_link5_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4, q_j5), zaxis(fr_base0_X_fr_j5(q_j1, q_j2, q_j3, q_j4)), posVector(fr_base0_X_fr_j5(q_j1, q_j2, q_j3, q_j4)))
+);
+link5_end_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4, q_j5) := posVector(fr_base0_X_link5_end(q_j1, q_j2, q_j3, q_j4, q_j5));
+fr_base0_J_link5_end(q_j1, q_j2, q_j3, q_j4, q_j5) := addcol(matrix()
+	, GJacobianColumn(link5_end_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4, q_j5), zaxis(fr_base0_X_fr_j1()), posVector(fr_base0_X_fr_j1()))
+	, GJacobianColumn(link5_end_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4, q_j5), zaxis(fr_base0_X_fr_j2(q_j1)), posVector(fr_base0_X_fr_j2(q_j1)))
+	, GJacobianColumn(link5_end_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4, q_j5), zaxis(fr_base0_X_fr_j3(q_j1, q_j2)), posVector(fr_base0_X_fr_j3(q_j1, q_j2)))
+	, GJacobianColumn(link5_end_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4, q_j5), zaxis(fr_base0_X_fr_j4(q_j1, q_j2, q_j3)), posVector(fr_base0_X_fr_j4(q_j1, q_j2, q_j3)))
+	, GJacobianColumn(link5_end_pos_wrt_fr_base0(q_j1, q_j2, q_j3, q_j4, q_j5), zaxis(fr_base0_X_fr_j5(q_j1, q_j2, q_j3, q_j4)), posVector(fr_base0_X_fr_j5(q_j1, q_j2, q_j3, q_j4)))
+);

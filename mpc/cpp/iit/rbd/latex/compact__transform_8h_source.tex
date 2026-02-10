@@ -1,0 +1,227 @@
+\doxysection{compact\+\_\+transform.\+h}
+\hypertarget{compact__transform_8h_source}{}\label{compact__transform_8h_source}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ IIT\_RBD\_COMPACT\_TRANSFORM\_H\_}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ IIT\_RBD\_COMPACT\_TRANSFORM\_H\_}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <iit/rbd/rbd.h>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <iit/rbd/StateDependentBase.h>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <iit/rbd/internals.h>}}
+\DoxyCodeLine{00007\ \textcolor{comment}{//\#include\ <iostream>}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \textcolor{keyword}{namespace\ }iit\ \{}
+\DoxyCodeLine{00010\ \textcolor{keyword}{namespace\ }rbd\ \{}
+\DoxyCodeLine{00011\ }
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ \textcolor{comment}{//\ //\ Just\ a\ dummy\ type\ to\ investigate\ what\ happens\ with\ temporary\ vectors\ with}}
+\DoxyCodeLine{00014\ \textcolor{comment}{//\ //\ the\ code\ below.\ Using\ this\ type\ should\ confirm\ that\ no\ useless\ copies\ of}}
+\DoxyCodeLine{00015\ \textcolor{comment}{//\ //\ vectors\ are\ performed,\ even\ without\ optimizations\ (g++\ 5.4\ (onwards?)).}}
+\DoxyCodeLine{00016\ \textcolor{comment}{//\ //\ See\ instead\ what\ happens\ when\ deliberately\ compiling\ with\ -\/fno-\/elide-\/constructors}}
+\DoxyCodeLine{00017\ \textcolor{comment}{//template<typename\ Scalar>}}
+\DoxyCodeLine{00018\ \textcolor{comment}{//struct\ Vec6Probe\ :\ public\ Vec6<Scalar>}}
+\DoxyCodeLine{00019\ \textcolor{comment}{//\{}}
+\DoxyCodeLine{00020\ \textcolor{comment}{//\ \ \ \ Vec6Probe()\ \{}}
+\DoxyCodeLine{00021\ \textcolor{comment}{//\ \ \ \ \ \ \ \ std::cout\ <<\ "{}CTor"{}\ <<\ std::endl;}}
+\DoxyCodeLine{00022\ \textcolor{comment}{//\ \ \ \ \}}}
+\DoxyCodeLine{00023\ \textcolor{comment}{//\ \ \ \ Vec6Probe(const\ Vec6Probe<Scalar>\&\ rhs)\ \{}}
+\DoxyCodeLine{00024\ \textcolor{comment}{//\ \ \ \ \ \ \ \ std::cout\ <<\ "{}Copy\ CTor"{}\ <<\ std::endl;}}
+\DoxyCodeLine{00025\ \textcolor{comment}{//\ \ \ \ \}}}
+\DoxyCodeLine{00026\ \textcolor{comment}{//\};}}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00038\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ Scalar>}
+\DoxyCodeLine{00039\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core}{CTransformCore}}}
+\DoxyCodeLine{00040\ \{}
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{keyword}{using\ }vector6\ =\ Vec6<Scalar>;}
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{comment}{//using\ vector6\ =\ Vec6Probe<Scalar>;\ //\ use\ this\ to\ investigate\ about\ temporaries}}
+\DoxyCodeLine{00043\ \ \ \ \ \textcolor{keyword}{using\ }matrix4\ =\ PlainMatrix<Scalar,\ 4,\ 4>;}
+\DoxyCodeLine{00044\ \ \ \ \ \textcolor{keyword}{using\ }matrix6\ =\ PlainMatrix<Scalar,\ 6,\ 6>;}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00046\ \ \ \ \ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core}{CTransformCore}}()\ \{\}}
+\DoxyCodeLine{00047\ \ \ \ \ \textcolor{keyword}{explicit}\ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core}{CTransformCore}}(\textcolor{keywordtype}{int})\ :\ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a0ec8cdfa111840e162df3536d6da51f7}{a\_R\_b}}(Mat33<Scalar>::Zero()),\ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a08d4f01aec94573705ad8e9c6c47ef32}{r\_ab\_a}}(0,0,0)\ \{\}}
+\DoxyCodeLine{00048\ }
+\DoxyCodeLine{00049\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Derived>}
+\DoxyCodeLine{00050\ \ \ \ \ vector6\ A\_XM\_B(\textcolor{keyword}{const}\ MatrixBase<Derived>\&\ v\_b)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00051\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ vector6\ v\_a;}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ angularPart(v\_a)\ =\ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a0ec8cdfa111840e162df3536d6da51f7}{a\_R\_b}}\ *\ angularPart(v\_b);}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ linearPart(v\_a)\ \ =\ internal::cross(\mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a08d4f01aec94573705ad8e9c6c47ef32}{r\_ab\_a}},\ angularPart(v\_a))\ +\ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a0ec8cdfa111840e162df3536d6da51f7}{a\_R\_b}}\ *linearPart(v\_b);}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ v\_a;}
+\DoxyCodeLine{00056\ \ \ \ \ \}}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Derived>}
+\DoxyCodeLine{00059\ \ \ \ \ vector6\ \ B\_XM\_A(\textcolor{keyword}{const}\ MatrixBase<Derived>\&\ v\_a)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00060\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ vector6\ v\_b;}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ angularPart(v\_b)\ =\ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a0ec8cdfa111840e162df3536d6da51f7}{a\_R\_b}}.transpose()\ *\ angularPart(v\_a);}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ linearPart(v\_b)\ \ =\ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a0ec8cdfa111840e162df3536d6da51f7}{a\_R\_b}}.transpose()\ *\ (internal::cross(-\/\mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a08d4f01aec94573705ad8e9c6c47ef32}{r\_ab\_a}},\ angularPart(v\_a))\ +\ linearPart(v\_a));}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ v\_b;}
+\DoxyCodeLine{00065\ \ \ \ \ \}}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Derived>}
+\DoxyCodeLine{00068\ \ \ \ \ vector6\ \ A\_XF\_B(\textcolor{keyword}{const}\ MatrixBase<Derived>\&\ v\_B)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00069\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ vector6\ v\_A;}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ linearPart(v\_A)\ =\ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a0ec8cdfa111840e162df3536d6da51f7}{a\_R\_b}}\ *\ linearPart(v\_B);}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ angularPart(v\_A)=\ \ internal::cross(\mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a08d4f01aec94573705ad8e9c6c47ef32}{r\_ab\_a}},\ linearPart(v\_A))\ +\ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a0ec8cdfa111840e162df3536d6da51f7}{a\_R\_b}}\ *\ angularPart(v\_B);}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ v\_A;}
+\DoxyCodeLine{00074\ \ \ \ \ \}}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Derived>}
+\DoxyCodeLine{00077\ \ \ \ \ vector6\ \ B\_XF\_A(\textcolor{keyword}{const}\ MatrixBase<Derived>\&\ v\_A)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00078\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ vector6\ v\_B;}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ linearPart(v\_B)\ =\ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a0ec8cdfa111840e162df3536d6da51f7}{a\_R\_b}}.transpose()\ *\ linearPart(v\_A);}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ angularPart(v\_B)=\ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a0ec8cdfa111840e162df3536d6da51f7}{a\_R\_b}}.transpose()\ *\ (internal::cross(-\/\mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a08d4f01aec94573705ad8e9c6c47ef32}{r\_ab\_a}},\ linearPart(v\_A))\ +\ angularPart(v\_A));}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ v\_B;}
+\DoxyCodeLine{00083\ \ \ \ \ \}}
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00085\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Derived>}
+\DoxyCodeLine{00086\ \ \ \ \ Vec3<Scalar>\ A\_XH\_B(\textcolor{keyword}{const}\ MatrixBase<Derived>\&\ v\_b)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00087\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a0ec8cdfa111840e162df3536d6da51f7}{a\_R\_b}}\ *\ v\_b\ +\ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a08d4f01aec94573705ad8e9c6c47ef32}{r\_ab\_a}};}
+\DoxyCodeLine{00089\ \ \ \ \ \}}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Derived>}
+\DoxyCodeLine{00092\ \ \ \ \ Vec3<Scalar>\ B\_XH\_A(\textcolor{keyword}{const}\ MatrixBase<Derived>\&\ v\_a)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00093\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a0ec8cdfa111840e162df3536d6da51f7}{a\_R\_b}}.transpose()\ *\ (v\_a\ -\/\ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a08d4f01aec94573705ad8e9c6c47ef32}{r\_ab\_a}});}
+\DoxyCodeLine{00095\ \ \ \ \ \}}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ }
+\DoxyCodeLine{00098\ \textcolor{preprocessor}{\#define\ block31\ template\ block<3,1>}}
+\DoxyCodeLine{00099\ \textcolor{preprocessor}{\#define\ block33\ template\ block<3,3>}}
+\DoxyCodeLine{00100\ \ \ \ \ \textcolor{comment}{//\ there\ might\ be\ better\ ways\ to\ do\ the\ following\ functions\ in\ Eigen}}
+\DoxyCodeLine{00101\ \ \ \ \ \textcolor{comment}{//\ (e.g.\ with\ nullary\ expressions),\ but\ for\ now\ I\ don't\ care}}
+\DoxyCodeLine{00102\ }
+\DoxyCodeLine{00103\ \ \ \ \ matrix6\ A\_XM\_B\_matrix()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00104\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ matrix6\ ret;}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ ret.block33(AX,AX)\ =\ ret.block33(LX,LX)\ =\ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a0ec8cdfa111840e162df3536d6da51f7}{a\_R\_b}};}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ ret.block33(LX,AX)\ =\ rx()\ *\ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a0ec8cdfa111840e162df3536d6da51f7}{a\_R\_b}};}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ ret.block33(AX,LX).setZero();}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00110\ \ \ \ \ \}}
+\DoxyCodeLine{00111\ \ \ \ \ matrix6\ B\_XM\_A\_matrix()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00112\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ matrix6\ ret;}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ ret.block33(AX,AX)\ =\ ret.block33(LX,LX)\ =\ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a0ec8cdfa111840e162df3536d6da51f7}{a\_R\_b}}.transpose();}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ ret.block33(LX,AX)\ =\ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a0ec8cdfa111840e162df3536d6da51f7}{a\_R\_b}}.transpose()\ *\ rx().transpose();}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ ret.block33(AX,LX).setZero();}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00118\ \ \ \ \ \}}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00120\ \ \ \ \ matrix6\ A\_XF\_B\_matrix()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00121\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ matrix6\ ret;}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ ret.block33(AX,AX)\ =\ ret.block33(LX,LX)\ =\ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a0ec8cdfa111840e162df3536d6da51f7}{a\_R\_b}};}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ ret.block33(AX,LX)\ =\ rx()\ *\ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a0ec8cdfa111840e162df3536d6da51f7}{a\_R\_b}};}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ ret.block33(LX,AX).setZero();}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00127\ \ \ \ \ \}}
+\DoxyCodeLine{00128\ \ \ \ \ matrix6\ B\_XF\_A\_matrix()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00129\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ matrix6\ ret;}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ ret.block33(AX,AX)\ =\ ret.block33(LX,LX)\ =\ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a0ec8cdfa111840e162df3536d6da51f7}{a\_R\_b}}.transpose();}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ ret.block33(AX,LX)\ =\ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a0ec8cdfa111840e162df3536d6da51f7}{a\_R\_b}}.transpose()\ *\ rx().transpose();}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \ \ ret.block33(LX,AX).setZero();}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00135\ \ \ \ \ \}}
+\DoxyCodeLine{00136\ }
+\DoxyCodeLine{00137\ \ \ \ \ matrix4\ A\_XH\_B\_matrix()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00138\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ matrix4\ ret;}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ ret.block33(0,0)\ =\ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a0ec8cdfa111840e162df3536d6da51f7}{a\_R\_b}};}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ ret.block31(0,3)\ =\ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a08d4f01aec94573705ad8e9c6c47ef32}{r\_ab\_a}};}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ ret.row(3)\ <<\ 0,0,0,1;}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00144\ \ \ \ \ \}}
+\DoxyCodeLine{00145\ \ \ \ \ matrix4\ B\_XH\_A\_matrix()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00146\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ matrix4\ ret;}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ ret.block33(0,0)\ =\ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a0ec8cdfa111840e162df3536d6da51f7}{a\_R\_b}}.transpose();}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ ret.block31(0,3)\ =\ -\/\ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a0ec8cdfa111840e162df3536d6da51f7}{a\_R\_b}}.transpose()\ *\ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a08d4f01aec94573705ad8e9c6c47ef32}{r\_ab\_a}};}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ ret.row(3)\ <<\ 0,0,0,1;}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00152\ \ \ \ \ \}}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \textcolor{preprocessor}{\#undef\ block31}}
+\DoxyCodeLine{00155\ \textcolor{preprocessor}{\#undef\ block33}}
+\DoxyCodeLine{00156\ }
+\DoxyCodeLine{00158\ \ \ \ \ Mat33<Scalar>\ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a0ec8cdfa111840e162df3536d6da51f7}{a\_R\_b}};}
+\DoxyCodeLine{00159\ }
+\DoxyCodeLine{00162\ \ \ \ \ Vec3\ <Scalar>\ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a08d4f01aec94573705ad8e9c6c47ef32}{r\_ab\_a}};}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00165\ \ \ \ \ Mat33<Scalar>\ rx()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ Mat33<Scalar>\ ret;}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ ret\ <<\ \ 0\ \ \ \ \ \ \ \ ,\ -\/\mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a08d4f01aec94573705ad8e9c6c47ef32}{r\_ab\_a}}(Z),\ \ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a08d4f01aec94573705ad8e9c6c47ef32}{r\_ab\_a}}(Y),}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a08d4f01aec94573705ad8e9c6c47ef32}{r\_ab\_a}}(Z),\ \ \ 0\ \ \ \ \ \ \ ,\ -\/\mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a08d4f01aec94573705ad8e9c6c47ef32}{r\_ab\_a}}(X),}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/\mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a08d4f01aec94573705ad8e9c6c47ef32}{r\_ab\_a}}(Y),\ \ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a08d4f01aec94573705ad8e9c6c47ef32}{r\_ab\_a}}(X),\ \ \ 0;}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00171\ \ \ \ \ \}}
+\DoxyCodeLine{00172\ \};}
+\DoxyCodeLine{00173\ }
+\DoxyCodeLine{00174\ }
+\DoxyCodeLine{00175\ \textcolor{comment}{//\ Define\ a\ type\ for\ each\ of\ the\ product\ functions\ defined\ above;\ this\ type}}
+\DoxyCodeLine{00176\ \textcolor{comment}{//\ can\ then\ overload\ the\ product\ operator\ and\ implement\ it\ with\ its}}
+\DoxyCodeLine{00177\ \textcolor{comment}{//\ corresponding\ function.}}
+\DoxyCodeLine{00178\ \textcolor{comment}{//\ For\ example,\ for\ the\ type\ 'A\_XM\_B',\ we\ have\ that:}}
+\DoxyCodeLine{00179\ \textcolor{comment}{//}}
+\DoxyCodeLine{00180\ \textcolor{comment}{//\ \ A\_XM\_B::operator*()\ \ <-\/-\/-\/-\/>\ \ \ CTransformCore::A\_XM\_B()}}
+\DoxyCodeLine{00181\ \textcolor{comment}{//}}
+\DoxyCodeLine{00182\ \textcolor{comment}{//\ This\ will\ enable\ us\ to\ make\ a\ TransformBase\ type\ (see\ below)\ which\ can\ use}}
+\DoxyCodeLine{00183\ \textcolor{comment}{//\ the\ nicer\ looking\ operator*.}}
+\DoxyCodeLine{00184\ \textcolor{comment}{//}}
+\DoxyCodeLine{00185\ \textcolor{comment}{//\ We\ use\ a\ parametrized\ macro,\ and\ then\ instantiate\ it\ a\ number\ of\ times:}}
+\DoxyCodeLine{00186\ }
+\DoxyCodeLine{00187\ \textcolor{preprocessor}{\#define\ STRUCT\_DEFINING\_OPERATOR\_STAR(KEY)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00188\ \textcolor{preprocessor}{\ \ \ \ template<typename\ Scalar>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00189\ \textcolor{preprocessor}{\ \ \ \ struct\ KEY\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00190\ \textcolor{preprocessor}{\ \ \ \ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00191\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ const\ CTransformCore<Scalar>\&\ data;\(\backslash\)}}
+\DoxyCodeLine{00192\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ template\ <typename\ Derived>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00193\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ auto\ operator*(const\ MatrixBase<Derived>\&\ v\_in)\ const\ -\/>\ decltype(\ std::declval<\ CTransformCore<Scalar>\ >().KEY(v\_in)\ )\ \(\backslash\)}}
+\DoxyCodeLine{00194\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00195\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ return\ data.KEY(v\_in);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00196\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00197\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ auto\ matrix()\ const\ -\/>\ decltype(std::declval<\ CTransformCore<Scalar>\ >().KEY\ \#\#\ \_matrix()\ )\ \(\backslash\)}}
+\DoxyCodeLine{00198\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00199\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ return\ data.KEY\ \#\#\ \_matrix();\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00200\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00201\ \textcolor{preprocessor}{\ \ \ \ \};}}
+\DoxyCodeLine{00202\ }
+\DoxyCodeLine{00203\ \textcolor{comment}{//\ The\ 'decltype'\ above\ make\ sure\ to\ use\ the\ same\ return\ type\ as\ the\ actual}}
+\DoxyCodeLine{00204\ \textcolor{comment}{//\ product\ function\ that\ we\ call,\ in\ CTransformCore.\ This\ ensures\ consistency}}
+\DoxyCodeLine{00205\ \textcolor{comment}{//\ if\ we\ change\ the\ typedef(s)\ inside\ CTransformCore.}}
+\DoxyCodeLine{00206\ }
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00208\ STRUCT\_DEFINING\_OPERATOR\_STAR(A\_XM\_B)}
+\DoxyCodeLine{00209\ STRUCT\_DEFINING\_OPERATOR\_STAR(B\_XM\_A)}
+\DoxyCodeLine{00210\ STRUCT\_DEFINING\_OPERATOR\_STAR(A\_XF\_B)}
+\DoxyCodeLine{00211\ STRUCT\_DEFINING\_OPERATOR\_STAR(B\_XF\_A)}
+\DoxyCodeLine{00212\ STRUCT\_DEFINING\_OPERATOR\_STAR(A\_XH\_B)}
+\DoxyCodeLine{00213\ STRUCT\_DEFINING\_OPERATOR\_STAR(B\_XH\_A)}
+\DoxyCodeLine{00214\ }
+\DoxyCodeLine{00215\ }
+\DoxyCodeLine{00216\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ STATE,\ \textcolor{keyword}{typename}\ Actual>}
+\DoxyCodeLine{00217\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{structiit_1_1rbd_1_1_transform_base}{TransformBase}}\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{classiit_1_1rbd_1_1_state_dependent_base}{StateDependentBase}}<STATE,\ Actual>}
+\DoxyCodeLine{00218\ \{}
+\DoxyCodeLine{00219\ \ \ \ \ \mbox{\hyperlink{structiit_1_1rbd_1_1_transform_base}{TransformBase}}()\ \{\}}
+\DoxyCodeLine{00220\ \ \ \ \ \textcolor{keyword}{explicit}\ \mbox{\hyperlink{structiit_1_1rbd_1_1_transform_base}{TransformBase}}(\textcolor{keywordtype}{int}\ foo)\ :\ ct(foo)\ \{\}}
+\DoxyCodeLine{00221\ }
+\DoxyCodeLine{00222\ \ \ \ \ CTransformCore<typename\ STATE::Scalar>\ ct;}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00224\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ REPR>}
+\DoxyCodeLine{00225\ \ \ \ \ REPR\ as()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ REPR\{ct\};}
+\DoxyCodeLine{00227\ \ \ \ \ \}}
+\DoxyCodeLine{00228\ \};}
+\DoxyCodeLine{00229\ }
+\DoxyCodeLine{00230\ \}}
+\DoxyCodeLine{00231\ \}}
+\DoxyCodeLine{00232\ }
+\DoxyCodeLine{00233\ }
+\DoxyCodeLine{00234\ }
+\DoxyCodeLine{00235\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

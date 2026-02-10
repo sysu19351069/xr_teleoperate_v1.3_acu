@@ -1,0 +1,42 @@
+\doxysection{iit\+::rbd\+::State\+Dependent\+Base\texorpdfstring{$<$}{<} State, Actual \texorpdfstring{$>$}{>} Class Template Reference}
+\hypertarget{classiit_1_1rbd_1_1_state_dependent_base}{}\label{classiit_1_1rbd_1_1_state_dependent_base}\index{iit::rbd::StateDependentBase$<$ State, Actual $>$@{iit::rbd::StateDependentBase$<$ State, Actual $>$}}
+
+
+{\ttfamily \#include $<$State\+Dependent\+Base.\+h$>$}
+
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+EIGEN\+\_\+\+MAKE\+\_\+\+ALIGNED\+\_\+\+OPERATOR\+\_\+\+NEW const Actual \& \mbox{\hyperlink{classiit_1_1rbd_1_1_state_dependent_base_a8742b35f960dda246eff316042561fe4}{operator()}} (State const \&state)
+\item 
+const Actual \& \mbox{\hyperlink{classiit_1_1rbd_1_1_state_dependent_base_a393e71b3ffa83694806ad97ed3f83c6a}{update}} (State const \&state)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\subsubsection*{template$<$class State, class Actual$>$\newline
+class iit\+::rbd\+::\+State\+Dependent\+Base$<$ State, Actual $>$}
+A sort of minimal interface to model the dependency on some kind of state variable. The type of such a state variable is the first template parameter.
+
+The second parameter must be a class inheriting from this one, i.\+e., this class is supposed to be used according to the "{}curiously recurring template pattern"{}. The sub-\/class shall implement the \doxylink{classiit_1_1rbd_1_1_state_dependent_base_a393e71b3ffa83694806ad97ed3f83c6a}{update()} function with the actual, class-\/specific logic to update the instance, because the implementation of the operator(\+State const\&) relies on \doxylink{classiit_1_1rbd_1_1_state_dependent_base_a393e71b3ffa83694806ad97ed3f83c6a}{update(\+State const\&)}. 
+
+\doxysubsection{Member Function Documentation}
+\Hypertarget{classiit_1_1rbd_1_1_state_dependent_base_a8742b35f960dda246eff316042561fe4}\label{classiit_1_1rbd_1_1_state_dependent_base_a8742b35f960dda246eff316042561fe4} 
+\index{iit::rbd::StateDependentBase$<$ State, Actual $>$@{iit::rbd::StateDependentBase$<$ State, Actual $>$}!operator()@{operator()}}
+\index{operator()@{operator()}!iit::rbd::StateDependentBase$<$ State, Actual $>$@{iit::rbd::StateDependentBase$<$ State, Actual $>$}}
+\doxysubsubsection{\texorpdfstring{operator()()}{operator()()}}
+{\footnotesize\ttfamily template$<$class State , class Actual $>$ \\
+EIGEN\+\_\+\+MAKE\+\_\+\+ALIGNED\+\_\+\+OPERATOR\+\_\+\+NEW const Actual \& \mbox{\hyperlink{classiit_1_1rbd_1_1_state_dependent_base}{iit\+::rbd\+::\+State\+Dependent\+Base}}$<$ State, Actual $>$\+::operator() (\begin{DoxyParamCaption}\item[{State const \&}]{state }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Updates this object according to the given state. The actual logic of the update must be implemented in the \doxylink{classiit_1_1rbd_1_1_state_dependent_base_a393e71b3ffa83694806ad97ed3f83c6a}{update()} function. \Hypertarget{classiit_1_1rbd_1_1_state_dependent_base_a393e71b3ffa83694806ad97ed3f83c6a}\label{classiit_1_1rbd_1_1_state_dependent_base_a393e71b3ffa83694806ad97ed3f83c6a} 
+\index{iit::rbd::StateDependentBase$<$ State, Actual $>$@{iit::rbd::StateDependentBase$<$ State, Actual $>$}!update@{update}}
+\index{update@{update}!iit::rbd::StateDependentBase$<$ State, Actual $>$@{iit::rbd::StateDependentBase$<$ State, Actual $>$}}
+\doxysubsubsection{\texorpdfstring{update()}{update()}}
+{\footnotesize\ttfamily template$<$class State , class Actual $>$ \\
+const Actual \& \mbox{\hyperlink{classiit_1_1rbd_1_1_state_dependent_base}{iit\+::rbd\+::\+State\+Dependent\+Base}}$<$ State, Actual $>$\+::update (\begin{DoxyParamCaption}\item[{State const \&}]{state }\end{DoxyParamCaption})}
+
+Updates this object according to the given state variable. Subclasses shall implement this method since the implementation of \doxylink{classiit_1_1rbd_1_1_state_dependent_base_a8742b35f960dda246eff316042561fe4}{operator()(\+State const\&)} relies on it. 
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+State\+Dependent\+Base.\+h\end{DoxyCompactItemize}

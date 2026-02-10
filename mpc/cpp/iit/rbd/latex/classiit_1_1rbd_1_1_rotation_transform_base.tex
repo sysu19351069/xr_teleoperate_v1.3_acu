@@ -1,0 +1,47 @@
+\doxysection{iit\+::rbd\+::Rotation\+Transform\+Base\texorpdfstring{$<$}{<} State, Actual\+Matrix \texorpdfstring{$>$}{>} Class Template Reference}
+\hypertarget{classiit_1_1rbd_1_1_rotation_transform_base}{}\label{classiit_1_1rbd_1_1_rotation_transform_base}\index{iit::rbd::RotationTransformBase$<$ State, ActualMatrix $>$@{iit::rbd::RotationTransformBase$<$ State, ActualMatrix $>$}}
+
+
+{\ttfamily \#include $<$Transforms\+Base.\+h$>$}
+
+Inheritance diagram for iit\+::rbd\+::Rotation\+Transform\+Base\texorpdfstring{$<$}{<} State, Actual\+Matrix \texorpdfstring{$>$}{>}\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.413793cm]{classiit_1_1rbd_1_1_rotation_transform_base}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Additional Inherited Members}
+\doxysubsection*{Public Types inherited from \mbox{\hyperlink{classiit_1_1rbd_1_1_state_dependent_matrix}{iit\+::rbd\+::\+State\+Dependent\+Matrix$<$ State, 3, 3, Actual\+Matrix $>$}}}
+\begin{DoxyCompactItemize}
+\item 
+typedef Base\+::\+Index \mbox{\hyperlink{classiit_1_1rbd_1_1_state_dependent_matrix_a6eaa619d2b367e0af95234916a93fba8}{Index}}
+\item 
+typedef Base \mbox{\hyperlink{classiit_1_1rbd_1_1_state_dependent_matrix_af1c688295e506148b85736fccc09c9da}{Matrix\+Type}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Member Functions inherited from \mbox{\hyperlink{classiit_1_1rbd_1_1_state_dependent_matrix}{iit\+::rbd\+::\+State\+Dependent\+Matrix$<$ State, 3, 3, Actual\+Matrix $>$}}}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classiit_1_1rbd_1_1_state_dependent_matrix}{State\+Dependent\+Matrix}} \& {\bfseries operator=} (const Matrix\+Base$<$ Other\+Derived $>$ \&other)
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Member Functions inherited from \mbox{\hyperlink{classiit_1_1rbd_1_1_state_dependent_base}{iit\+::rbd\+::\+State\+Dependent\+Base$<$ State, Actual\+Matrix $>$}}}
+\begin{DoxyCompactItemize}
+\item 
+EIGEN\+\_\+\+MAKE\+\_\+\+ALIGNED\+\_\+\+OPERATOR\+\_\+\+NEW const Actual\+Matrix \& \mbox{\hyperlink{classiit_1_1rbd_1_1_state_dependent_base_a8742b35f960dda246eff316042561fe4}{operator()}} (State const \&state)
+\item 
+const Actual\+Matrix \& \mbox{\hyperlink{classiit_1_1rbd_1_1_state_dependent_base_a393e71b3ffa83694806ad97ed3f83c6a}{update}} (State const \&state)
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes inherited from \mbox{\hyperlink{classiit_1_1rbd_1_1_state_dependent_matrix}{iit\+::rbd\+::\+State\+Dependent\+Matrix$<$ State, 3, 3, Actual\+Matrix $>$}}}
+\begin{DoxyCompactItemize}
+\item 
+EIGEN\+\_\+\+MAKE\+\_\+\+ALIGNED\+\_\+\+OPERATOR\+\_\+\+NEW typedef Base\+::\+Scalar \mbox{\hyperlink{classiit_1_1rbd_1_1_state_dependent_matrix_a1fc2b2f01b9f79ddefe762fdf6c9feea}{Scalar}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\subsubsection*{template$<$class State, class Actual\+Matrix$>$\newline
+class iit\+::rbd\+::\+Rotation\+Transform\+Base$<$ State, Actual\+Matrix $>$}
+A 3x3 specialization of \doxylink{classiit_1_1rbd_1_1_state_dependent_matrix}{State\+Dependent\+Matrix}, to be used as a base class for rotation matrices that depend on a state variable. 
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Transforms\+Base.\+h\end{DoxyCompactItemize}

@@ -1,0 +1,94 @@
+\doxysection{iit\+::rbd\+::Utils Class Reference}
+\hypertarget{classiit_1_1rbd_1_1_utils}{}\label{classiit_1_1rbd_1_1_utils}\index{iit::rbd::Utils@{iit::rbd::Utils}}
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structiit_1_1rbd_1_1_utils_1_1_cwise_almost_zero_op}{Cwise\+Almost\+Zero\+Op}}
+\item 
+struct \mbox{\hyperlink{structiit_1_1rbd_1_1_utils_1_1_inertia_moments}{Inertia\+Moments}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classiit_1_1rbd_1_1_utils_acb325d65a06fcf68ff2301efd8f6c032}\label{classiit_1_1rbd_1_1_utils_acb325d65a06fcf68ff2301efd8f6c032} 
+{\footnotesize template$<$typename Scalar $>$ }\\static Mat33$<$ Scalar $>$ {\bfseries build\+Inertia\+Tensor} (Scalar Ixx, Scalar Iyy, Scalar Izz, Scalar Ixy, Scalar Ixz, Scalar Iyz)
+\item 
+\Hypertarget{classiit_1_1rbd_1_1_utils_a6cc1b49a55f8977209fe29f39a31b8cf}\label{classiit_1_1rbd_1_1_utils_a6cc1b49a55f8977209fe29f39a31b8cf} 
+static Matrix33d {\bfseries build\+Cross\+Product\+Matrix} (const Vector3d \&in)
+\item 
+{\footnotesize template$<$typename Derived $>$ }\\static void \mbox{\hyperlink{classiit_1_1rbd_1_1_utils_ae35b7d826eb5d5a844c509565f778e0c}{fill\+As\+Rotation\+Matrix}} (double rx, double ry, double rz, const Matrix\+Base$<$ Derived $>$ \&mx)
+\item 
+static Matrix33d \mbox{\hyperlink{classiit_1_1rbd_1_1_utils_a427888c943bc104a7f0c1658e15eb3dd}{build\+Rotation\+Matrix}} (double rx, double ry, double rz)
+\item 
+\Hypertarget{classiit_1_1rbd_1_1_utils_aaa55d575d84b8fbeede6861ed30c15d4}\label{classiit_1_1rbd_1_1_utils_aaa55d575d84b8fbeede6861ed30c15d4} 
+{\footnotesize template$<$typename Scalar $>$ }\\static void {\bfseries fill\+As\+Motion\+Cross\+Product\+Mx} (const Vec6$<$ Scalar $>$ \&v, Mat66$<$ Scalar $>$ \&mx)
+\item 
+\Hypertarget{classiit_1_1rbd_1_1_utils_a43879340192c665907881445f225a7e0}\label{classiit_1_1rbd_1_1_utils_a43879340192c665907881445f225a7e0} 
+{\footnotesize template$<$typename Scalar $>$ }\\static void {\bfseries fill\+As\+Force\+Cross\+Product\+Mx} (const Vec6$<$ Scalar $>$ \&v, Mat66$<$ Scalar $>$ \&mx)
+\item 
+\Hypertarget{classiit_1_1rbd_1_1_utils_a9e81be10957b17d3a854f99b77cc5188}\label{classiit_1_1rbd_1_1_utils_a9e81be10957b17d3a854f99b77cc5188} 
+{\footnotesize template$<$typename D1 , typename D2 $>$ }\\static void {\bfseries fill\+As\+Cross\+Product\+Matrix} (const Matrix\+Base$<$ D2 $>$ \&in, const Matrix\+Base$<$ D1 $>$ \&mx)
+\item 
+\Hypertarget{classiit_1_1rbd_1_1_utils_a5e3d3509ee8a9d4f1408d0294afb4679}\label{classiit_1_1rbd_1_1_utils_a5e3d3509ee8a9d4f1408d0294afb4679} 
+{\footnotesize template$<$typename Derived $>$ }\\static const Matrix\+Block$<$ const Derived, 3, 1 $>$ {\bfseries position\+Vector} (const Matrix\+Base$<$ Derived $>$ \&homT)
+\item 
+\Hypertarget{classiit_1_1rbd_1_1_utils_a9d4fbdec03f9586149061b408f133fa1}\label{classiit_1_1rbd_1_1_utils_a9d4fbdec03f9586149061b408f133fa1} 
+{\footnotesize template$<$typename Derived $>$ }\\static const Matrix\+Block$<$ const Derived, 3, 3 $>$ {\bfseries rotation\+Mx} (const Matrix\+Base$<$ Derived $>$ \&homT)
+\item 
+\Hypertarget{classiit_1_1rbd_1_1_utils_a103b695f80b2d384657fa6750b2242bf}\label{classiit_1_1rbd_1_1_utils_a103b695f80b2d384657fa6750b2242bf} 
+{\footnotesize template$<$typename Derived $>$ }\\static const Matrix\+Block$<$ const Derived, 3, 1 $>$ {\bfseries z\+Axis} (const Matrix\+Base$<$ Derived $>$ \&homT)
+\item 
+{\footnotesize template$<$typename Derived , typename Other $>$ }\\static \mbox{\hyperlink{structiit_1_1rbd_1_1_core}{Core}}$<$ typename\+Other\+::\+Scalar $>$\+::\+Vector3 \mbox{\hyperlink{classiit_1_1rbd_1_1_utils_ab9e831b1438490cacf84d55a47edda54}{transform}} (const Matrix\+Base$<$ Derived $>$ \&homT, const Matrix\+Base$<$ Other $>$ \&vect3d)
+\item 
+\Hypertarget{classiit_1_1rbd_1_1_utils_a95e113733c83261123ff604d24557e88}\label{classiit_1_1rbd_1_1_utils_a95e113733c83261123ff604d24557e88} 
+static void {\bfseries random\+Vec} (Vector6D \&vec)
+\item 
+\Hypertarget{classiit_1_1rbd_1_1_utils_af1336bc18f101ccd1ea8ef737aa990a2}\label{classiit_1_1rbd_1_1_utils_af1336bc18f101ccd1ea8ef737aa990a2} 
+static void {\bfseries random\+Gravity} (Velocity\+Vector \&\mbox{\hyperlink{namespaceiit_1_1rbd_ad7a661c3d10f9e3a31bda29e3a2d957e}{g}})
+\item 
+\Hypertarget{classiit_1_1rbd_1_1_utils_a6f0486376c4b00f8cafab723a95bc51f}\label{classiit_1_1rbd_1_1_utils_a6f0486376c4b00f8cafab723a95bc51f} 
+{\footnotesize template$<$class RT $>$ }\\static void {\bfseries cmdlineargs\+\_\+spatialv} (int argc, char \texorpdfstring{$\ast$}{*}\texorpdfstring{$\ast$}{*}argv, iit\+::rbd\+::\+Vector6D \&vec)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Member Function Documentation}
+\Hypertarget{classiit_1_1rbd_1_1_utils_a427888c943bc104a7f0c1658e15eb3dd}\label{classiit_1_1rbd_1_1_utils_a427888c943bc104a7f0c1658e15eb3dd} 
+\index{iit::rbd::Utils@{iit::rbd::Utils}!buildRotationMatrix@{buildRotationMatrix}}
+\index{buildRotationMatrix@{buildRotationMatrix}!iit::rbd::Utils@{iit::rbd::Utils}}
+\doxysubsubsection{\texorpdfstring{buildRotationMatrix()}{buildRotationMatrix()}}
+{\footnotesize\ttfamily static Matrix33d iit\+::rbd\+::\+Utils\+::build\+Rotation\+Matrix (\begin{DoxyParamCaption}\item[{double}]{rx,  }\item[{double}]{ry,  }\item[{double}]{rz }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+Suppose B is rotated respect to A by rx, than ry, than rz. \begin{DoxyReturn}{Returns}
+the 3x3 rotation matrix A -\/-\/\texorpdfstring{$>$}{>} B (\textquotesingle{}B\+\_\+\+X\+\_\+A\textquotesingle{}) 
+\end{DoxyReturn}
+\Hypertarget{classiit_1_1rbd_1_1_utils_ae35b7d826eb5d5a844c509565f778e0c}\label{classiit_1_1rbd_1_1_utils_ae35b7d826eb5d5a844c509565f778e0c} 
+\index{iit::rbd::Utils@{iit::rbd::Utils}!fillAsRotationMatrix@{fillAsRotationMatrix}}
+\index{fillAsRotationMatrix@{fillAsRotationMatrix}!iit::rbd::Utils@{iit::rbd::Utils}}
+\doxysubsubsection{\texorpdfstring{fillAsRotationMatrix()}{fillAsRotationMatrix()}}
+{\footnotesize\ttfamily template$<$typename Derived $>$ \\
+static void iit\+::rbd\+::\+Utils\+::fill\+As\+Rotation\+Matrix (\begin{DoxyParamCaption}\item[{double}]{rx,  }\item[{double}]{ry,  }\item[{double}]{rz,  }\item[{const Matrix\+Base$<$ Derived $>$ \&}]{mx }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+Suppose B is rotated respect to A by rx, than ry, than rz. Fills the last parameter with the 3x3 rotation matrix A -\/-\/\texorpdfstring{$>$}{>} B (\textquotesingle{}B\+\_\+\+X\+\_\+A\textquotesingle{}) \Hypertarget{classiit_1_1rbd_1_1_utils_ab9e831b1438490cacf84d55a47edda54}\label{classiit_1_1rbd_1_1_utils_ab9e831b1438490cacf84d55a47edda54} 
+\index{iit::rbd::Utils@{iit::rbd::Utils}!transform@{transform}}
+\index{transform@{transform}!iit::rbd::Utils@{iit::rbd::Utils}}
+\doxysubsubsection{\texorpdfstring{transform()}{transform()}}
+{\footnotesize\ttfamily template$<$typename Derived , typename Other $>$ \\
+static \mbox{\hyperlink{structiit_1_1rbd_1_1_core}{Core}}$<$ typename\+Other\+::\+Scalar $>$\+::\+Vector3 iit\+::rbd\+::\+Utils\+::transform (\begin{DoxyParamCaption}\item[{const Matrix\+Base$<$ Derived $>$ \&}]{homT,  }\item[{const Matrix\+Base$<$ Other $>$ \&}]{vect3d }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+Applies a roto-\/translation to the given 3D vector. This function is provided for convenience, since a direct matrix product between a 4x4 matrix and a 3x1 vector is obviously not possible. It should also be slightly more efficient than taking the homogeneous representation of the 3D vector (4x1) and then compute the matrix product.
+
+
+\begin{DoxyParams}{Parameters}
+{\em homT} & a 4x4 homogeneous coordinate transform encoding the rotation and the translation \\
+\hline
+{\em vect3d} & the 3x1 vector to be transformed \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+the 3D vector that results from the rotation plus translation 
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+utils.\+h\end{DoxyCompactItemize}

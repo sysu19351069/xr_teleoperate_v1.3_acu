@@ -1,0 +1,254 @@
+\doxysection{Inertia\+Matrix.\+h}
+\hypertarget{_inertia_matrix_8h_source}{}\label{_inertia_matrix_8h_source}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ CPYHDR\ \{\ */}}
+\DoxyCodeLine{00002\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *\ This\ file\ is\ part\ of\ the\ 'iit-\/rbd'\ library.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ Copyright\ ©\ 2015-\/2024,\ Marco\ Frigerio}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *\ See\ the\ LICENSE\ file\ for\ more\ information.}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00008\ \textcolor{comment}{/*\ \}\ CPYHDR\ */}}
+\DoxyCodeLine{00009\ }
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#ifndef\ \_IIT\_RBD\_INERTIAMATRIX\_H\_}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#define\ \_IIT\_RBD\_INERTIAMATRIX\_H\_}}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ "{}rbd.h"{}}}
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00015\ }
+\DoxyCodeLine{00016\ \textcolor{keyword}{namespace\ }iit\ \{}
+\DoxyCodeLine{00017\ \textcolor{keyword}{namespace\ }rbd\ \{}
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ \textcolor{keyword}{namespace\ }tpl\ \{}
+\DoxyCodeLine{00024\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ SCALAR>}
+\DoxyCodeLine{00025\ \textcolor{keyword}{class\ }\mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense}{InertiaMatrixDense}}\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{structiit_1_1rbd_1_1_core}{Core}}<SCALAR>::Matrix66}
+\DoxyCodeLine{00026\ \{}
+\DoxyCodeLine{00027\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00028\ \ \ \ \ EIGEN\_MAKE\_ALIGNED\_OPERATOR\_NEW}
+\DoxyCodeLine{00029\ \ \ \ \ \textcolor{keyword}{typedef}\ SCALAR\ Scalar;}
+\DoxyCodeLine{00030\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00031\ \ \ \ \ \textcolor{keyword}{typedef}\ Core<Scalar>\ Cores;}
+\DoxyCodeLine{00032\ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ Cores::Matrix66\ Base;}
+\DoxyCodeLine{00033\ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ Cores::Matrix33\ Mat33;}
+\DoxyCodeLine{00034\ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ Cores::Vector3\ \ Vec3;}
+\DoxyCodeLine{00035\ \ \ \ \ \textcolor{keyword}{typedef}\ MatrixBlock<const\ Base,3,3>\ Block33\_const;}
+\DoxyCodeLine{00036\ \ \ \ \ \textcolor{keyword}{typedef}\ MatrixBlock<Base,3,3>\ Block33\_t;}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00038\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00039\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ OtherDerived>}
+\DoxyCodeLine{00040\ \ \ \ \ InertiaMatrixDense<Scalar>\&\ operator=\ (\textcolor{keyword}{const}\ MatrixBase<OtherDerived>\&\ other);}
+\DoxyCodeLine{00041\ }
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ OtherDerived>}
+\DoxyCodeLine{00043\ \ \ \ \ InertiaMatrixDense<Scalar>\&\ operator+=\ (\textcolor{keyword}{const}\ MatrixBase<OtherDerived>\&\ other);}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \ \ \ \ \mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense}{InertiaMatrixDense}}();}
+\DoxyCodeLine{00049\ \ \ \ \ \mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_a97a1fcd6afbe21b3b95a779f5b165ed2}{InertiaMatrixDense}}(Scalar\ m,\ \textcolor{keyword}{const}\ Vec3\&\ com,\ \textcolor{keyword}{const}\ Mat33\&\ I);}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_a5eee9298d8099484bd08a674a7bf495e}{fill}}(Scalar\ m,\ \textcolor{keyword}{const}\ Vec3\&\ com,\ \textcolor{keyword}{const}\ Mat33\&\ tensor);}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00076\ \ \ \ \ Scalar\ \mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_afc43bae9be8de4abf26d0ada345cd634}{getMass}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00081\ \ \ \ \ Vec3\ \mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_a62bfbf0bf8b26fb0eb96d2a3f428469c}{getCOM}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00086\ \ \ \ \ \textcolor{keyword}{const}\ Block33\_const\ \mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_a7d40b98b95cc1526c3d804a1dbff77c6}{get3x3Tensor}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00105\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_a3585798a2c2b2bcfeb28cd6a9fc42548}{changeMass}}(Scalar\ m);}
+\DoxyCodeLine{00120\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_a9f21a2a025236993491c9aaf170eb896}{changeCOM}}(\textcolor{keyword}{const}\ Vec3\&\ newcom);}
+\DoxyCodeLine{00126\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_ae16572d388e05f61cae75c796aa8f66c}{changeRotationalInertia}}(\textcolor{keyword}{const}\ Mat33\&\ tensor);}
+\DoxyCodeLine{00128\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00129\ \ \ \ \ \textcolor{keywordtype}{void}\ setTheFixedZeros();}
+\DoxyCodeLine{00130\ }
+\DoxyCodeLine{00131\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ Vector>}
+\DoxyCodeLine{00132\ \ \ \ \ \textcolor{keywordtype}{void}\ setSkewSymmetricBlock(}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ MatrixBase<Vector>\&\ v,}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \ \ \ \ Block33\_t\ block);}
+\DoxyCodeLine{00135\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00136\ \ \ \ \ \textcolor{keywordtype}{void}\ set(Scalar\ m,\ \textcolor{keyword}{const}\ Vec3\&\ com,\ \textcolor{keyword}{const}\ Mat33\&\ I);}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \};}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00140\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ SCALAR>}
+\DoxyCodeLine{00141\ \textcolor{keyword}{class\ }\mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_sparse}{InertiaMatrixSparse}}\ :\ \textcolor{keyword}{public}\ SparseMatrix<SCALAR>}
+\DoxyCodeLine{00142\ \{}
+\DoxyCodeLine{00143\ \ \ \ \ \textcolor{keyword}{typedef}\ SparseMatrix<SCALAR>\ Base;}
+\DoxyCodeLine{00144\ \};}
+\DoxyCodeLine{00145\ }
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00147\ \textcolor{preprocessor}{\#define\ block33\ this-\/>template\ block<3,3>}}
+\DoxyCodeLine{00148\ \textcolor{preprocessor}{\#define\ data\ \ \ \ (this-\/>operator())}}
+\DoxyCodeLine{00149\ \textcolor{preprocessor}{\#define\ TPL\ \ \ \ \ template<typename\ S>}}
+\DoxyCodeLine{00150\ \textcolor{preprocessor}{\#define\ CLASS\ \ \ InertiaMatrixDense<S>}}
+\DoxyCodeLine{00151\ }
+\DoxyCodeLine{00152\ }
+\DoxyCodeLine{00153\ \textcolor{comment}{/*\ I\ do\ not\ care\ here\ about\ the\ creation\ of\ temporaries,\ thus\ I\ use\ const}}
+\DoxyCodeLine{00154\ \textcolor{comment}{\ *\ refs\ to\ actual\ Eigen\ matrices,\ rather\ than\ the\ common\ base\ of\ the}}
+\DoxyCodeLine{00155\ \textcolor{comment}{\ *\ matrix\ expression.\ If\ you\ haven't\ read\ Eigen\ docs,\ this\ comment\ is}}
+\DoxyCodeLine{00156\ \textcolor{comment}{\ *\ completely\ obscure!}}
+\DoxyCodeLine{00157\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00158\ TPL}
+\DoxyCodeLine{00159\ \textcolor{keyword}{inline}\ CLASS::InertiaMatrixDense()\ :\ Base()\ \{}
+\DoxyCodeLine{00160\ \ \ \ \ setTheFixedZeros();}
+\DoxyCodeLine{00161\ \}}
+\DoxyCodeLine{00162\ }
+\DoxyCodeLine{00167\ TPL}
+\DoxyCodeLine{00168\ \textcolor{keyword}{inline}\ CLASS::InertiaMatrixDense(}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ Scalar\ mass,\ \textcolor{keyword}{const}\ Vec3\&\ cogPosition,\ \textcolor{keyword}{const}\ Mat33\&\ tensor)}
+\DoxyCodeLine{00170\ :\ Base()}
+\DoxyCodeLine{00171\ \{}
+\DoxyCodeLine{00172\ \ \ \ \ setTheFixedZeros();}
+\DoxyCodeLine{00173\ \ \ \ \ set(mass,\ cogPosition,\ tensor);}
+\DoxyCodeLine{00174\ \}}
+\DoxyCodeLine{00175\ }
+\DoxyCodeLine{00176\ TPL}
+\DoxyCodeLine{00177\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ CLASS::fill(Scalar\ mass,\ \textcolor{keyword}{const}\ Vec3\&\ comPosition,}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Mat33\&\ tensor)}
+\DoxyCodeLine{00179\ \{}
+\DoxyCodeLine{00180\ \ \ \ \ set(mass,\ comPosition,\ tensor);}
+\DoxyCodeLine{00181\ \}}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ TPL}
+\DoxyCodeLine{00184\ \textcolor{keyword}{inline}\ \textcolor{keyword}{typename}\ CLASS::Scalar\ CLASS::getMass()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00185\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00186\ \ \ \ \ \textcolor{keywordflow}{return}\ data(LX,LX);}
+\DoxyCodeLine{00187\ \}}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00189\ TPL}
+\DoxyCodeLine{00190\ \textcolor{keyword}{inline}\ \textcolor{keyword}{typename}\ CLASS::Vec3\ CLASS::getCOM()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00191\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00192\ \ \ \ \ \textcolor{keywordflow}{return}\ Vec3(}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \ \ \ \ data(AZ,LY)/data(LX,LX),\ \textcolor{comment}{//\ X\ coordinate\ of\ the\ COM}}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \ \ \ \ data(AX,LZ)/data(LX,LX),\ \textcolor{comment}{//\ Y}}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \ \ \ \ data(AY,LX)/data(LX,LX));\textcolor{comment}{//\ Z}}
+\DoxyCodeLine{00196\ \}}
+\DoxyCodeLine{00197\ }
+\DoxyCodeLine{00198\ TPL}
+\DoxyCodeLine{00199\ \textcolor{keyword}{inline}\ \textcolor{keyword}{const}\ \textcolor{keyword}{typename}\ CLASS::Block33\_const\ CLASS::get3x3Tensor()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00200\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00201\ \ \ \ \ \textcolor{keywordflow}{return}\ block33(AX,AX);}
+\DoxyCodeLine{00202\ \}}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00204\ TPL}
+\DoxyCodeLine{00205\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ CLASS::changeMass(Scalar\ newMass)\ \{}
+\DoxyCodeLine{00206\ \ \ \ \ \textcolor{comment}{//\ Note\ the\ use\ of\ indices\ AX\ and\ hard-\/coded\ 0,\ to\ make\ it\ independent\ from}}
+\DoxyCodeLine{00207\ \ \ \ \ \textcolor{comment}{//\ \ the\ convention\ angular/linear}}
+\DoxyCodeLine{00208\ \ \ \ \ this-\/>\textcolor{keyword}{template}\ block<3,6>(AX,0)\ *=\ newMass/getMass();}
+\DoxyCodeLine{00209\ \ \ \ \ block33(LX,AX)\ =\ block33(AX,LX).transpose();}
+\DoxyCodeLine{00210\ \ \ \ \ data(LX,LX)\ =\ data(LY,LY)\ =\ data(LZ,LZ)\ =\ newMass;}
+\DoxyCodeLine{00211\ \}}
+\DoxyCodeLine{00212\ }
+\DoxyCodeLine{00213\ TPL}
+\DoxyCodeLine{00214\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ CLASS::changeCOM(\textcolor{keyword}{const}\ Vec3\&\ newcom)}
+\DoxyCodeLine{00215\ \{}
+\DoxyCodeLine{00216\ \ \ \ \ \textcolor{comment}{//\ Update\ the\ angular-\/linear\ block\ according\ to\ the\ new\ COM\ position}}
+\DoxyCodeLine{00217\ \ \ \ \ setSkewSymmetricBlock(\ \ getMass()\ *\ newcom,\ block33(AX,LX));}
+\DoxyCodeLine{00218\ }
+\DoxyCodeLine{00219\ \ \ \ \ \textcolor{comment}{//\ Correct\ the\ 3x3\ tensor.\ Use\ the\ block(AX,LX)\ which\ reflects\ the\ new\ COM}}
+\DoxyCodeLine{00220\ \ \ \ \ \textcolor{comment}{//\ \ and\ the\ block(LX,AX)\ which\ instead\ is\ still\ based\ on\ the\ previous\ value.}}
+\DoxyCodeLine{00221\ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ I\ =\ I\ -\/\ m(cx)(cx)\string^T\ +\ m(c'x)(c'x)\string^T}}
+\DoxyCodeLine{00222\ \ \ \ \ \textcolor{comment}{//\ \ where\ cx\ is\ the\ skew\ symmetric\ matrix\ for\ the\ old\ COM\ vector,\ while}}
+\DoxyCodeLine{00223\ \ \ \ \ \textcolor{comment}{//\ \ c'x\ is\ the\ one\ for\ the\ new\ COM\ vector.}}
+\DoxyCodeLine{00224\ \ \ \ \ block33(AX,AX)\ +=\ (}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \ \ \ \ \ \ (\ block33(AX,LX)\ *\ block33(AX,LX).transpose()\ )\ -\/}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \ \ \ \ \ \ (\ block33(LX,AX).transpose()\ *\ block33(LX,AX)\ )}
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\ /\ getMass();}
+\DoxyCodeLine{00228\ \ \ \ \ \textcolor{comment}{//\ Update\ the\ linear-\/angular\ block}}
+\DoxyCodeLine{00229\ \ \ \ \ block33(LX,AX)\ =\ block33(AX,LX).transpose();}
+\DoxyCodeLine{00230\ \ \ \ \ \textcolor{comment}{//\ alternatively:}}
+\DoxyCodeLine{00231\ \ \ \ \ \textcolor{comment}{//\ setSkewSymmetricBlock(\ -\/\ getMass()\ *\ newcom,\ block33(LX,AX));}}
+\DoxyCodeLine{00232\ \}}
+\DoxyCodeLine{00233\ }
+\DoxyCodeLine{00234\ TPL}
+\DoxyCodeLine{00235\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ CLASS::changeRotationalInertia(\textcolor{keyword}{const}\ Mat33\&\ tensor)}
+\DoxyCodeLine{00236\ \{}
+\DoxyCodeLine{00237\ \ \ \ \ block33(AX,AX)\ =\ tensor;}
+\DoxyCodeLine{00238\ \}}
+\DoxyCodeLine{00239\ }
+\DoxyCodeLine{00240\ TPL}
+\DoxyCodeLine{00241\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ CLASS::set(}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \ \ Scalar\ mass,}
+\DoxyCodeLine{00243\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Vec3\&\ com,}
+\DoxyCodeLine{00244\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Mat33\&\ tensor)}
+\DoxyCodeLine{00245\ \{}
+\DoxyCodeLine{00246\ \ \ \ \ block33(AX,AX)\ =\ tensor;\textcolor{comment}{//\ +\ mass\ *\ comCrossMx\ *\ comCrossMx.transpose();}}
+\DoxyCodeLine{00247\ }
+\DoxyCodeLine{00248\ \ \ \ \ data(AX,LY)\ =\ data(LY,AX)\ =\ -\/\ (\ data(AY,LX)\ =\ data(LX,AY)\ =\ mass*com(Z)\ );}
+\DoxyCodeLine{00249\ \ \ \ \ data(AZ,LX)\ =\ data(LX,AZ)\ =\ -\/\ (\ data(AX,LZ)\ =\ data(LZ,AX)\ =\ mass*com(Y)\ );}
+\DoxyCodeLine{00250\ \ \ \ \ data(AY,LZ)\ =\ data(LZ,AY)\ =\ -\/\ (\ data(AZ,LY)\ =\ data(LY,AZ)\ =\ mass*com(X)\ );}
+\DoxyCodeLine{00251\ \ \ \ \ \textcolor{comment}{//\ Equivalent,\ just\ slightly\ less\ efficient\ (probably\ because\ of\ Eigen's\ blocks\ and\ repeated\ product):}}
+\DoxyCodeLine{00252\ \ \ \ \ \textcolor{comment}{//setSkewSymmetricBlock(\ \ mass\ *\ com,\ block33(AX,LX));}}
+\DoxyCodeLine{00253\ \ \ \ \ \textcolor{comment}{//setSkewSymmetricBlock(-\/\ mass\ *\ com,\ block33(LX,AX));}}
+\DoxyCodeLine{00254\ }
+\DoxyCodeLine{00255\ \ \ \ \ data(LX,LX)\ =\ data(LY,LY)\ =\ data(LZ,LZ)\ =\ mass;}
+\DoxyCodeLine{00256\ \}}
+\DoxyCodeLine{00257\ }
+\DoxyCodeLine{00258\ TPL}
+\DoxyCodeLine{00259\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ OtherDerived>}
+\DoxyCodeLine{00260\ \textcolor{keyword}{inline}\ CLASS\&\ CLASS::operator=}
+\DoxyCodeLine{00261\ \ \ \ \ \ \ \ \ (\textcolor{keyword}{const}\ MatrixBase<OtherDerived>\&\ other)}
+\DoxyCodeLine{00262\ \{}
+\DoxyCodeLine{00263\ \ \ \ \ \textcolor{comment}{//\ Here\ we\ silently\ assume\ that\ 'other'\ is\ also\ an\ inertia...}}
+\DoxyCodeLine{00264\ \ \ \ \ \textcolor{comment}{//\ \ \ Type\ safety\ would\ suggest\ to\ prevent\ the\ assignment\ of\ anything\ but}}
+\DoxyCodeLine{00265\ \ \ \ \ \textcolor{comment}{//\ another\ inertia,\ but\ that\ would\ prevent,\ for\ example,\ the\ assignment}}
+\DoxyCodeLine{00266\ \ \ \ \ \textcolor{comment}{//\ of\ matrix\ expressions.\ We\ also\ do\ not\ want\ to\ perform\ any\ check,\ for}}
+\DoxyCodeLine{00267\ \ \ \ \ \textcolor{comment}{//\ performance\ reasons\ (remember\ this\ library\ is\ meant\ primarily\ to\ support}}
+\DoxyCodeLine{00268\ \ \ \ \ \textcolor{comment}{//\ code\ generation,\ not\ to\ be\ a\ robust\ API\ for\ user\ applications).}}
+\DoxyCodeLine{00269\ \ \ \ \ block33(AX,AX)\ =\ other.template\ block<3,3>(AX,AX);}
+\DoxyCodeLine{00270\ \ \ \ \ data(AX,LY)\ =\ data(LY,AX)\ =\ -\/\ (\ data(AY,LX)\ =\ data(LX,AY)\ =\ other(LX,AY)\ );}
+\DoxyCodeLine{00271\ \ \ \ \ data(AZ,LX)\ =\ data(LX,AZ)\ =\ -\/\ (\ data(AX,LZ)\ =\ data(LZ,AX)\ =\ other(LZ,AX)\ );}
+\DoxyCodeLine{00272\ \ \ \ \ data(AY,LZ)\ =\ data(LZ,AY)\ =\ -\/\ (\ data(AZ,LY)\ =\ data(LY,AZ)\ =\ other(LY,AZ)\ );}
+\DoxyCodeLine{00273\ \ \ \ \ data(LX,LX)\ =\ data(LY,LY)\ =\ data(LZ,LZ)\ =\ other(LX,LX);}
+\DoxyCodeLine{00274\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00275\ \}}
+\DoxyCodeLine{00276\ }
+\DoxyCodeLine{00277\ TPL}
+\DoxyCodeLine{00278\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ OtherDerived>}
+\DoxyCodeLine{00279\ \textcolor{keyword}{inline}\ CLASS\&\ CLASS::operator+=}
+\DoxyCodeLine{00280\ \ \ \ \ \ \ \ \ (\textcolor{keyword}{const}\ MatrixBase<OtherDerived>\&\ other)}
+\DoxyCodeLine{00281\ \{}
+\DoxyCodeLine{00282\ \ \ \ \ block33(AX,AX)\ +=\ other.template\ block<3,3>(AX,AX);}
+\DoxyCodeLine{00283\ \ \ \ \ data(AX,LY)\ =\ data(LY,AX)\ =\ -\/\ (\ data(AY,LX)\ =\ (data(LX,AY)\ +=\ other(LX,AY))\ );}
+\DoxyCodeLine{00284\ \ \ \ \ data(AZ,LX)\ =\ data(LX,AZ)\ =\ -\/\ (\ data(AX,LZ)\ =\ (data(LZ,AX)\ +=\ other(LZ,AX))\ );}
+\DoxyCodeLine{00285\ \ \ \ \ data(AY,LZ)\ =\ data(LZ,AY)\ =\ -\/\ (\ data(AZ,LY)\ =\ (data(LY,AZ)\ +=\ other(LY,AZ))\ );}
+\DoxyCodeLine{00286\ \ \ \ \ data(LX,LX)\ =\ data(LY,LY)\ =\ (data(LZ,LZ)\ +=\ other(LX,LX));}
+\DoxyCodeLine{00287\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00288\ \}}
+\DoxyCodeLine{00289\ }
+\DoxyCodeLine{00290\ TPL}
+\DoxyCodeLine{00291\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ CLASS::setTheFixedZeros()}
+\DoxyCodeLine{00292\ \{}
+\DoxyCodeLine{00293\ \ \ \ \ block33(LX,LX).setZero();\ \textcolor{comment}{//\ the\ diagonal\ won't\ be\ zero,\ but\ who\ cares}}
+\DoxyCodeLine{00294\ \ \ \ \ data(AX,LX)\ =\ data(AY,LY)\ =\ data(AZ,LZ)\ =}
+\DoxyCodeLine{00295\ \ \ \ \ \ \ \ \ \ \ \ \ data(LX,AX)\ =\ data(LY,AY)\ =\ data(LZ,AZ)\ =\ 0;}
+\DoxyCodeLine{00296\ \}}
+\DoxyCodeLine{00297\ }
+\DoxyCodeLine{00298\ TPL}
+\DoxyCodeLine{00299\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ Vector>}
+\DoxyCodeLine{00300\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ CLASS::setSkewSymmetricBlock(}
+\DoxyCodeLine{00301\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ MatrixBase<Vector>\&\ v,\ Block33\_t\ block)}
+\DoxyCodeLine{00302\ \{}
+\DoxyCodeLine{00303\ \ \ \ \ block(X,Y)\ =\ -\/\ (\ block(Y,X)\ =\ v(Z)\ );}
+\DoxyCodeLine{00304\ \ \ \ \ block(Z,X)\ =\ -\/\ (\ block(X,Z)\ =\ v(Y)\ );}
+\DoxyCodeLine{00305\ \ \ \ \ block(Y,Z)\ =\ -\/\ (\ block(Z,Y)\ =\ v(X)\ );}
+\DoxyCodeLine{00306\ \}}
+\DoxyCodeLine{00307\ }
+\DoxyCodeLine{00308\ }
+\DoxyCodeLine{00309\ \textcolor{preprocessor}{\#undef\ block33}}
+\DoxyCodeLine{00310\ \textcolor{preprocessor}{\#undef\ data}}
+\DoxyCodeLine{00311\ \textcolor{preprocessor}{\#undef\ TPL}}
+\DoxyCodeLine{00312\ \textcolor{preprocessor}{\#undef\ CLASS}}
+\DoxyCodeLine{00313\ \}}
+\DoxyCodeLine{00314\ }
+\DoxyCodeLine{00315\ \textcolor{comment}{//\ For\ backward\ compatibility:}}
+\DoxyCodeLine{00316\ \textcolor{keyword}{using\ }InertiaMatrixDense\ =\ tpl::InertiaMatrixDense<double>;}
+\DoxyCodeLine{00317\ }
+\DoxyCodeLine{00318\ \textcolor{comment}{//\ Convenience\ alias}}
+\DoxyCodeLine{00319\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ S>\ \textcolor{keyword}{using\ }InertiaMat\ =\ tpl::InertiaMatrixDense<S>;}
+\DoxyCodeLine{00320\ }
+\DoxyCodeLine{00321\ \}}
+\DoxyCodeLine{00322\ \}}
+\DoxyCodeLine{00323\ }
+\DoxyCodeLine{00324\ }
+\DoxyCodeLine{00325\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ INERTIAMATRIX\_H\_\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

@@ -1,0 +1,131 @@
+\doxysection{rbd.\+h}
+\hypertarget{rbd_8h_source}{}\label{rbd_8h_source}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ CPYHDR\ \{\ */}}
+\DoxyCodeLine{00002\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *\ This\ file\ is\ part\ of\ the\ 'iit-\/rbd'\ library.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ Copyright\ ©\ 2015-\/2024,\ Marco\ Frigerio}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *\ See\ the\ LICENSE\ file\ for\ more\ information.}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00008\ \textcolor{comment}{/*\ \}\ CPYHDR\ */}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#ifndef\ IIT\_RBD\_H\_}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#define\ IIT\_RBD\_H\_}}
+\DoxyCodeLine{00011\ }
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ <Eigen/Dense>}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#define\ EIGEN\_YES\_I\_KNOW\_SPARSE\_MODULE\_IS\_NOT\_STABLE\_YET\ 1}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ <Eigen/Sparse>}}
+\DoxyCodeLine{00015\ }
+\DoxyCodeLine{00016\ }
+\DoxyCodeLine{00017\ \textcolor{keyword}{namespace\ }iit\ \{}
+\DoxyCodeLine{00035\ \textcolor{keyword}{namespace\ }rbd\ \{}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00065\ \textcolor{comment}{//\ Use\ alias\ templates\ to\ limit\ the\ references\ to\ 'Eigen'\ to\ this\ header}}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ Derived>}
+\DoxyCodeLine{00068\ \textcolor{keyword}{using\ }MatrixBase\ =\ Eigen::MatrixBase<\ Derived\ >;}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ Scalar,\ \textcolor{keywordtype}{int}\ R,\ \textcolor{keywordtype}{int}\ C>}
+\DoxyCodeLine{00071\ \textcolor{keyword}{using\ }PlainMatrix\ =\ Eigen::Matrix<\ Scalar,\ R,\ C\ >;}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00073\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ XprType,\ \textcolor{keywordtype}{int}\ R,\ \textcolor{keywordtype}{int}\ C>}
+\DoxyCodeLine{00074\ \textcolor{keyword}{using\ }MatrixBlock\ =\ Eigen::Block<\ XprType,\ R,\ C\ >;}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ Scalar>}
+\DoxyCodeLine{00077\ \textcolor{keyword}{using\ }SparseMatrix\ =\ Eigen::SparseMatrix<Scalar>;}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ Scalar>}
+\DoxyCodeLine{00080\ \textcolor{keyword}{using\ }SparseVector\ =\ Eigen::SparseVector<Scalar>;}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00088\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ SCALAR>}
+\DoxyCodeLine{00089\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{structiit_1_1rbd_1_1_core}{Core}}}
+\DoxyCodeLine{00090\ \{}
+\DoxyCodeLine{00091\ \ \ \ \ \textcolor{keyword}{typedef}\ SCALAR\ Scalar;}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00095\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keywordtype}{int}\ R,\ \textcolor{keywordtype}{int}\ C>\ \textcolor{keyword}{using\ }PlainMatrix\ =\ PlainMatrix<Scalar,\ R,\ C\ >;}
+\DoxyCodeLine{00096\ \ \ \ \ \textcolor{keyword}{typedef}\ PlainMatrix<3,3>\ Matrix33;}
+\DoxyCodeLine{00097\ \ \ \ \ \textcolor{keyword}{typedef}\ PlainMatrix<6,6>\ Matrix66;}
+\DoxyCodeLine{00098\ \ \ \ \ \textcolor{keyword}{typedef}\ PlainMatrix<3,1>\ Vector3;}
+\DoxyCodeLine{00099\ \ \ \ \ \textcolor{keyword}{typedef}\ PlainMatrix<6,1>\ Vector6;}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00107\ \ \ \ \ \textcolor{keyword}{typedef}\ Vector6\ \ Vector6D;\ \ \ \ \ \ \ \textcolor{comment}{//\ here\ the\ 'D'\ stands\ for\ Dimension,\ not\ double\ !}}
+\DoxyCodeLine{00108\ \ \ \ \ \textcolor{keyword}{typedef}\ Vector6D\ Column6D;}
+\DoxyCodeLine{00109\ \ \ \ \ \textcolor{keyword}{typedef}\ Vector6D\ VelocityVector;}
+\DoxyCodeLine{00110\ \ \ \ \ \textcolor{keyword}{typedef}\ Vector6D\ ForceVector;}
+\DoxyCodeLine{00111\ }
+\DoxyCodeLine{00112\ \ \ \ \ \textcolor{keyword}{typedef}\ MatrixBlock<Vector6D,3,1>\ \ \ \ \ \ \ \mbox{\hyperlink{structiit_1_1rbd_1_1_core_aee12e2fc82e08ec7480375306824a405}{Part3D}};\ \ \ \ \ }
+\DoxyCodeLine{00113\ \ \ \ \ \textcolor{keyword}{typedef}\ MatrixBlock<const\ Vector6D,3,1>\ \mbox{\hyperlink{structiit_1_1rbd_1_1_core_a26507adb5f163ae41a2a1225b9ac33f6}{Part3DConst}};}
+\DoxyCodeLine{00115\ }
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00127\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{structiit_1_1rbd_1_1_core_aee12e2fc82e08ec7480375306824a405}{Part3D}}\ \mbox{\hyperlink{structiit_1_1rbd_1_1_core_a6b20b31a9ab23742565b8bd083538f02}{angularPart}}(Vector6D\&\ f)\ \{}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ f.template\ topRows<3>();}
+\DoxyCodeLine{00129\ \ \ \ \ \}}
+\DoxyCodeLine{00134\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{structiit_1_1rbd_1_1_core_aee12e2fc82e08ec7480375306824a405}{Part3D}}\ \mbox{\hyperlink{structiit_1_1rbd_1_1_core_ab7d885a16482d13af2ee0cd665eccf82}{linearPart}}(Vector6D\&\ f)\ \{}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ f.template\ bottomRows<3>();}
+\DoxyCodeLine{00136\ \ \ \ \ \}}
+\DoxyCodeLine{00137\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ Part3DConst\ \mbox{\hyperlink{structiit_1_1rbd_1_1_core_a6b20b31a9ab23742565b8bd083538f02}{angularPart}}(\textcolor{keyword}{const}\ Vector6D\&\ f)\ \{}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ f.template\ topRows<3>();}
+\DoxyCodeLine{00139\ \ \ \ \ \}}
+\DoxyCodeLine{00140\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{structiit_1_1rbd_1_1_core_a26507adb5f163ae41a2a1225b9ac33f6}{Part3DConst}}\ \mbox{\hyperlink{structiit_1_1rbd_1_1_core_ab7d885a16482d13af2ee0cd665eccf82}{linearPart}}(\textcolor{keyword}{const}\ Vector6D\&\ f)\ \{}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ f.template\ bottomRows<3>();}
+\DoxyCodeLine{00142\ \ \ \ \ \}}
+\DoxyCodeLine{00143\ \};}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00145\ \textcolor{preprocessor}{\#define\ TPL\ template<typename\ S>}}
+\DoxyCodeLine{00152\ TPL\ \textcolor{keyword}{using\ }Velocity\ =\ \textcolor{keyword}{typename}\ Core<S>::VelocityVector;}
+\DoxyCodeLine{00153\ TPL\ \textcolor{keyword}{using\ }Force\ \ \ \ =\ \textcolor{keyword}{typename}\ Core<S>::ForceVector;}
+\DoxyCodeLine{00154\ TPL\ \textcolor{keyword}{using\ }Mat33\ \ \ \ =\ \textcolor{keyword}{typename}\ Core<S>::Matrix33;}
+\DoxyCodeLine{00155\ TPL\ \textcolor{keyword}{using\ }Mat66\ \ \ \ =\ \textcolor{keyword}{typename}\ Core<S>::Matrix66;}
+\DoxyCodeLine{00156\ TPL\ \textcolor{keyword}{using\ }Vec3\ \ \ \ \ =\ \textcolor{keyword}{typename}\ Core<S>::Vector3;}
+\DoxyCodeLine{00157\ TPL\ \textcolor{keyword}{using\ }Vec6\ \ \ \ \ =\ \textcolor{keyword}{typename}\ Core<S>::Vector6;}
+\DoxyCodeLine{00159\ \textcolor{preprocessor}{\#undef\ TPL}}
+\DoxyCodeLine{00160\ }
+\DoxyCodeLine{00172\ \textcolor{keyword}{typedef}\ Core<double>\ Cored;}
+\DoxyCodeLine{00173\ }
+\DoxyCodeLine{00174\ \textcolor{keyword}{using\ }Matrix33d\ =\ Cored::Matrix33;}
+\DoxyCodeLine{00175\ \textcolor{keyword}{using\ }Vector3d\ \ =\ Cored::Vector3;}
+\DoxyCodeLine{00176\ \textcolor{keyword}{using\ }Matrix66d\ =\ Cored::Matrix66;}
+\DoxyCodeLine{00177\ \textcolor{keyword}{using\ }Vector6d\ \ =\ Cored::Vector6;}
+\DoxyCodeLine{00178\ }
+\DoxyCodeLine{00179\ \textcolor{keyword}{using\ }Vector6D\ \ \ \ \ \ \ =\ Cored::Vector6D;}
+\DoxyCodeLine{00180\ \textcolor{keyword}{using\ }VelocityVector\ =\ Cored::VelocityVector;}
+\DoxyCodeLine{00181\ \textcolor{keyword}{using\ }ForceVector\ \ \ \ =\ Cored::ForceVector;}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ \textcolor{keyword}{using\ }Part3D\ \ \ \ \ \ =\ \mbox{\hyperlink{structiit_1_1rbd_1_1_core_aee12e2fc82e08ec7480375306824a405}{Cored::Part3D}};}
+\DoxyCodeLine{00184\ \textcolor{keyword}{using\ }Part3DConst\ =\ \mbox{\hyperlink{structiit_1_1rbd_1_1_core_a26507adb5f163ae41a2a1225b9ac33f6}{Cored::Part3DConst}};}
+\DoxyCodeLine{00185\ }
+\DoxyCodeLine{00186\ \textcolor{keyword}{using\ }Column6d\ =\ Cored::Column6D;\ \ \textcolor{comment}{//\ an\ alias}}
+\DoxyCodeLine{00187\ }
+\DoxyCodeLine{00188\ \textcolor{keyword}{using\ }SparseMatrixd\ =\ SparseMatrix<double>;}
+\DoxyCodeLine{00189\ \textcolor{keyword}{using\ }SparseColumnd\ =\ SparseVector<double>;}
+\DoxyCodeLine{00190\ }
+\DoxyCodeLine{00191\ }
+\DoxyCodeLine{00192\ \textcolor{keyword}{inline}\ Part3D\ angularPart(Vector6D\&\ f)\ \{}
+\DoxyCodeLine{00193\ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{structiit_1_1rbd_1_1_core_a6b20b31a9ab23742565b8bd083538f02}{Cored::angularPart}}(f);}
+\DoxyCodeLine{00194\ \}}
+\DoxyCodeLine{00195\ \textcolor{keyword}{inline}\ Part3D\ linearPart(Vector6D\&\ f)\ \{}
+\DoxyCodeLine{00196\ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{structiit_1_1rbd_1_1_core_ab7d885a16482d13af2ee0cd665eccf82}{Cored::linearPart}}(f);}
+\DoxyCodeLine{00197\ \}}
+\DoxyCodeLine{00198\ \textcolor{keyword}{inline}\ Part3DConst\ angularPart(\textcolor{keyword}{const}\ Vector6D\&\ f)\ \{}
+\DoxyCodeLine{00199\ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{structiit_1_1rbd_1_1_core_a6b20b31a9ab23742565b8bd083538f02}{Cored::angularPart}}(f);}
+\DoxyCodeLine{00200\ \}}
+\DoxyCodeLine{00201\ \textcolor{keyword}{inline}\ Part3DConst\ linearPart(\textcolor{keyword}{const}\ Vector6D\&\ f)\ \{}
+\DoxyCodeLine{00202\ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{structiit_1_1rbd_1_1_core_ab7d885a16482d13af2ee0cd665eccf82}{Cored::linearPart}}(f);}
+\DoxyCodeLine{00203\ \}}
+\DoxyCodeLine{00205\ }
+\DoxyCodeLine{00206\ }
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00213\ \textcolor{keyword}{enum}\ Coords3D\ \{\ X=0,\ Y,\ Z\};}
+\DoxyCodeLine{00215\ \textcolor{keyword}{enum}\ \mbox{\hyperlink{group__rbd-core_ga040191b0074ada049644bc2ddff593ef}{Coords6D}}\ \{\ AX=0,\ AY,\ AZ,\ LX,\ LY,\ LZ\ \};}
+\DoxyCodeLine{00217\ }
+\DoxyCodeLine{00219\ }
+\DoxyCodeLine{00225\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{namespaceiit_1_1rbd_ad7a661c3d10f9e3a31bda29e3a2d957e}{g}}\{9.80665\};}
+\DoxyCodeLine{00226\ }
+\DoxyCodeLine{00227\ \}}
+\DoxyCodeLine{00228\ \}}
+\DoxyCodeLine{00229\ }
+\DoxyCodeLine{00230\ }
+\DoxyCodeLine{00231\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ IIT\_RBD\_H\_\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

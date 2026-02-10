@@ -1,0 +1,152 @@
+\doxysection{RBD Core}
+\hypertarget{group__rbd-core}{}\label{group__rbd-core}\index{RBD Core@{RBD Core}}
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structiit_1_1rbd_1_1_core}{iit\+::rbd\+::\+Core$<$ SCALAR $>$}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{group__rbd-core_ga7189cdc61951a79531e56abd79bac978}\label{group__rbd-core_ga7189cdc61951a79531e56abd79bac978} 
+\#define {\bfseries TPL}~template$<$typename S$>$
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Vector coordinates}
+Constants to index either 6D or 3D coordinate vectors. \begin{DoxyCompactItemize}
+\item 
+\Hypertarget{group__rbd-core_gad2cb680ea27e496cdedb32836e6b3b2a}\label{group__rbd-core_gad2cb680ea27e496cdedb32836e6b3b2a} 
+enum {\bfseries Coords3D} \{ {\bfseries X} =0
+, {\bfseries Y}
+, {\bfseries Z}
+ \}
+\item 
+\Hypertarget{group__rbd-core_ga040191b0074ada049644bc2ddff593ef}\label{group__rbd-core_ga040191b0074ada049644bc2ddff593ef} 
+enum \mbox{\hyperlink{group__rbd-core_ga040191b0074ada049644bc2ddff593ef}{iit\+::rbd\+::\+Coords6D}} \{ \newline
+{\bfseries AX} =0
+, {\bfseries AY}
+, {\bfseries AZ}
+, {\bfseries LX}
+, \newline
+{\bfseries LY}
+, {\bfseries LZ}
+ \}
+\begin{DoxyCompactList}\small\item\em To be used with 6D vectors. \textquotesingle{}A\textquotesingle{} stands for angular, \textquotesingle{}L\textquotesingle{} for linear. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{General matrix types}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{group__rbd-core_gad5c6dfb1ac53379c445284a9ff6d3fd1}\label{group__rbd-core_gad5c6dfb1ac53379c445284a9ff6d3fd1} 
+{\footnotesize template$<$typename Derived $>$ }\\using {\bfseries iit\+::rbd\+::\+Matrix\+Base} = Eigen\+::\+Matrix\+Base$<$ Derived $>$
+\item 
+\Hypertarget{group__rbd-core_gaf4cbaaa94db6ba0b06434aab4def510f}\label{group__rbd-core_gaf4cbaaa94db6ba0b06434aab4def510f} 
+{\footnotesize template$<$typename Scalar , int R, int C$>$ }\\using {\bfseries iit\+::rbd\+::\+Plain\+Matrix} = Eigen\+::\+Matrix$<$ Scalar, R, C $>$
+\item 
+\Hypertarget{group__rbd-core_gafd4c75a944914480bef759609c74eb34}\label{group__rbd-core_gafd4c75a944914480bef759609c74eb34} 
+{\footnotesize template$<$typename Xpr\+Type , int R, int C$>$ }\\using {\bfseries iit\+::rbd\+::\+Matrix\+Block} = Eigen\+::\+Block$<$ Xpr\+Type, R, C $>$
+\item 
+\Hypertarget{group__rbd-core_gaf8040d3913e51520fcd69544a56fa5ff}\label{group__rbd-core_gaf8040d3913e51520fcd69544a56fa5ff} 
+{\footnotesize template$<$typename Scalar $>$ }\\using {\bfseries iit\+::rbd\+::\+Sparse\+Matrix} = Eigen\+::\+Sparse\+Matrix$<$Scalar$>$
+\item 
+\Hypertarget{group__rbd-core_gae65775319584687427d8b7a7b492a590}\label{group__rbd-core_gae65775319584687427d8b7a7b492a590} 
+{\footnotesize template$<$typename Scalar $>$ }\\using {\bfseries iit\+::rbd\+::\+Sparse\+Vector} = Eigen\+::\+Sparse\+Vector$<$Scalar$>$
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Generators of individual core types}
+These aliases are useful when one or few types are needed, given a Scalar. \begin{DoxyCompactItemize}
+\item 
+\Hypertarget{group__rbd-core_gae28e48c9aecbef5832fa0e1caa0f3ff2}\label{group__rbd-core_gae28e48c9aecbef5832fa0e1caa0f3ff2} 
+using {\bfseries iit\+::rbd\+::\+Velocity} = typename \mbox{\hyperlink{structiit_1_1rbd_1_1_core}{Core}}$<$S$>$\+::\+Velocity\+Vector
+\item 
+\Hypertarget{group__rbd-core_ga5b117f23ece2078916a9c57d4b9567d7}\label{group__rbd-core_ga5b117f23ece2078916a9c57d4b9567d7} 
+using {\bfseries iit\+::rbd\+::\+Force} = typename \mbox{\hyperlink{structiit_1_1rbd_1_1_core}{Core}}$<$S$>$\+::\+Force\+Vector
+\item 
+\Hypertarget{group__rbd-core_ga35f18819413d4fcafad8a6f70a5c609d}\label{group__rbd-core_ga35f18819413d4fcafad8a6f70a5c609d} 
+using {\bfseries iit\+::rbd\+::\+Mat33} = typename \mbox{\hyperlink{structiit_1_1rbd_1_1_core}{Core}}$<$S$>$\+::\+Matrix33
+\item 
+\Hypertarget{group__rbd-core_ga6f665e821863522058c2a337f170e754}\label{group__rbd-core_ga6f665e821863522058c2a337f170e754} 
+using {\bfseries iit\+::rbd\+::\+Mat66} = typename \mbox{\hyperlink{structiit_1_1rbd_1_1_core}{Core}}$<$S$>$\+::\+Matrix66
+\item 
+\Hypertarget{group__rbd-core_gab4fd57bb5c94c75fa816a3080c618dd9}\label{group__rbd-core_gab4fd57bb5c94c75fa816a3080c618dd9} 
+using {\bfseries iit\+::rbd\+::\+Vec3} = typename \mbox{\hyperlink{structiit_1_1rbd_1_1_core}{Core}}$<$S$>$\+::\+Vector3
+\item 
+\Hypertarget{group__rbd-core_ga9d090ef1453ffa68817e48655dbb4af9}\label{group__rbd-core_ga9d090ef1453ffa68817e48655dbb4af9} 
+using {\bfseries iit\+::rbd\+::\+Vec6} = typename \mbox{\hyperlink{structiit_1_1rbd_1_1_core}{Core}}$<$S$>$\+::\+Vector6
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Core types using double as scalar}
+Explicit instantiation of all the various matrix types using the standard {\ttfamily double} as the scalar type. These definitions are included for backward compatibility with client code using prior non-\/templated version of this library.
+
+See \doxylink{structiit_1_1rbd_1_1_core}{Core}. \begin{DoxyCompactItemize}
+\item 
+\Hypertarget{group__rbd-core_gaac5d9beca493475738864420f3921092}\label{group__rbd-core_gaac5d9beca493475738864420f3921092} 
+typedef \mbox{\hyperlink{structiit_1_1rbd_1_1_core}{Core}}$<$ double $>$ {\bfseries iit\+::rbd\+::\+Cored}
+\item 
+\Hypertarget{group__rbd-core_ga3bc971e23af9a930d0cbc21fd7effa7b}\label{group__rbd-core_ga3bc971e23af9a930d0cbc21fd7effa7b} 
+using {\bfseries iit\+::rbd\+::\+Matrix33d} = Cored\+::\+Matrix33
+\item 
+\Hypertarget{group__rbd-core_gaead59b8976196b3a78477a7ea1bddf20}\label{group__rbd-core_gaead59b8976196b3a78477a7ea1bddf20} 
+using {\bfseries iit\+::rbd\+::\+Vector3d} = Cored\+::\+Vector3
+\item 
+\Hypertarget{group__rbd-core_gaf102807c75d508f7602e38428fc98e07}\label{group__rbd-core_gaf102807c75d508f7602e38428fc98e07} 
+using {\bfseries iit\+::rbd\+::\+Matrix66d} = Cored\+::\+Matrix66
+\item 
+\Hypertarget{group__rbd-core_gab509b3fea1850a1d2cac52a71f332a9c}\label{group__rbd-core_gab509b3fea1850a1d2cac52a71f332a9c} 
+using {\bfseries iit\+::rbd\+::\+Vector6d} = Cored\+::\+Vector6
+\item 
+\Hypertarget{group__rbd-core_ga17501b83cf2c0e7e1f368ac9d66c2de9}\label{group__rbd-core_ga17501b83cf2c0e7e1f368ac9d66c2de9} 
+using {\bfseries iit\+::rbd\+::\+Vector6D} = Cored\+::\+Vector6D
+\item 
+\Hypertarget{group__rbd-core_gabf101a2f959dc989ec297a1d8fb4f47a}\label{group__rbd-core_gabf101a2f959dc989ec297a1d8fb4f47a} 
+using {\bfseries iit\+::rbd\+::\+Velocity\+Vector} = Cored\+::\+Velocity\+Vector
+\item 
+\Hypertarget{group__rbd-core_ga31475c18e8ec63ef30a087eff9819027}\label{group__rbd-core_ga31475c18e8ec63ef30a087eff9819027} 
+using {\bfseries iit\+::rbd\+::\+Force\+Vector} = Cored\+::\+Force\+Vector
+\item 
+\Hypertarget{group__rbd-core_ga3faace1b08e86f9bc09c0e5398ea6e3b}\label{group__rbd-core_ga3faace1b08e86f9bc09c0e5398ea6e3b} 
+using {\bfseries iit\+::rbd\+::\+Part3D} = \mbox{\hyperlink{structiit_1_1rbd_1_1_core_aee12e2fc82e08ec7480375306824a405}{Cored\+::\+Part3D}}
+\item 
+\Hypertarget{group__rbd-core_ga9694c9e3d1c3a2a212474e2f19fc8fb5}\label{group__rbd-core_ga9694c9e3d1c3a2a212474e2f19fc8fb5} 
+using {\bfseries iit\+::rbd\+::\+Part3\+DConst} = \mbox{\hyperlink{structiit_1_1rbd_1_1_core_a26507adb5f163ae41a2a1225b9ac33f6}{Cored\+::\+Part3\+DConst}}
+\item 
+\Hypertarget{group__rbd-core_ga6e96d645a8439c029dac911b4d6d1459}\label{group__rbd-core_ga6e96d645a8439c029dac911b4d6d1459} 
+using {\bfseries iit\+::rbd\+::\+Column6d} = Cored\+::\+Column6D
+\item 
+\Hypertarget{group__rbd-core_ga16b489ab22f4f690ed36003ab15466b7}\label{group__rbd-core_ga16b489ab22f4f690ed36003ab15466b7} 
+using {\bfseries iit\+::rbd\+::\+Sparse\+Matrixd} = Sparse\+Matrix$<$double$>$
+\item 
+\Hypertarget{group__rbd-core_ga76082fe2343b649ae30b51c6bb799aa9}\label{group__rbd-core_ga76082fe2343b649ae30b51c6bb799aa9} 
+using {\bfseries iit\+::rbd\+::\+Sparse\+Columnd} = Sparse\+Vector$<$double$>$
+\item 
+\Hypertarget{group__rbd-core_ga3f39a6c126b44e7bada7b205b2a4a0cd}\label{group__rbd-core_ga3f39a6c126b44e7bada7b205b2a4a0cd} 
+Part3D {\bfseries iit\+::rbd\+::angular\+Part} (Vector6D \&f)
+\item 
+\Hypertarget{group__rbd-core_ga57eae3c904f4fb3c38d447cdb7500818}\label{group__rbd-core_ga57eae3c904f4fb3c38d447cdb7500818} 
+Part3D {\bfseries iit\+::rbd\+::linear\+Part} (Vector6D \&f)
+\item 
+\Hypertarget{group__rbd-core_gad6a1e39ab8f6235186a4b40979621844}\label{group__rbd-core_gad6a1e39ab8f6235186a4b40979621844} 
+Part3\+DConst {\bfseries iit\+::rbd\+::angular\+Part} (const Vector6D \&f)
+\item 
+\Hypertarget{group__rbd-core_ga40c8740197843387a49154c9868f460c}\label{group__rbd-core_ga40c8740197843387a49154c9868f460c} 
+Part3\+DConst {\bfseries iit\+::rbd\+::linear\+Part} (const Vector6D \&f)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Main, basic data types and functions
+
+All the types are templated on the Scalar type. There are two ways of defining a complete type in client code. For individual types one can use something like this\+: 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{typedef}\ iit::rbd::Velocity<\ float\ >\ myVelocity;}
+
+\end{DoxyCode}
+
+
+An alternative, maybe neater in the case of multiple types, is the following\+: 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{typedef}\ \textcolor{keywordtype}{float}\ Scalar;}
+\DoxyCodeLine{\textcolor{keyword}{typedef}\ iit::rbd::Core<\ Scalar\ >\ mycore;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{using\ }Matrix33\ =\ mycore::Matrix33;}
+\DoxyCodeLine{\textcolor{keyword}{using\ }Vector3\ \ =\ mycore::Vector3;}
+\DoxyCodeLine{\textcolor{keyword}{using\ }Velocity\ =\ mycore::VelocityVector;}
+\DoxyCodeLine{\textcolor{comment}{//\ etc.}}
+
+\end{DoxyCode}
+ 

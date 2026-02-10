@@ -1,0 +1,59 @@
+\doxysection{Transforms\+Base.\+h}
+\hypertarget{_transforms_base_8h_source}{}\label{_transforms_base_8h_source}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ CPYHDR\ \{\ */}}
+\DoxyCodeLine{00002\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *\ This\ file\ is\ part\ of\ the\ 'iit-\/rbd'\ library.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ Copyright\ ©\ 2015-\/2024,\ Marco\ Frigerio}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *\ See\ the\ LICENSE\ file\ for\ more\ information.}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00008\ \textcolor{comment}{/*\ \}\ CPYHDR\ */}}
+\DoxyCodeLine{00009\ }
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#ifndef\ IIT\_RBD\_TRANSFORMSBASE\_H\_}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#define\ IIT\_RBD\_TRANSFORMSBASE\_H\_}}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ "{}StateDependentMatrix.h"{}}}
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00015\ \textcolor{keyword}{namespace\ }iit\ \{}
+\DoxyCodeLine{00016\ \textcolor{keyword}{namespace\ }rbd\ \{}
+\DoxyCodeLine{00017\ }
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00023\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ State,\ \textcolor{keyword}{class}\ ActualMatrix>}
+\DoxyCodeLine{00024\ \textcolor{keyword}{class\ }\mbox{\hyperlink{classiit_1_1rbd_1_1_rotation_transform_base}{RotationTransformBase}}\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{classiit_1_1rbd_1_1_state_dependent_matrix}{StateDependentMatrix}}<State,\ 3,\ 3,\ ActualMatrix>}
+\DoxyCodeLine{00025\ \{}
+\DoxyCodeLine{00026\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00027\ \ \ \ \ EIGEN\_MAKE\_ALIGNED\_OPERATOR\_NEW}
+\DoxyCodeLine{00028\ \};}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00034\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ State,\ \textcolor{keyword}{class}\ ActualMatrix>}
+\DoxyCodeLine{00035\ \textcolor{keyword}{class\ }\mbox{\hyperlink{classiit_1_1rbd_1_1_homogeneous_transform_base}{HomogeneousTransformBase}}\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{classiit_1_1rbd_1_1_state_dependent_matrix}{StateDependentMatrix}}<State,\ 4,\ 4,\ ActualMatrix>}
+\DoxyCodeLine{00036\ \{}
+\DoxyCodeLine{00037\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00038\ \ \ \ \ EIGEN\_MAKE\_ALIGNED\_OPERATOR\_NEW}
+\DoxyCodeLine{00039\ \};}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00045\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ State,\ \textcolor{keyword}{class}\ ActualMatrix>}
+\DoxyCodeLine{00046\ \textcolor{keyword}{class\ }\mbox{\hyperlink{classiit_1_1rbd_1_1_spatial_transform_base}{SpatialTransformBase}}\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{classiit_1_1rbd_1_1_state_dependent_matrix}{StateDependentMatrix}}<State,\ 6,\ 6,\ ActualMatrix>}
+\DoxyCodeLine{00047\ \{}
+\DoxyCodeLine{00048\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00049\ \ \ \ \ EIGEN\_MAKE\_ALIGNED\_OPERATOR\_NEW}
+\DoxyCodeLine{00050\ \};}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00056\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ State,\ \textcolor{keywordtype}{int}\ Cols,\ \textcolor{keyword}{class}\ ActualMatrix>}
+\DoxyCodeLine{00057\ \textcolor{keyword}{class\ }\mbox{\hyperlink{classiit_1_1rbd_1_1_jacobian_base}{JacobianBase}}\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{classiit_1_1rbd_1_1_state_dependent_matrix}{StateDependentMatrix}}<State,\ 6,\ Cols,\ ActualMatrix>}
+\DoxyCodeLine{00058\ \{}
+\DoxyCodeLine{00059\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00060\ \ \ \ \ EIGEN\_MAKE\_ALIGNED\_OPERATOR\_NEW}
+\DoxyCodeLine{00061\ \};}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ \}}
+\DoxyCodeLine{00066\ \}}
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ IIT\_RBD\_TRANSFORMSBASE\_H\_\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

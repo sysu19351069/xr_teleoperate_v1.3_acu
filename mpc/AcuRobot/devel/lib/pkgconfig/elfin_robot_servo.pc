@@ -1,0 +1,8 @@
+prefix=/home/ros/AcuRobot/devel
+
+Name: elfin_robot_servo
+Description: Description of elfin_robot_servo
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

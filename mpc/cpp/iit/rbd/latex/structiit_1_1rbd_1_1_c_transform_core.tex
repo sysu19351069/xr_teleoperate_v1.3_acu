@@ -1,0 +1,98 @@
+\doxysection{iit\+::rbd\+::CTransform\+Core\texorpdfstring{$<$}{<} Scalar \texorpdfstring{$>$}{>} Struct Template Reference}
+\hypertarget{structiit_1_1rbd_1_1_c_transform_core}{}\label{structiit_1_1rbd_1_1_c_transform_core}\index{iit::rbd::CTransformCore$<$ Scalar $>$@{iit::rbd::CTransformCore$<$ Scalar $>$}}
+
+
+{\ttfamily \#include $<$compact\+\_\+transform.\+h$>$}
+
+\doxysubsubsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{structiit_1_1rbd_1_1_c_transform_core_a7ad5d5b55892ad73f7bc75294ca28705}\label{structiit_1_1rbd_1_1_c_transform_core_a7ad5d5b55892ad73f7bc75294ca28705} 
+using {\bfseries vector6} = Vec6$<$Scalar$>$
+\item 
+\Hypertarget{structiit_1_1rbd_1_1_c_transform_core_a3f4acda65b86b8301e2e204aeb5d53a8}\label{structiit_1_1rbd_1_1_c_transform_core_a3f4acda65b86b8301e2e204aeb5d53a8} 
+using {\bfseries matrix4} = Plain\+Matrix$<$Scalar, 4, 4$>$
+\item 
+\Hypertarget{structiit_1_1rbd_1_1_c_transform_core_a46ef7dc01c433f419d7e107d4395490e}\label{structiit_1_1rbd_1_1_c_transform_core_a46ef7dc01c433f419d7e107d4395490e} 
+using {\bfseries matrix6} = Plain\+Matrix$<$Scalar, 6, 6$>$
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{structiit_1_1rbd_1_1_c_transform_core_a1ea94f824af98bfb26f0f1e8826e4c52}\label{structiit_1_1rbd_1_1_c_transform_core_a1ea94f824af98bfb26f0f1e8826e4c52} 
+{\bfseries CTransform\+Core} (int)
+\item 
+\Hypertarget{structiit_1_1rbd_1_1_c_transform_core_ad4e0e2fabd6d427a8503951c978710de}\label{structiit_1_1rbd_1_1_c_transform_core_ad4e0e2fabd6d427a8503951c978710de} 
+{\footnotesize template$<$typename Derived $>$ }\\vector6 {\bfseries A\+\_\+\+XM\+\_\+B} (const Matrix\+Base$<$ Derived $>$ \&v\+\_\+b) const
+\item 
+\Hypertarget{structiit_1_1rbd_1_1_c_transform_core_adb347b93cfc8e8ca3b63714ee760e213}\label{structiit_1_1rbd_1_1_c_transform_core_adb347b93cfc8e8ca3b63714ee760e213} 
+{\footnotesize template$<$typename Derived $>$ }\\vector6 {\bfseries B\+\_\+\+XM\+\_\+A} (const Matrix\+Base$<$ Derived $>$ \&v\+\_\+a) const
+\item 
+\Hypertarget{structiit_1_1rbd_1_1_c_transform_core_abab3d7943e0ddc5648a5b356c870a720}\label{structiit_1_1rbd_1_1_c_transform_core_abab3d7943e0ddc5648a5b356c870a720} 
+{\footnotesize template$<$typename Derived $>$ }\\vector6 {\bfseries A\+\_\+\+XF\+\_\+B} (const Matrix\+Base$<$ Derived $>$ \&v\+\_\+B) const
+\item 
+\Hypertarget{structiit_1_1rbd_1_1_c_transform_core_aa7c4de3f705f02487338cfd500ab91c0}\label{structiit_1_1rbd_1_1_c_transform_core_aa7c4de3f705f02487338cfd500ab91c0} 
+{\footnotesize template$<$typename Derived $>$ }\\vector6 {\bfseries B\+\_\+\+XF\+\_\+A} (const Matrix\+Base$<$ Derived $>$ \&v\+\_\+A) const
+\item 
+\Hypertarget{structiit_1_1rbd_1_1_c_transform_core_a7aeda8a0658260ba931ba49cf30ef3bb}\label{structiit_1_1rbd_1_1_c_transform_core_a7aeda8a0658260ba931ba49cf30ef3bb} 
+{\footnotesize template$<$typename Derived $>$ }\\Vec3$<$ Scalar $>$ {\bfseries A\+\_\+\+XH\+\_\+B} (const Matrix\+Base$<$ Derived $>$ \&v\+\_\+b) const
+\item 
+\Hypertarget{structiit_1_1rbd_1_1_c_transform_core_a705f4a5be4dfff4204a29d6f7c02fd56}\label{structiit_1_1rbd_1_1_c_transform_core_a705f4a5be4dfff4204a29d6f7c02fd56} 
+{\footnotesize template$<$typename Derived $>$ }\\Vec3$<$ Scalar $>$ {\bfseries B\+\_\+\+XH\+\_\+A} (const Matrix\+Base$<$ Derived $>$ \&v\+\_\+a) const
+\item 
+\Hypertarget{structiit_1_1rbd_1_1_c_transform_core_a8a9585af0706e472749e7ca7802023dd}\label{structiit_1_1rbd_1_1_c_transform_core_a8a9585af0706e472749e7ca7802023dd} 
+matrix6 {\bfseries A\+\_\+\+XM\+\_\+\+B\+\_\+matrix} () const
+\item 
+\Hypertarget{structiit_1_1rbd_1_1_c_transform_core_a5604e570188799d4362dc90d5c8aaebb}\label{structiit_1_1rbd_1_1_c_transform_core_a5604e570188799d4362dc90d5c8aaebb} 
+matrix6 {\bfseries B\+\_\+\+XM\+\_\+\+A\+\_\+matrix} () const
+\item 
+\Hypertarget{structiit_1_1rbd_1_1_c_transform_core_a9c5317e443d2ecfbc85e6ae548cac0a4}\label{structiit_1_1rbd_1_1_c_transform_core_a9c5317e443d2ecfbc85e6ae548cac0a4} 
+matrix6 {\bfseries A\+\_\+\+XF\+\_\+\+B\+\_\+matrix} () const
+\item 
+\Hypertarget{structiit_1_1rbd_1_1_c_transform_core_af4e312974449e542ae46b55a577228dc}\label{structiit_1_1rbd_1_1_c_transform_core_af4e312974449e542ae46b55a577228dc} 
+matrix6 {\bfseries B\+\_\+\+XF\+\_\+\+A\+\_\+matrix} () const
+\item 
+\Hypertarget{structiit_1_1rbd_1_1_c_transform_core_a529f99fc111c6f1f968b7d8931d24599}\label{structiit_1_1rbd_1_1_c_transform_core_a529f99fc111c6f1f968b7d8931d24599} 
+matrix4 {\bfseries A\+\_\+\+XH\+\_\+\+B\+\_\+matrix} () const
+\item 
+\Hypertarget{structiit_1_1rbd_1_1_c_transform_core_aa648a9fce785739535fcdcc1a3732c0e}\label{structiit_1_1rbd_1_1_c_transform_core_aa648a9fce785739535fcdcc1a3732c0e} 
+matrix4 {\bfseries B\+\_\+\+XH\+\_\+\+A\+\_\+matrix} () const
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+Mat33$<$ Scalar $>$ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a0ec8cdfa111840e162df3536d6da51f7}{a\+\_\+\+R\+\_\+b}}
+\item 
+Vec3$<$ Scalar $>$ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core_a08d4f01aec94573705ad8e9c6c47ef32}{r\+\_\+ab\+\_\+a}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\subsubsection*{template$<$typename Scalar$>$\newline
+struct iit\+::rbd\+::\+CTransform\+Core$<$ Scalar $>$}
+A compact type that can act as different representations of a coordinate transform.
+
+An instance contains the minimum amount of data to encode a coordinate transform for homogeneous coordinates and spatial vectors (both motion and force)\+: a rotation matrix and a translation vector.
+
+Different member functions implement the actual coordinate transformation for the different representations. 
+
+\doxysubsection{Member Data Documentation}
+\Hypertarget{structiit_1_1rbd_1_1_c_transform_core_a0ec8cdfa111840e162df3536d6da51f7}\label{structiit_1_1rbd_1_1_c_transform_core_a0ec8cdfa111840e162df3536d6da51f7} 
+\index{iit::rbd::CTransformCore$<$ Scalar $>$@{iit::rbd::CTransformCore$<$ Scalar $>$}!a\_R\_b@{a\_R\_b}}
+\index{a\_R\_b@{a\_R\_b}!iit::rbd::CTransformCore$<$ Scalar $>$@{iit::rbd::CTransformCore$<$ Scalar $>$}}
+\doxysubsubsection{\texorpdfstring{a\_R\_b}{a\_R\_b}}
+{\footnotesize\ttfamily template$<$typename Scalar $>$ \\
+Mat33$<$Scalar$>$ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core}{iit\+::rbd\+::\+CTransform\+Core}}$<$ Scalar $>$\+::a\+\_\+\+R\+\_\+b}
+
+The rotation matrix from \textquotesingle{}b\textquotesingle{} to \textquotesingle{}a\textquotesingle{} coordinates \Hypertarget{structiit_1_1rbd_1_1_c_transform_core_a08d4f01aec94573705ad8e9c6c47ef32}\label{structiit_1_1rbd_1_1_c_transform_core_a08d4f01aec94573705ad8e9c6c47ef32} 
+\index{iit::rbd::CTransformCore$<$ Scalar $>$@{iit::rbd::CTransformCore$<$ Scalar $>$}!r\_ab\_a@{r\_ab\_a}}
+\index{r\_ab\_a@{r\_ab\_a}!iit::rbd::CTransformCore$<$ Scalar $>$@{iit::rbd::CTransformCore$<$ Scalar $>$}}
+\doxysubsubsection{\texorpdfstring{r\_ab\_a}{r\_ab\_a}}
+{\footnotesize\ttfamily template$<$typename Scalar $>$ \\
+Vec3$<$Scalar$>$ \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core}{iit\+::rbd\+::\+CTransform\+Core}}$<$ Scalar $>$\+::r\+\_\+ab\+\_\+a}
+
+The position vector from the origin of \textquotesingle{}a\textquotesingle{} to the origin of \textquotesingle{}b\textquotesingle{}, in \textquotesingle{}a\textquotesingle{} coordinates 
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+compact\+\_\+transform.\+h\end{DoxyCompactItemize}

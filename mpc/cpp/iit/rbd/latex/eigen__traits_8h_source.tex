@@ -1,0 +1,73 @@
+\doxysection{eigen\+\_\+traits.\+h}
+\hypertarget{eigen__traits_8h_source}{}\label{eigen__traits_8h_source}\mbox{\hyperlink{eigen__traits_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ CPYHDR\ \{\ */}}
+\DoxyCodeLine{00002\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *\ This\ file\ is\ part\ of\ the\ 'iit-\/rbd'\ library.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ Copyright\ ©\ 2015-\/2024,\ Marco\ Frigerio}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *\ See\ the\ LICENSE\ file\ for\ more\ information.}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00008\ \textcolor{comment}{/*\ \}\ CPYHDR\ */}}
+\DoxyCodeLine{00009\ }
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#ifndef\ IIT\_RBD\_EIGEN\_TRAITS\_}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#define\ IIT\_RBD\_EIGEN\_TRAITS\_}}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ "{}StateDependentMatrix.h"{}}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ "{}TransformsBase.h"{}}}
+\DoxyCodeLine{00016\ }
+\DoxyCodeLine{00023\ \textcolor{keyword}{namespace\ }Eigen\ \{}
+\DoxyCodeLine{00024\ \textcolor{keyword}{namespace\ }internal\ \{}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00029\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ State,\ \textcolor{keyword}{typename}\ M>}
+\DoxyCodeLine{00030\ \textcolor{keyword}{struct\ }traits<\ iit::rbd::HomogeneousTransformBase<State,\ M>\ >}
+\DoxyCodeLine{00031\ \{}
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ \mbox{\hyperlink{classiit_1_1rbd_1_1_state_dependent_matrix_af1c688295e506148b85736fccc09c9da}{iit::rbd::HomogeneousTransformBase<State,\ M>::MatrixType}}\ MxType;}
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ traits<MxType>\ Traits;}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ Traits::Scalar\ Scalar;}
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ Traits::StorageKind\ StorageKind;}
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ Traits::Index\ Index;}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ Traits::XprKind\ XprKind;}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum}\ \{}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \ \ \ \ \ \ RowsAtCompileTime\ \ \ \ =\ Traits::RowsAtCompileTime,}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ \ \ \ \ ColsAtCompileTime\ \ \ \ =\ Traits::ColsAtCompileTime,}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ \ \ \ \ MaxRowsAtCompileTime\ =\ Traits::MaxRowsAtCompileTime,}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ \ \ \ \ MaxColsAtCompileTime\ =\ Traits::MaxColsAtCompileTime,}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ \ \ \ \ Options\ =\ Traits::Options,}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ \ \ \ \ Flags\ \ \ =\ Traits::Flags,}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ \ \ \ \ CoeffReadCost\ =\ Traits::CoeffReadCost,}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ \ \ \ \ InnerStrideAtCompileTime\ =\ Traits::InnerStrideAtCompileTime,}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \ \ \ \ OuterStrideAtCompileTime\ =\ Traits::OuterStrideAtCompileTime}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00049\ \};}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00054\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ State,\ \textcolor{keyword}{typename}\ M>}
+\DoxyCodeLine{00055\ \textcolor{keyword}{struct\ }traits<\ iit::rbd::RotationTransformBase<State,\ M>\ >}
+\DoxyCodeLine{00056\ \{}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ \mbox{\hyperlink{classiit_1_1rbd_1_1_state_dependent_matrix_af1c688295e506148b85736fccc09c9da}{iit::rbd::RotationTransformBase<State,\ M>::MatrixType}}\ MxType;}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ traits<MxType>\ Traits;}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ Traits::Scalar\ Scalar;}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ Traits::StorageKind\ StorageKind;}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ Traits::Index\ Index;}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ Traits::XprKind\ XprKind;}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum}\ \{}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \ \ \ \ RowsAtCompileTime\ \ \ \ =\ Traits::RowsAtCompileTime,}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \ \ \ \ ColsAtCompileTime\ \ \ \ =\ Traits::ColsAtCompileTime,}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \ \ \ \ MaxRowsAtCompileTime\ =\ Traits::MaxRowsAtCompileTime,}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ \ \ \ \ MaxColsAtCompileTime\ =\ Traits::MaxColsAtCompileTime,}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \ \ \ \ Options\ =\ Traits::Options,}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \ \ \ \ Flags\ \ \ =\ Traits::Flags,}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \ \ \ \ CoeffReadCost\ =\ Traits::CoeffReadCost,}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \ \ \ \ InnerStrideAtCompileTime\ =\ Traits::InnerStrideAtCompileTime,}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \ \ \ \ OuterStrideAtCompileTime\ =\ Traits::OuterStrideAtCompileTime}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00074\ \};}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \}}
+\DoxyCodeLine{00078\ \}}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

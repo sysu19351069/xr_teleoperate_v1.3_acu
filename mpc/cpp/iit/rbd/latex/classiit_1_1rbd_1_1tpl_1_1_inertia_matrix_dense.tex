@@ -1,0 +1,179 @@
+\doxysection{iit\+::rbd\+::tpl\+::Inertia\+Matrix\+Dense\texorpdfstring{$<$}{<} SCALAR \texorpdfstring{$>$}{>} Class Template Reference}
+\hypertarget{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense}{}\label{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense}\index{iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$@{iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$}}
+
+
+{\ttfamily \#include $<$Inertia\+Matrix.\+h$>$}
+
+Inheritance diagram for iit\+::rbd\+::tpl\+::Inertia\+Matrix\+Dense\texorpdfstring{$<$}{<} SCALAR \texorpdfstring{$>$}{>}\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_a166d44df63437d636b3eace8c7ccb709}\label{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_a166d44df63437d636b3eace8c7ccb709} 
+{\footnotesize template$<$typename Other\+Derived $>$ }\\\mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense}{Inertia\+Matrix\+Dense}}$<$ Scalar $>$ \& {\bfseries operator=} (const Matrix\+Base$<$ Other\+Derived $>$ \&other)
+\item 
+\Hypertarget{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_a05e64d05ab244362639200e2b5a6b3f2}\label{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_a05e64d05ab244362639200e2b5a6b3f2} 
+{\footnotesize template$<$typename Other\+Derived $>$ }\\\mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense}{Inertia\+Matrix\+Dense}}$<$ Scalar $>$ \& {\bfseries operator+=} (const Matrix\+Base$<$ Other\+Derived $>$ \&other)
+\item 
+\mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_a97a1fcd6afbe21b3b95a779f5b165ed2}{Inertia\+Matrix\+Dense}} (Scalar m, const Vec3 \&com, const Mat33 \&I)
+\item 
+void \mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_a5eee9298d8099484bd08a674a7bf495e}{fill}} (Scalar m, const Vec3 \&com, const Mat33 \&tensor)
+\end{DoxyCompactItemize}
+\begin{Indent}\textbf{ Components getters}\par
+\begin{DoxyCompactItemize}
+\item 
+Scalar \mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_afc43bae9be8de4abf26d0ada345cd634}{get\+Mass}} () const
+\item 
+Vec3 \mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_a62bfbf0bf8b26fb0eb96d2a3f428469c}{get\+COM}} () const
+\item 
+const Block33\+\_\+const \mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_a7d40b98b95cc1526c3d804a1dbff77c6}{get3x3\+Tensor}} () const
+\end{DoxyCompactItemize}
+\end{Indent}
+\begin{Indent}\textbf{ Modifiers}\par
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_a3585798a2c2b2bcfeb28cd6a9fc42548}{change\+Mass}} (Scalar m)
+\item 
+void \mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_a9f21a2a025236993491c9aaf170eb896}{change\+COM}} (const Vec3 \&newcom)
+\item 
+void \mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_ae16572d388e05f61cae75c796aa8f66c}{change\+Rotational\+Inertia}} (const Mat33 \&tensor)
+\end{DoxyCompactItemize}
+\end{Indent}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_a95da07a892f21b8ed12a0c7fe0df9d32}\label{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_a95da07a892f21b8ed12a0c7fe0df9d32} 
+EIGEN\+\_\+\+MAKE\+\_\+\+ALIGNED\+\_\+\+OPERATOR\+\_\+\+NEW typedef SCALAR {\bfseries Scalar}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_acf1dfa1ef468cfbdb8666571392b3e2c}\label{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_acf1dfa1ef468cfbdb8666571392b3e2c} 
+void {\bfseries set\+The\+Fixed\+Zeros} ()
+\item 
+\Hypertarget{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_a1b11659b0e529c393921640168d4949f}\label{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_a1b11659b0e529c393921640168d4949f} 
+{\footnotesize template$<$typename Vector $>$ }\\void {\bfseries set\+Skew\+Symmetric\+Block} (const Matrix\+Base$<$ Vector $>$ \&v, Block33\+\_\+t block)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\subsubsection*{template$<$typename SCALAR$>$\newline
+class iit\+::rbd\+::tpl\+::\+Inertia\+Matrix\+Dense$<$ SCALAR $>$}
+Dense 6x6 matrix that represents the 6D spatial inertia tensor. See chapther 2 of Featherstone\textquotesingle{}s "{}\+Rigid body dynamics algorithms"{}. 
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_a97a1fcd6afbe21b3b95a779f5b165ed2}\label{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_a97a1fcd6afbe21b3b95a779f5b165ed2} 
+\index{iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$@{iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$}!InertiaMatrixDense@{InertiaMatrixDense}}
+\index{InertiaMatrixDense@{InertiaMatrixDense}!iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$@{iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$}}
+\doxysubsubsection{\texorpdfstring{InertiaMatrixDense()}{InertiaMatrixDense()}}
+{\footnotesize\ttfamily template$<$typename SCALAR $>$ \\
+\mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense}{iit\+::rbd\+::tpl\+::\+Inertia\+Matrix\+Dense}}$<$ SCALAR $>$\+::\+Inertia\+Matrix\+Dense (\begin{DoxyParamCaption}\item[{Scalar}]{m,  }\item[{const Vec3 \&}]{com,  }\item[{const Mat33 \&}]{I }\end{DoxyParamCaption})}
+
+See \doxylink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_a5eee9298d8099484bd08a674a7bf495e}{fill()} 
+
+\doxysubsection{Member Function Documentation}
+\Hypertarget{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_a9f21a2a025236993491c9aaf170eb896}\label{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_a9f21a2a025236993491c9aaf170eb896} 
+\index{iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$@{iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$}!changeCOM@{changeCOM}}
+\index{changeCOM@{changeCOM}!iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$@{iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$}}
+\doxysubsubsection{\texorpdfstring{changeCOM()}{changeCOM()}}
+{\footnotesize\ttfamily template$<$typename SCALAR $>$ \\
+void \mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense}{iit\+::rbd\+::tpl\+::\+Inertia\+Matrix\+Dense}}$<$ SCALAR $>$\+::change\+COM (\begin{DoxyParamCaption}\item[{const Vec3 \&}]{newcom }\end{DoxyParamCaption})}
+
+Changes the position of the Center-\/\+Of-\/\+Mass of the rigid body modeled by this tensor.
+
+In addition to the two off-\/diagonal 3x3 blocks, this method also modifies the 3x3 block that corresponds to the classical inertia tensor, to keep it consistent with the position of the center of mass. It does not change the mass property. Cfr. chapter 2 of Featherstone\textquotesingle{}s book on rigid body dynamics algorithms. TODO show some equations
+
+
+\begin{DoxyParams}{Parameters}
+{\em newcom} & a 3D vector specifying the position of the center of mass, expressed in meters \\
+\hline
+\end{DoxyParams}
+\Hypertarget{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_a3585798a2c2b2bcfeb28cd6a9fc42548}\label{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_a3585798a2c2b2bcfeb28cd6a9fc42548} 
+\index{iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$@{iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$}!changeMass@{changeMass}}
+\index{changeMass@{changeMass}!iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$@{iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$}}
+\doxysubsubsection{\texorpdfstring{changeMass()}{changeMass()}}
+{\footnotesize\ttfamily template$<$typename SCALAR $>$ \\
+void \mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense}{iit\+::rbd\+::tpl\+::\+Inertia\+Matrix\+Dense}}$<$ SCALAR $>$\+::change\+Mass (\begin{DoxyParamCaption}\item[{Scalar}]{m }\end{DoxyParamCaption})}
+
+Scales the whole tensor according to the new value of the mass.
+
+The changes guarantee that the matrix remains positive definite (assuming it was so before).
+
+This method does NOT change the center-\/of-\/mass property, while it does change the moments of inertia. Intuitively, calling this method corresponds to changing the mass-\/density of the body leaving its size and geometry untouched.
+
+
+\begin{DoxyParams}{Parameters}
+{\em new\+Mass} & the new value of the mass (always expressed in Kilograms); it MUST be positive, no checks are performed \\
+\hline
+\end{DoxyParams}
+\Hypertarget{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_ae16572d388e05f61cae75c796aa8f66c}\label{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_ae16572d388e05f61cae75c796aa8f66c} 
+\index{iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$@{iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$}!changeRotationalInertia@{changeRotationalInertia}}
+\index{changeRotationalInertia@{changeRotationalInertia}!iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$@{iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$}}
+\doxysubsubsection{\texorpdfstring{changeRotationalInertia()}{changeRotationalInertia()}}
+{\footnotesize\ttfamily template$<$typename SCALAR $>$ \\
+void \mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense}{iit\+::rbd\+::tpl\+::\+Inertia\+Matrix\+Dense}}$<$ SCALAR $>$\+::change\+Rotational\+Inertia (\begin{DoxyParamCaption}\item[{const Mat33 \&}]{tensor }\end{DoxyParamCaption})}
+
+Simply sets the 3x3 block that corresponds to the classical rotational inertia 
+\begin{DoxyParams}{Parameters}
+{\em tensor} & the new 3x3 rotational inertia tensor \\
+\hline
+\end{DoxyParams}
+\Hypertarget{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_a5eee9298d8099484bd08a674a7bf495e}\label{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_a5eee9298d8099484bd08a674a7bf495e} 
+\index{iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$@{iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$}!fill@{fill}}
+\index{fill@{fill}!iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$@{iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$}}
+\doxysubsubsection{\texorpdfstring{fill()}{fill()}}
+{\footnotesize\ttfamily template$<$typename SCALAR $>$ \\
+void \mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense}{iit\+::rbd\+::tpl\+::\+Inertia\+Matrix\+Dense}}$<$ SCALAR $>$\+::fill (\begin{DoxyParamCaption}\item[{Scalar}]{m,  }\item[{const Vec3 \&}]{com,  }\item[{const Mat33 \&}]{tensor }\end{DoxyParamCaption})}
+
+Sets this 6x6 inertia tensor according to the given inertia properties. All the values (ie the COM and the 3x3 tensor) must be expressed in the same reference frame.
+
+No consistency checks are performed (Note\+: possibly changing in future).
+
+
+\begin{DoxyParams}{Parameters}
+{\em mass} & the total mass of the body \\
+\hline
+{\em com} & the 3D vector with the position of the center of mass \\
+\hline
+{\em tensor} & the classical 3x3 inertia tensor; this parameter should be expressed in the same coordinate frame as the center-\/of-\/mass vector. In other words, it is NOT treated as the inertia tensor with respect to a frame with origin in the center-\/of-\/mass, and the parallel axis theorem is NOT applied. The given tensor is copied as it is, in the appropriate 3x3 sub-\/block of this spatial tensor. \\
+\hline
+\end{DoxyParams}
+\Hypertarget{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_a7d40b98b95cc1526c3d804a1dbff77c6}\label{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_a7d40b98b95cc1526c3d804a1dbff77c6} 
+\index{iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$@{iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$}!get3x3Tensor@{get3x3Tensor}}
+\index{get3x3Tensor@{get3x3Tensor}!iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$@{iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$}}
+\doxysubsubsection{\texorpdfstring{get3x3Tensor()}{get3x3Tensor()}}
+{\footnotesize\ttfamily template$<$typename SCALAR $>$ \\
+const Block33\+\_\+const \mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense}{iit\+::rbd\+::tpl\+::\+Inertia\+Matrix\+Dense}}$<$ SCALAR $>$\+::get3x3\+Tensor (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const}
+
+\begin{DoxyReturn}{Returns}
+the 3x3 block of this spatial tensor which corresponds to the sole rotational inertia, that is, the classical inertia tensor 
+\end{DoxyReturn}
+\Hypertarget{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_a62bfbf0bf8b26fb0eb96d2a3f428469c}\label{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_a62bfbf0bf8b26fb0eb96d2a3f428469c} 
+\index{iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$@{iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$}!getCOM@{getCOM}}
+\index{getCOM@{getCOM}!iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$@{iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$}}
+\doxysubsubsection{\texorpdfstring{getCOM()}{getCOM()}}
+{\footnotesize\ttfamily template$<$typename SCALAR $>$ \\
+Vec3 \mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense}{iit\+::rbd\+::tpl\+::\+Inertia\+Matrix\+Dense}}$<$ SCALAR $>$\+::get\+COM (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const}
+
+\begin{DoxyReturn}{Returns}
+the position of the center-\/of-\/mass of the rigid body modeled by this spatial tensor 
+\end{DoxyReturn}
+\Hypertarget{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_afc43bae9be8de4abf26d0ada345cd634}\label{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense_afc43bae9be8de4abf26d0ada345cd634} 
+\index{iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$@{iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$}!getMass@{getMass}}
+\index{getMass@{getMass}!iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$@{iit::rbd::tpl::InertiaMatrixDense$<$ SCALAR $>$}}
+\doxysubsubsection{\texorpdfstring{getMass()}{getMass()}}
+{\footnotesize\ttfamily template$<$typename SCALAR $>$ \\
+Scalar \mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense}{iit\+::rbd\+::tpl\+::\+Inertia\+Matrix\+Dense}}$<$ SCALAR $>$\+::get\+Mass (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const}
+
+\begin{DoxyReturn}{Returns}
+the current value of the mass of the rigid body modeled by this tensor 
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Inertia\+Matrix.\+h\end{DoxyCompactItemize}

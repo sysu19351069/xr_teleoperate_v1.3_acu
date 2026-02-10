@@ -1,0 +1,42 @@
+Robot AcuRobot
+
+Frames {
+    fr_base0, fr_link1, fr_link2, fr_link3, fr_link4, fr_link5, fr_link6, fr_link7, fr_link8,
+    fr_j1, fr_j2, fr_j3, fr_j4, fr_j5, fr_j6, fr_j7, fr_j8,
+    fr_link1_end, fr_link2_end, fr_link4_end, fr_link5_end,
+    ee
+}
+
+Transforms
+{
+    fr_base0  <- ee
+    fr_j6     <- ee
+    fr_base0  <- fr_link1_end
+    fr_base0  <- fr_link2_end
+    fr_base0  <- fr_link3_end
+    fr_base0  <- fr_link4_end
+    fr_base0  <- fr_link5_end
+}
+
+Jacobians
+{
+    base = fr_base0   target = ee
+    base = fr_base0   target = fr_link6
+
+    base = fr_base0   target = fr_link1
+    base = fr_base0   target = fr_link1_end
+
+    base = fr_base0   target = fr_link2
+    base = fr_base0   target = fr_link2_end
+
+    base = fr_base0   target = fr_link3
+    base = fr_base0   target = fr_link3_end
+
+    base = fr_base0   target = fr_link4
+    base = fr_base0   target = fr_link4_end
+
+    base = fr_base0   target = fr_link5
+    base = fr_base0   target = fr_link5_end
+
+
+}

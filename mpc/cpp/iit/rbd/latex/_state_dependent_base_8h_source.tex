@@ -1,0 +1,38 @@
+\doxysection{State\+Dependent\+Base.\+h}
+\hypertarget{_state_dependent_base_8h_source}{}\label{_state_dependent_base_8h_source}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ CPYHDR\ \{\ */}}
+\DoxyCodeLine{00002\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *\ This\ file\ is\ part\ of\ the\ 'iit-\/rbd'\ library.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ Copyright\ ©\ 2015-\/2024,\ Marco\ Frigerio}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *\ See\ the\ LICENSE\ file\ for\ more\ information.}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00008\ \textcolor{comment}{/*\ \}\ CPYHDR\ */}}
+\DoxyCodeLine{00009\ }
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#ifndef\ \_IIT\_RBD\_\_STATE\_DEPENDENT\_BASE\_H\_}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#define\ \_IIT\_RBD\_\_STATE\_DEPENDENT\_BASE\_H\_}}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ "{}rbd.h"{}}}
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00015\ \textcolor{keyword}{namespace\ }iit\ \{}
+\DoxyCodeLine{00016\ \textcolor{keyword}{namespace\ }rbd\ \{}
+\DoxyCodeLine{00017\ }
+\DoxyCodeLine{00030\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ State,\ \textcolor{keyword}{class}\ Actual>}
+\DoxyCodeLine{00031\ \textcolor{keyword}{class\ }\mbox{\hyperlink{classiit_1_1rbd_1_1_state_dependent_base}{StateDependentBase}}}
+\DoxyCodeLine{00032\ \{}
+\DoxyCodeLine{00033\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \ \ EIGEN\_MAKE\_ALIGNED\_OPERATOR\_NEW}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Actual\&\ \mbox{\hyperlink{classiit_1_1rbd_1_1_state_dependent_base_a8742b35f960dda246eff316042561fe4}{operator()}}(State\ \textcolor{keyword}{const}\&\ state)\ \{}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}Actual*\textcolor{keyword}{>}(\textcolor{keyword}{this})\ -\/>\ \mbox{\hyperlink{classiit_1_1rbd_1_1_state_dependent_base_a393e71b3ffa83694806ad97ed3f83c6a}{update}}(state);}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Actual\&\ \mbox{\hyperlink{classiit_1_1rbd_1_1_state_dependent_base_a393e71b3ffa83694806ad97ed3f83c6a}{update}}(State\ \textcolor{keyword}{const}\&\ state);}
+\DoxyCodeLine{00049\ \};}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ \}}
+\DoxyCodeLine{00052\ \}}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

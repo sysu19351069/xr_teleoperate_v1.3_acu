@@ -1,0 +1,102 @@
+\doxysection{iit\+::rbd\+::Core\texorpdfstring{$<$}{<} SCALAR \texorpdfstring{$>$}{>} Struct Template Reference}
+\hypertarget{structiit_1_1rbd_1_1_core}{}\label{structiit_1_1rbd_1_1_core}\index{iit::rbd::Core$<$ SCALAR $>$@{iit::rbd::Core$<$ SCALAR $>$}}
+
+
+{\ttfamily \#include $<$rbd.\+h$>$}
+
+\doxysubsubsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{structiit_1_1rbd_1_1_core_a9956b91822d9ecb88a6f853b2f218139}\label{structiit_1_1rbd_1_1_core_a9956b91822d9ecb88a6f853b2f218139} 
+typedef SCALAR {\bfseries Scalar}
+\end{DoxyCompactItemize}
+\begin{Indent}\textbf{ Basic matrix types}\par
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{structiit_1_1rbd_1_1_core_ac40f256fd8aa091e4e6bafdec4a6eab8}\label{structiit_1_1rbd_1_1_core_ac40f256fd8aa091e4e6bafdec4a6eab8} 
+{\footnotesize template$<$int R, int C$>$ }\\using {\bfseries Plain\+Matrix} = Plain\+Matrix$<$Scalar, R, C $>$
+\item 
+\Hypertarget{structiit_1_1rbd_1_1_core_a27f2f92b4b9db0fd61139116aae8318a}\label{structiit_1_1rbd_1_1_core_a27f2f92b4b9db0fd61139116aae8318a} 
+typedef Plain\+Matrix$<$ 3, 3 $>$ {\bfseries Matrix33}
+\item 
+\Hypertarget{structiit_1_1rbd_1_1_core_a45141045c13aa41cc20ba8f9eaac223a}\label{structiit_1_1rbd_1_1_core_a45141045c13aa41cc20ba8f9eaac223a} 
+typedef Plain\+Matrix$<$ 6, 6 $>$ {\bfseries Matrix66}
+\item 
+\Hypertarget{structiit_1_1rbd_1_1_core_a3b32679fd78d155ee6e201ec72a46a9d}\label{structiit_1_1rbd_1_1_core_a3b32679fd78d155ee6e201ec72a46a9d} 
+typedef Plain\+Matrix$<$ 3, 1 $>$ {\bfseries Vector3}
+\item 
+\Hypertarget{structiit_1_1rbd_1_1_core_a60c100afed4deaf747938544f0036c09}\label{structiit_1_1rbd_1_1_core_a60c100afed4deaf747938544f0036c09} 
+typedef Plain\+Matrix$<$ 6, 1 $>$ {\bfseries Vector6}
+\end{DoxyCompactItemize}
+\end{Indent}
+\begin{Indent}\textbf{ 6D vectors "{}à la Featherstone"{}}\par
+{\em Types of vectors used in dynamics computations. }\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{structiit_1_1rbd_1_1_core_aed0c710ec50ae92243350b39aab61849}\label{structiit_1_1rbd_1_1_core_aed0c710ec50ae92243350b39aab61849} 
+typedef Vector6 {\bfseries Vector6D}
+\item 
+\Hypertarget{structiit_1_1rbd_1_1_core_ab08d872bf3748348065932b10ed9bdcc}\label{structiit_1_1rbd_1_1_core_ab08d872bf3748348065932b10ed9bdcc} 
+typedef Vector6D {\bfseries Column6D}
+\item 
+\Hypertarget{structiit_1_1rbd_1_1_core_a753bf97b9ad2100ed9d9431c90bbada0}\label{structiit_1_1rbd_1_1_core_a753bf97b9ad2100ed9d9431c90bbada0} 
+typedef Vector6D {\bfseries Velocity\+Vector}
+\item 
+\Hypertarget{structiit_1_1rbd_1_1_core_aad5d12d1ecc8b6358c1764cb1b5aac8f}\label{structiit_1_1rbd_1_1_core_aad5d12d1ecc8b6358c1764cb1b5aac8f} 
+typedef Vector6D {\bfseries Force\+Vector}
+\item 
+\Hypertarget{structiit_1_1rbd_1_1_core_aee12e2fc82e08ec7480375306824a405}\label{structiit_1_1rbd_1_1_core_aee12e2fc82e08ec7480375306824a405} 
+typedef Matrix\+Block$<$ Vector6D, 3, 1 $>$ {\bfseries Part3D}
+\begin{DoxyCompactList}\small\item\em a 3D subvector of a 6D vector \end{DoxyCompactList}\item 
+\Hypertarget{structiit_1_1rbd_1_1_core_a26507adb5f163ae41a2a1225b9ac33f6}\label{structiit_1_1rbd_1_1_core_a26507adb5f163ae41a2a1225b9ac33f6} 
+typedef Matrix\+Block$<$ const Vector6D, 3, 1 $>$ {\bfseries Part3\+DConst}
+\begin{DoxyCompactList}\small\item\em a const 3D subvector of a 6D vector \end{DoxyCompactList}\end{DoxyCompactItemize}
+\end{Indent}
+\doxysubsubsection*{Static Public Member Functions}
+\begin{Indent}\textbf{ 6D vectors accessors}\par
+{\em These functions allow to access the linear and the angular coordinates of motion/force vectors. }\begin{DoxyCompactItemize}
+\item 
+static \mbox{\hyperlink{structiit_1_1rbd_1_1_core_aee12e2fc82e08ec7480375306824a405}{Part3D}} \mbox{\hyperlink{structiit_1_1rbd_1_1_core_a6b20b31a9ab23742565b8bd083538f02}{angular\+Part}} (Vector6D \&f)
+\item 
+static \mbox{\hyperlink{structiit_1_1rbd_1_1_core_aee12e2fc82e08ec7480375306824a405}{Part3D}} \mbox{\hyperlink{structiit_1_1rbd_1_1_core_ab7d885a16482d13af2ee0cd665eccf82}{linear\+Part}} (Vector6D \&f)
+\item 
+\Hypertarget{structiit_1_1rbd_1_1_core_aeefe42a5bd66649e46a2fd7747c3ba4e}\label{structiit_1_1rbd_1_1_core_aeefe42a5bd66649e46a2fd7747c3ba4e} 
+static \mbox{\hyperlink{structiit_1_1rbd_1_1_core_a26507adb5f163ae41a2a1225b9ac33f6}{Part3\+DConst}} {\bfseries angular\+Part} (const Vector6D \&f)
+\item 
+\Hypertarget{structiit_1_1rbd_1_1_core_a2b8480015c20dce1cc7f0d89a08dfcc1}\label{structiit_1_1rbd_1_1_core_a2b8480015c20dce1cc7f0d89a08dfcc1} 
+static \mbox{\hyperlink{structiit_1_1rbd_1_1_core_a26507adb5f163ae41a2a1225b9ac33f6}{Part3\+DConst}} {\bfseries linear\+Part} (const Vector6D \&f)
+\end{DoxyCompactItemize}
+\end{Indent}
+
+
+\doxysubsection{Detailed Description}
+\subsubsection*{template$<$typename SCALAR$>$\newline
+struct iit\+::rbd\+::\+Core$<$ SCALAR $>$}
+A container of basic type/function definitions, templated on the scalar type.
+
+
+\begin{DoxyTemplParams}{Template Parameters}
+{\em SCALAR} & the numerical type for scalar values \\
+\hline
+\end{DoxyTemplParams}
+
+
+\doxysubsection{Member Function Documentation}
+\Hypertarget{structiit_1_1rbd_1_1_core_a6b20b31a9ab23742565b8bd083538f02}\label{structiit_1_1rbd_1_1_core_a6b20b31a9ab23742565b8bd083538f02} 
+\index{iit::rbd::Core$<$ SCALAR $>$@{iit::rbd::Core$<$ SCALAR $>$}!angularPart@{angularPart}}
+\index{angularPart@{angularPart}!iit::rbd::Core$<$ SCALAR $>$@{iit::rbd::Core$<$ SCALAR $>$}}
+\doxysubsubsection{\texorpdfstring{angularPart()}{angularPart()}}
+{\footnotesize\ttfamily template$<$typename SCALAR $>$ \\
+static \mbox{\hyperlink{structiit_1_1rbd_1_1_core_aee12e2fc82e08ec7480375306824a405}{Part3D}} \mbox{\hyperlink{structiit_1_1rbd_1_1_core}{iit\+::rbd\+::\+Core}}$<$ SCALAR $>$\+::angular\+Part (\begin{DoxyParamCaption}\item[{Vector6D \&}]{f }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+The 3-\/coordinate vector with the angular components (angular velocity or torque) of the given 6D vector. \Hypertarget{structiit_1_1rbd_1_1_core_ab7d885a16482d13af2ee0cd665eccf82}\label{structiit_1_1rbd_1_1_core_ab7d885a16482d13af2ee0cd665eccf82} 
+\index{iit::rbd::Core$<$ SCALAR $>$@{iit::rbd::Core$<$ SCALAR $>$}!linearPart@{linearPart}}
+\index{linearPart@{linearPart}!iit::rbd::Core$<$ SCALAR $>$@{iit::rbd::Core$<$ SCALAR $>$}}
+\doxysubsubsection{\texorpdfstring{linearPart()}{linearPart()}}
+{\footnotesize\ttfamily template$<$typename SCALAR $>$ \\
+static \mbox{\hyperlink{structiit_1_1rbd_1_1_core_aee12e2fc82e08ec7480375306824a405}{Part3D}} \mbox{\hyperlink{structiit_1_1rbd_1_1_core}{iit\+::rbd\+::\+Core}}$<$ SCALAR $>$\+::linear\+Part (\begin{DoxyParamCaption}\item[{Vector6D \&}]{f }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+The 3-\/coordinate vector with the linear components (linear velocity or force) of the given 6D vector. 
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+rbd.\+h\end{DoxyCompactItemize}

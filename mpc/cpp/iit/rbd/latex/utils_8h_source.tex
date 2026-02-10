@@ -1,0 +1,194 @@
+\doxysection{utils.\+h}
+\hypertarget{utils_8h_source}{}\label{utils_8h_source}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ CPYHDR\ \{\ */}}
+\DoxyCodeLine{00002\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *\ This\ file\ is\ part\ of\ the\ 'iit-\/rbd'\ library.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ Copyright\ ©\ 2015-\/2024,\ Marco\ Frigerio}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *\ See\ the\ LICENSE\ file\ for\ more\ information.}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00008\ \textcolor{comment}{/*\ \}\ CPYHDR\ */}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#ifndef\ IIT\_RBD\_UTILS\_H\_}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#define\ IIT\_RBD\_UTILS\_H\_}}
+\DoxyCodeLine{00011\ }
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ <cmath>}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ <ctime>}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ <iostream>}}
+\DoxyCodeLine{00015\ }
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ "{}rbd.h"{}}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ "{}scalar\_traits.h"{}}}
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ \textcolor{keyword}{namespace\ }iit\ \{}
+\DoxyCodeLine{00020\ \textcolor{keyword}{namespace\ }rbd\ \{}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{keyword}{class\ }\mbox{\hyperlink{classiit_1_1rbd_1_1_utils}{Utils}}\ \{}
+\DoxyCodeLine{00023\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00024\ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\mbox{\hyperlink{structiit_1_1rbd_1_1_utils_1_1_inertia_moments}{InertiaMoments}}\ \{}
+\DoxyCodeLine{00025\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ ixx;\ \textcolor{keywordtype}{double}\ iyy;\ \textcolor{keywordtype}{double}\ izz;\ \textcolor{keywordtype}{double}\ ixy;\ \textcolor{keywordtype}{double}\ ixz;\ \textcolor{keywordtype}{double}\ iyz;}
+\DoxyCodeLine{00026\ \ \ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Scalar>}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\mbox{\hyperlink{structiit_1_1rbd_1_1_utils_1_1_cwise_almost_zero_op}{CwiseAlmostZeroOp}}\ \{}
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{structiit_1_1rbd_1_1_utils_1_1_cwise_almost_zero_op}{CwiseAlmostZeroOp}}(\textcolor{keyword}{const}\ Scalar\&\ threshold)\ :\ thresh(threshold)\ \{\}}
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Scalar\ operator()(\textcolor{keyword}{const}\ Scalar\&\ x)\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{structiit_1_1rbd_1_1_scalar_traits}{ScalarTraits<Scalar>::abs}}(x)\ <\ thresh\ ?\ 0\ :\ x;}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Scalar\ thresh;}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00042\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00043\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Scalar>}
+\DoxyCodeLine{00044\ \ \ \ \ \textcolor{keyword}{static}\ Mat33<Scalar>\ buildInertiaTensor(}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ \ \ \ \ Scalar\ Ixx,\ Scalar\ Iyy,\ Scalar\ Izz,}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ \ \ \ \ Scalar\ Ixy,\ Scalar\ Ixz,\ Scalar\ Iyz)}
+\DoxyCodeLine{00047\ \ \ \ \ \{}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ Mat33<Scalar>\ I;}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ I\ <<\ \ Ixx,\ -\/Ixy,\ -\/Ixz,}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/Ixy,\ \ Iyy,\ -\/Iyz,}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/Ixz,\ -\/Iyz,\ \ Izz;}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ I;}
+\DoxyCodeLine{00053\ \ \ \ \ \}}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{keyword}{static}\ Matrix33d\ buildCrossProductMatrix(\textcolor{keyword}{const}\ Vector3d\&\ in)\ \{}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ Matrix33d\ out;}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ out\ <<\ \ 0\ \ \ ,\ -\/in(2),\ \ in(1),}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ in(2),\ \ \ 0\ \ \ ,\ -\/in(0),}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/in(1),\ \ in(0),\ \ \ 0;}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ out;}
+\DoxyCodeLine{00061\ \ \ \ \ \}}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{comment}{//\ Put\ implementation\ here\ in\ header\ even\ if\ it\ is\ not\ inline,\ since}}
+\DoxyCodeLine{00064\ \ \ \ \ \textcolor{comment}{//\ \ this\ is\ a\ template\ function}}
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Derived>}
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classiit_1_1rbd_1_1_utils_ae35b7d826eb5d5a844c509565f778e0c}{fillAsRotationMatrix}}(\textcolor{keywordtype}{double}\ rx,\ \textcolor{keywordtype}{double}\ ry,\ \textcolor{keywordtype}{double}\ rz,}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ MatrixBase<Derived>\&\ mx)}
+\DoxyCodeLine{00072\ \ \ \ \ \{}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ eigen\_assert(mx.rows()\ ==\ 3\ \ \&\&\ \ mx.cols()\ ==\ 3);}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ cx\ =\ std::cos(rx);}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ sx\ =\ std::sin(rx);}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ cy\ =\ std::cos(ry);}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ sy\ =\ std::sin(ry);}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ cz\ =\ std::cos(rz);}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ sz\ =\ std::sin(rz);}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const\_cast<}MatrixBase<Derived>\&\textcolor{keyword}{>}(mx)}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ cy*cz,\ cx*sz+sx*sy*cz,\ sx*sz-\/cx*sy*cz,}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/cy*sz,\ cx*cz-\/sx*sy*sz,\ cx*sy*sz+sx*cz,}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ sy,\ \ \ -\/sx*cy,\ \ \ \ \ \ \ \ \ cx*cy;}
+\DoxyCodeLine{00086\ \ \ \ \ \}}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00092\ \ \ \ \ \textcolor{keyword}{static}\ Matrix33d\ \mbox{\hyperlink{classiit_1_1rbd_1_1_utils_a427888c943bc104a7f0c1658e15eb3dd}{buildRotationMatrix}}(\textcolor{keywordtype}{double}\ rx,\ \textcolor{keywordtype}{double}\ ry,\ \textcolor{keywordtype}{double}\ rz)\ \{}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ cx\ =\ std::cos(rx);}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ sx\ =\ std::sin(rx);}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ cy\ =\ std::cos(ry);}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ sy\ =\ std::sin(ry);}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ cz\ =\ std::cos(rz);}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ sz\ =\ std::sin(rz);}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ Matrix33d\ ret;}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ ret\ <<\ cy*cz,\ cx*sz+sx*sy*cz,\ sx*sz-\/cx*sy*cz,}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/cy*sz,\ cx*cz-\/sx*sy*sz,\ cx*sy*sz+sx*cz,}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ sy,\ \ \ -\/sx*cy,\ \ \ \ \ \ \ \ \ cx*cy;}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00104\ \ \ \ \ \}}
+\DoxyCodeLine{00105\ }
+\DoxyCodeLine{00106\ \textcolor{preprocessor}{\#define\ block31\ template\ block<3,1>}}
+\DoxyCodeLine{00107\ \textcolor{preprocessor}{\#define\ block33\ template\ block<3,3>}}
+\DoxyCodeLine{00108\ }
+\DoxyCodeLine{00109\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Scalar>}
+\DoxyCodeLine{00110\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ fillAsMotionCrossProductMx(\textcolor{keyword}{const}\ Vec6<Scalar>\&\ v,\ Mat66<Scalar>\&\ mx)\ \{}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ fillAsCrossProductMatrix(v.block31(0,0),\ mx.block33(0,0));}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ mx.block33(0,3).setZero();}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ fillAsCrossProductMatrix(v.block31(3,0),\ mx.block33(3,0));}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ mx.block33(3,3)\ =\ mx.block33(0,0);}
+\DoxyCodeLine{00115\ \ \ \ \ \}}
+\DoxyCodeLine{00116\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Scalar>}
+\DoxyCodeLine{00117\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ fillAsForceCrossProductMx(\textcolor{keyword}{const}\ Vec6<Scalar>\&\ v,\ Mat66<Scalar>\&\ mx)\ \{}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ fillAsCrossProductMatrix(v.block31(0,0),\ mx.block33(0,0));}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ fillAsCrossProductMatrix(v.block31(3,0),\ mx.block33(0,3));}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ mx.block33(3,0).setZero();}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ mx.block33(3,3)\ =\ mx.block33(0,0);}
+\DoxyCodeLine{00122\ \ \ \ \ \}}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ D1,\ \textcolor{keyword}{typename}\ D2>}
+\DoxyCodeLine{00125\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ fillAsCrossProductMatrix(\textcolor{keyword}{const}\ MatrixBase<D2>\&\ in,\ \textcolor{keyword}{const}\ MatrixBase<D1>\&\ mx)}
+\DoxyCodeLine{00126\ \ \ \ \ \{}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ eigen\_assert(mx.rows()\ ==\ 3\ \ \&\&\ \ mx.cols()\ ==\ 3);}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ D2::Scalar\ Scalar;}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const\_cast<}\ MatrixBase<D1>\&\ \textcolor{keyword}{>}(mx)}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \ \textcolor{keyword}{static\_cast<}Scalar\textcolor{keyword}{>}(0.0)\ \ \ ,\ -\/in(2),\ \ in(1),}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ in(2),\ \ \ \textcolor{keyword}{static\_cast<}Scalar\textcolor{keyword}{>}(0.0)\ \ \ ,\ -\/in(0),}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/in(1),\ \ in(0),\ \ \ \textcolor{keyword}{static\_cast<}Scalar\textcolor{keyword}{>}(0.0);}
+\DoxyCodeLine{00134\ \ \ \ \ \}}
+\DoxyCodeLine{00135\ }
+\DoxyCodeLine{00136\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Derived>}
+\DoxyCodeLine{00137\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ MatrixBlock<const\ Derived,3,1>\ positionVector(\textcolor{keyword}{const}\ MatrixBase<Derived>\&\ homT)\ \{}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ eigen\_assert(homT.rows()\ ==\ 4\ \ \&\&\ \ homT.cols()\ ==\ 4);\ \textcolor{comment}{//\ weak\ way\ to\ check\ if\ it\ is\ a\ homogeneous\ transform}}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ homT.block31(0,3);}
+\DoxyCodeLine{00140\ \ \ \ \ \}}
+\DoxyCodeLine{00141\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Derived>}
+\DoxyCodeLine{00142\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ MatrixBlock<const\ Derived,3,3>\ rotationMx(\textcolor{keyword}{const}\ MatrixBase<Derived>\&\ homT)\ \{}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ eigen\_assert(homT.rows()\ ==\ 4\ \ \&\&\ \ homT.cols()\ ==\ 4);\ \textcolor{comment}{//\ weak\ way\ to\ check\ if\ it\ is\ a\ homogeneous\ transform}}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ homT.block33(0,0);}
+\DoxyCodeLine{00145\ \ \ \ \ \}}
+\DoxyCodeLine{00146\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Derived>}
+\DoxyCodeLine{00147\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ MatrixBlock<const\ Derived,3,1>\ zAxis(\textcolor{keyword}{const}\ MatrixBase<Derived>\&\ homT)\ \{}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ eigen\_assert(homT.rows()\ ==\ 4\ \ \&\&\ \ homT.cols()\ ==\ 4);\ \textcolor{comment}{//\ weak\ way\ to\ check\ if\ it\ is\ a\ homogeneous\ transform}}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ homT.block31(0,2);}
+\DoxyCodeLine{00150\ \ \ \ \ \}}
+\DoxyCodeLine{00151\ }
+\DoxyCodeLine{00152\ \textcolor{preprocessor}{\#undef\ block31}}
+\DoxyCodeLine{00153\ \textcolor{preprocessor}{\#undef\ block33}}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00167\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Derived,\ \textcolor{keyword}{typename}\ Other>}
+\DoxyCodeLine{00168\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{typename}\ Core<typename\ Other::Scalar>::Vector3\ \mbox{\hyperlink{classiit_1_1rbd_1_1_utils_ab9e831b1438490cacf84d55a47edda54}{transform}}(}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ MatrixBase<Derived>\&\ homT,}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ MatrixBase<Other>\&\ vect3d)}
+\DoxyCodeLine{00171\ \ \ \ \ \{}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \ \ eigen\_assert(homT.rows()\ ==\ 4\ \ \&\&\ \ homT.cols()\ ==\ 4);\ \textcolor{comment}{//\ weak\ way\ to\ check\ if\ it\ is\ a\ homogeneous\ transform}}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ eigen\_assert(vect3d.rows()\ ==\ 3\ \ \&\&\ \ vect3d.cols()\ ==\ 1);\ \textcolor{comment}{//\ check\ if\ it\ is\ a\ 3d\ column}}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ rotationMx(homT)\ *\ vect3d\ +\ positionVector(homT);}
+\DoxyCodeLine{00175\ \ \ \ \ \}}
+\DoxyCodeLine{00176\ }
+\DoxyCodeLine{00177\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ randomVec(Vector6D\&\ vec)}
+\DoxyCodeLine{00178\ \ \ \ \ \{}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ std::srand(std::time(NULL));}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}(\textcolor{keywordtype}{int}\ i=0;\ i<6;\ i++)\ \{}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \ \ \ \ vec(i)\ =\ ((double)std::rand())\ /\ RAND\_MAX;}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00183\ \ \ \ \ \}}
+\DoxyCodeLine{00184\ }
+\DoxyCodeLine{00185\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ randomGravity(VelocityVector\&\ \mbox{\hyperlink{namespaceiit_1_1rbd_ad7a661c3d10f9e3a31bda29e3a2d957e}{g}})}
+\DoxyCodeLine{00186\ \ \ \ \ \{}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ angularPart(\mbox{\hyperlink{namespaceiit_1_1rbd_ad7a661c3d10f9e3a31bda29e3a2d957e}{g}}).setZero();}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ std::srand(std::time(NULL));}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceiit_1_1rbd_ad7a661c3d10f9e3a31bda29e3a2d957e}{g}}(LX)\ =\ ((double)std::rand())\ /\ RAND\_MAX;}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceiit_1_1rbd_ad7a661c3d10f9e3a31bda29e3a2d957e}{g}}(LY)\ =\ ((double)std::rand())\ /\ RAND\_MAX;}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{namespaceiit_1_1rbd_ad7a661c3d10f9e3a31bda29e3a2d957e}{g}}(LZ)\ =\ ((double)std::rand())\ /\ RAND\_MAX;}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ linearPart(\mbox{\hyperlink{namespaceiit_1_1rbd_ad7a661c3d10f9e3a31bda29e3a2d957e}{g}})\ =\ (linearPart(\mbox{\hyperlink{namespaceiit_1_1rbd_ad7a661c3d10f9e3a31bda29e3a2d957e}{g}})\ /\ linearPart(\mbox{\hyperlink{namespaceiit_1_1rbd_ad7a661c3d10f9e3a31bda29e3a2d957e}{g}}).norm())\ *\ \mbox{\hyperlink{namespaceiit_1_1rbd_ad7a661c3d10f9e3a31bda29e3a2d957e}{iit::rbd::g}};}
+\DoxyCodeLine{00193\ \ \ \ \ \}}
+\DoxyCodeLine{00194\ }
+\DoxyCodeLine{00195\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ RT>}
+\DoxyCodeLine{00196\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ cmdlineargs\_spatialv(\textcolor{keywordtype}{int}\ argc,\ \textcolor{keywordtype}{char}**\ argv,}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \ \ \ \ \ \ iit::rbd::Vector6D\&\ vec)}
+\DoxyCodeLine{00198\ \ \ \ \ \{}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(argc\ <\ 6)\ \{}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ \ \ \ \ std::cerr\ <<\ \textcolor{stringliteral}{"{}Not\ enough\ arguments"{}}\ <<\ std::endl;}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ \ \ \ \ exit(-\/1);}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}(\textcolor{keywordtype}{int}\ i=0;\ i<6;\ i++)\ \{}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ \ \ \ \ vec(i)\ =\ std::atof(argv[i]);}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00206\ \ \ \ \ \}}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00208\ \};}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ }
+\DoxyCodeLine{00211\ \}}
+\DoxyCodeLine{00212\ \}}
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00214\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ IIT\_RBD\_UTILS\_H\_\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

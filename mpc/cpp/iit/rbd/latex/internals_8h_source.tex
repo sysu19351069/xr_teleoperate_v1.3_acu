@@ -1,0 +1,201 @@
+\doxysection{internals.\+h}
+\hypertarget{internals_8h_source}{}\label{internals_8h_source}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ CPYHDR\ \{\ */}}
+\DoxyCodeLine{00002\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *\ This\ file\ is\ part\ of\ the\ 'iit-\/rbd'\ library.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ Copyright\ ©\ 2015-\/2024,\ Marco\ Frigerio}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *\ See\ the\ LICENSE\ file\ for\ more\ information.}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00008\ \textcolor{comment}{/*\ \}\ CPYHDR\ */}}
+\DoxyCodeLine{00009\ }
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#ifndef\ IIT\_RBD\_INTERNALS\_}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#define\ IIT\_RBD\_INTERNALS\_}}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ "{}rbd.h"{}}}
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00015\ \textcolor{keyword}{namespace\ }iit\ \{}
+\DoxyCodeLine{00016\ \textcolor{keyword}{namespace\ }rbd\ \{}
+\DoxyCodeLine{00017\ \textcolor{keyword}{namespace\ }internal\ \{}
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00020\ \textcolor{comment}{\ *\ A\ container\ of\ the\ 9\ coefficients\ of\ a\ 3x3\ matrix.}}
+\DoxyCodeLine{00021\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00022\ \textcolor{comment}{\ *\ When\ multiple,\ repeated\ access\ to\ the\ elements\ of\ the\ matrix\ is\ necessary,}}
+\DoxyCodeLine{00023\ \textcolor{comment}{\ *\ copying\ them\ once\ at\ the\ beginning\ in\ local\ variables\ might\ slightly\ improve}}
+\DoxyCodeLine{00024\ \textcolor{comment}{\ *\ the\ performance\ (coefficient\ access\ typically\ comes\ at\ the\ cost\ of\ few}}
+\DoxyCodeLine{00025\ \textcolor{comment}{\ *\ arithmetic\ operations)}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00027\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ Scalar>}
+\DoxyCodeLine{00028\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{structiit_1_1rbd_1_1internal_1_1_mat3x3_coefficients}{Mat3x3Coefficients}}}
+\DoxyCodeLine{00029\ \{}
+\DoxyCodeLine{00030\ \ \ \ \ Scalar\ XX,XY,XZ,YX,YY,YZ,ZX,ZY,ZZ;}
+\DoxyCodeLine{00031\ }
+\DoxyCodeLine{00032\ \ \ \ \ \mbox{\hyperlink{structiit_1_1rbd_1_1internal_1_1_mat3x3_coefficients}{Mat3x3Coefficients}}()\ \{\}}
+\DoxyCodeLine{00033\ \ \ \ \ \mbox{\hyperlink{structiit_1_1rbd_1_1internal_1_1_mat3x3_coefficients}{Mat3x3Coefficients}}(Scalar\ xx,\ Scalar\ xy,\ Scalar\ xz,}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Scalar\ yx,\ Scalar\ yy,\ Scalar\ yz,}
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Scalar\ zx,\ Scalar\ zy,\ Scalar\ zz)\ :}
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ XX(xx),\ XY(xy),\ XZ(xz),}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ YX(yx),\ YY(yy),\ YZ(yz),}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ZX(zx),\ ZY(zy),\ ZZ(zz)}
+\DoxyCodeLine{00039\ \ \ \ \ \{\}}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ D>}
+\DoxyCodeLine{00042\ \ \ \ \ \mbox{\hyperlink{structiit_1_1rbd_1_1internal_1_1_mat3x3_coefficients}{Mat3x3Coefficients}}(\textcolor{keyword}{const}\ MatrixBase<D>\&\ E)\ :}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ XX(E(X,X)),\ XY(E(X,Y)),\ XZ(E(X,Z)),}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ YX(E(Y,X)),\ YY(E(Y,Y)),\ YZ(E(Y,Z)),}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ ZX(E(Z,X)),\ ZY(E(Z,Y)),\ ZZ(E(Z,Z))}
+\DoxyCodeLine{00046\ \ \ \ \ \{\}}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ D>}
+\DoxyCodeLine{00049\ \ \ \ \ \textcolor{keywordtype}{void}\ read(\textcolor{keyword}{const}\ MatrixBase<D>\&\ E)}
+\DoxyCodeLine{00050\ \ \ \ \ \{}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ XX\ =\ E(X,X);\ XY\ =\ E(X,Y);\ XZ\ =\ E(X,Z);}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ YX\ =\ E(Y,X);\ YY\ =\ E(Y,Y);\ YZ\ =\ E(Y,Z);}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ ZX\ =\ E(Z,X);\ ZY\ =\ E(Z,Y);\ ZZ\ =\ E(Z,Z);}
+\DoxyCodeLine{00054\ \ \ \ \ \}}
+\DoxyCodeLine{00055\ \};}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00057\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00058\ \textcolor{comment}{\ *\ A\ container\ of\ the\ 6\ distinct\ coefficients\ of\ a\ symmetrix\ 3x3\ matrix.}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00060\ \textcolor{comment}{\ *\ See\ comment\ above.}}
+\DoxyCodeLine{00061\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00062\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ Scalar>}
+\DoxyCodeLine{00063\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{structiit_1_1rbd_1_1internal_1_1_symm_mat3x3_coefficients}{SymmMat3x3Coefficients}}\ \{}
+\DoxyCodeLine{00064\ \ \ \ \ Scalar\ XX,XY,XZ,YY,YZ,ZZ;}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \ \ \ \ \mbox{\hyperlink{structiit_1_1rbd_1_1internal_1_1_symm_mat3x3_coefficients}{SymmMat3x3Coefficients}}()\ \{\}}
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ \ \ \ \ \mbox{\hyperlink{structiit_1_1rbd_1_1internal_1_1_symm_mat3x3_coefficients}{SymmMat3x3Coefficients}}(Scalar\ xx,\ Scalar\ xy,\ Scalar\ xz,}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Scalar\ yy,\ Scalar\ yz,}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Scalar\ zz)\ :}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ XX(xx),\ XY(xy),\ XZ(xz),}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ YY(yy),\ YZ(yz),}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ZZ(zz)}
+\DoxyCodeLine{00074\ \ \ \ \ \{\}}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ D>}
+\DoxyCodeLine{00077\ \ \ \ \ \mbox{\hyperlink{structiit_1_1rbd_1_1internal_1_1_symm_mat3x3_coefficients}{SymmMat3x3Coefficients}}(\textcolor{keyword}{const}\ MatrixBase<D>\&\ E)\ \{}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ read(E);}
+\DoxyCodeLine{00079\ \ \ \ \ \}}
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00081\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ D>}
+\DoxyCodeLine{00082\ \ \ \ \ \textcolor{keywordtype}{void}\ read(\textcolor{keyword}{const}\ MatrixBase<D>\&\ E)}
+\DoxyCodeLine{00083\ \ \ \ \ \{}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ XX\ =\ E(X,X);\ XY\ =\ E(X,Y);\ XZ\ =\ E(X,Z);}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ YY\ =\ E(Y,Y);\ YZ\ =\ E(Y,Z);}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ZZ\ =\ E(Z,Z);}
+\DoxyCodeLine{00087\ \ \ \ \ \}}
+\DoxyCodeLine{00088\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ D>}
+\DoxyCodeLine{00089\ \ \ \ \ \textcolor{keywordtype}{void}\ write(\textcolor{keyword}{const}\ MatrixBase<D>\&\ Econst)}
+\DoxyCodeLine{00090\ \ \ \ \ \{}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ MatrixBase<D>\&\ E\ =\ \textcolor{keyword}{const\_cast<}MatrixBase<D>\&\textcolor{keyword}{>}(Econst);}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ E(X,X)\ =\ XX;\ E(X,Y)\ =\ XY;\ E(X,Z)\ =\ XZ;}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ E(Y,X)\ =\ XY;\ E(Y,Y)\ =\ YY;\ E(Y,Z)\ =\ YZ;}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ E(Z,X)\ =\ XZ;\ E(Z,Y)\ =\ YZ;\ E(Z,Z)\ =\ ZZ;}
+\DoxyCodeLine{00095\ \ \ \ \ \}}
+\DoxyCodeLine{00096\ \};}
+\DoxyCodeLine{00097\ }
+\DoxyCodeLine{00098\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00099\ \textcolor{comment}{\ *\ Performs\ the\ transformation\ of\ a\ symmetrix\ 3x3\ matrix\ A,\ with\ the\ rotation}}
+\DoxyCodeLine{00100\ \textcolor{comment}{\ *\ matrix\ E}}
+\DoxyCodeLine{00101\ \textcolor{comment}{\ *\ \ \ \ B\ =\ E\ *\ A\ *\ E\string^T}}
+\DoxyCodeLine{00102\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00103\ \textcolor{comment}{\ *\ These\ calculations\ are\ documented\ in\ the\ appendix\ of\ Roy's\ book}}
+\DoxyCodeLine{00104\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00105\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ Scalar>}
+\DoxyCodeLine{00106\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ rot\_symmetric\_EAET(}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Mat3x3Coefficients<Scalar>\&\ E,}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ SymmMat3x3Coefficients<Scalar>\&\ A,}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ SymmMat3x3Coefficients<Scalar>\&\ B)}
+\DoxyCodeLine{00110\ \{}
+\DoxyCodeLine{00111\ \ \ \ \ Scalar\ LXX\ =\ A.XX\ -\/\ A.ZZ;}
+\DoxyCodeLine{00112\ \ \ \ \ Scalar\ LXY\ =\ A.XY;\ \textcolor{comment}{//\ same\ as\ LYX}}
+\DoxyCodeLine{00113\ \ \ \ \ Scalar\ LYY\ =\ A.YY\ -\/\ A.ZZ;}
+\DoxyCodeLine{00114\ \ \ \ \ Scalar\ LZX\ =\ 2*A.XZ;}
+\DoxyCodeLine{00115\ \ \ \ \ Scalar\ LZY\ =\ 2*A.YZ;}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00117\ \ \ \ \ Scalar\ yXX\ =\ E.YX*LXX\ +\ E.YY*LXY\ +\ E.YZ*LZX;}
+\DoxyCodeLine{00118\ \ \ \ \ Scalar\ yXY\ =\ E.YX*LXY\ +\ E.YY*LYY\ +\ E.YZ*LZY;}
+\DoxyCodeLine{00119\ \ \ \ \ Scalar\ yYX\ =\ E.ZX*LXX\ +\ E.ZY*LXY\ +\ E.ZZ*LZX;}
+\DoxyCodeLine{00120\ \ \ \ \ Scalar\ yYY\ =\ E.ZX*LXY\ +\ E.ZY*LYY\ +\ E.ZZ*LZY;}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ \ \ \ \ Scalar\ v1\ =\ -\/A.YZ;}
+\DoxyCodeLine{00123\ \ \ \ \ Scalar\ v2\ =\ \ A.XZ;}
+\DoxyCodeLine{00124\ \ \ \ \ Scalar\ EvX\ =\ E.XX*v1\ +\ E.XY*v2;}
+\DoxyCodeLine{00125\ \ \ \ \ Scalar\ EvY\ =\ E.YX*v1\ +\ E.YY*v2;}
+\DoxyCodeLine{00126\ \ \ \ \ Scalar\ EvZ\ =\ E.ZX*v1\ +\ E.ZY*v2;}
+\DoxyCodeLine{00127\ }
+\DoxyCodeLine{00128\ \ \ \ \ B.XY\ =\ yXX\ *\ E.XX\ +\ yXY\ *\ E.XY\ +\ EvZ;}
+\DoxyCodeLine{00129\ \ \ \ \ B.XZ\ =\ yYX\ *\ E.XX\ +\ yYY\ *\ E.XY\ -\/\ EvY;}
+\DoxyCodeLine{00130\ \ \ \ \ B.YZ\ =\ yYX\ *\ E.YX\ +\ yYY\ *\ E.YY\ +\ EvX;}
+\DoxyCodeLine{00131\ }
+\DoxyCodeLine{00132\ \ \ \ \ Scalar\ zYY\ =\ yXX\ *\ E.YX\ +\ yXY\ *\ E.YY;}
+\DoxyCodeLine{00133\ \ \ \ \ Scalar\ zZZ\ =\ yYX\ *\ E.ZX\ +\ yYY\ *\ E.ZY;}
+\DoxyCodeLine{00134\ \ \ \ \ B.XX\ =\ LXX\ +\ LYY\ -\/\ zYY\ -\/\ zZZ\ +\ A.ZZ;}
+\DoxyCodeLine{00135\ \ \ \ \ B.YY\ =\ zYY\ +\ A.ZZ;}
+\DoxyCodeLine{00136\ \ \ \ \ B.ZZ\ =\ zZZ\ +\ A.ZZ;}
+\DoxyCodeLine{00137\ \}}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00139\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00140\ \textcolor{comment}{\ *\ Performs\ the\ transformation\ of\ a\ 3x3\ matrix\ A,\ with\ the\ rotation}}
+\DoxyCodeLine{00141\ \textcolor{comment}{\ *\ matrix\ E}}
+\DoxyCodeLine{00142\ \textcolor{comment}{\ *\ \ \ \ B\ =\ E\ *\ A\ *\ E\string^T}}
+\DoxyCodeLine{00143\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00144\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ Scalar>}
+\DoxyCodeLine{00145\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ rot\_EAET(}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Mat3x3Coefficients<Scalar>\&\ E,}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Mat3x3Coefficients<Scalar>\&\ A,}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Mat3x3Coefficients<Scalar>\&\ B)}
+\DoxyCodeLine{00149\ \{}
+\DoxyCodeLine{00150\ \ \ \ \ Scalar\ LXX\ =\ A.XX\ -\/\ A.ZZ;}
+\DoxyCodeLine{00151\ \ \ \ \ Scalar\ LXY\ =\ A.XY;}
+\DoxyCodeLine{00152\ \ \ \ \ Scalar\ LYX\ =\ A.YX;}
+\DoxyCodeLine{00153\ \ \ \ \ Scalar\ LYY\ =\ A.YY\ -\/\ A.ZZ;}
+\DoxyCodeLine{00154\ \ \ \ \ Scalar\ LZX\ =\ A.ZX\ +\ A.XZ;}
+\DoxyCodeLine{00155\ \ \ \ \ Scalar\ LZY\ =\ A.ZY\ +\ A.YZ;}
+\DoxyCodeLine{00156\ }
+\DoxyCodeLine{00157\ \ \ \ \ Scalar\ v1\ =\ -\/A.YZ;}
+\DoxyCodeLine{00158\ \ \ \ \ Scalar\ v2\ =\ \ A.XZ;}
+\DoxyCodeLine{00159\ \ \ \ \ Scalar\ EvX\ =\ E.XX*v1\ +\ E.XY*v2;}
+\DoxyCodeLine{00160\ \ \ \ \ Scalar\ EvY\ =\ E.YX*v1\ +\ E.YY*v2;}
+\DoxyCodeLine{00161\ \ \ \ \ Scalar\ EvZ\ =\ E.ZX*v1\ +\ E.ZY*v2;}
+\DoxyCodeLine{00162\ }
+\DoxyCodeLine{00163\ \ \ \ \ Scalar\ yXX\ =\ E.XX*LXX\ +\ E.XY*LYX\ +\ E.XZ*LZX;}
+\DoxyCodeLine{00164\ \ \ \ \ Scalar\ yXY\ =\ E.XX*LXY\ +\ E.XY*LYY\ +\ E.XZ*LZY;}
+\DoxyCodeLine{00165\ \ \ \ \ Scalar\ yYX\ =\ E.YX*LXX\ +\ E.YY*LYX\ +\ E.YZ*LZX;}
+\DoxyCodeLine{00166\ \ \ \ \ Scalar\ yYY\ =\ E.YX*LXY\ +\ E.YY*LYY\ +\ E.YZ*LZY;}
+\DoxyCodeLine{00167\ \ \ \ \ Scalar\ yZX\ =\ E.ZX*LXX\ +\ E.ZY*LYX\ +\ E.ZZ*LZX;}
+\DoxyCodeLine{00168\ \ \ \ \ Scalar\ yZY\ =\ E.ZX*LXY\ +\ E.ZY*LYY\ +\ E.ZZ*LZY;}
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00170\ \ \ \ \ B.XX\ =\ yXX*E.XX\ +\ yXY*E.XY\ +\ A.ZZ;}
+\DoxyCodeLine{00171\ \ \ \ \ B.YY\ =\ yYX*E.YX\ +\ yYY*E.YY\ +\ A.ZZ;}
+\DoxyCodeLine{00172\ \ \ \ \ B.ZZ\ =\ yZX*E.ZX\ +\ yZY*E.ZY\ +\ A.ZZ;}
+\DoxyCodeLine{00173\ }
+\DoxyCodeLine{00174\ \ \ \ \ B.XY\ =\ yXX*E.YX\ +\ yXY*E.YY\ -\/\ EvZ;}
+\DoxyCodeLine{00175\ \ \ \ \ B.YX\ =\ yYX*E.XX\ +\ yYY*E.XY\ +\ EvZ;}
+\DoxyCodeLine{00176\ \ \ \ \ B.XZ\ =\ yXX*E.ZX\ +\ yXY*E.ZY\ +\ EvY;}
+\DoxyCodeLine{00177\ \ \ \ \ B.ZX\ =\ yZX*E.XX\ +\ yZY*E.XY\ -\/\ EvY;}
+\DoxyCodeLine{00178\ \ \ \ \ B.YZ\ =\ yYX*E.ZX\ +\ yYY*E.ZY\ -\/\ EvX;}
+\DoxyCodeLine{00179\ \ \ \ \ B.ZY\ =\ yZX*E.YX\ +\ yZY*E.YY\ +\ EvX;}
+\DoxyCodeLine{00180\ \}}
+\DoxyCodeLine{00181\ }
+\DoxyCodeLine{00182\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ Derived,\ \textcolor{keyword}{typename}\ Derived2>}
+\DoxyCodeLine{00183\ \textcolor{keyword}{inline}\ Vec3<typename\ Derived::Scalar>\ cross(\textcolor{keyword}{const}\ MatrixBase<Derived>\&\ r,\ \textcolor{keyword}{const}\ MatrixBase<Derived2>\&\ v)}
+\DoxyCodeLine{00184\ \{}
+\DoxyCodeLine{00185\ \ \ \ \ \textcolor{keywordflow}{return}\ Vec3<typename\ Derived::Scalar>(}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ \ \ \ \ r(Y)*v(Z)-\/r(Z)*v(Y),}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ \ \ \ \ r(Z)*v(X)-\/r(X)*v(Z),}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \ \ \ \ r(X)*v(Y)-\/r(Y)*v(X));}
+\DoxyCodeLine{00189\ \}}
+\DoxyCodeLine{00190\ }
+\DoxyCodeLine{00191\ }
+\DoxyCodeLine{00192\ \}}
+\DoxyCodeLine{00193\ \}}
+\DoxyCodeLine{00194\ \}}
+\DoxyCodeLine{00195\ }
+\DoxyCodeLine{00196\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

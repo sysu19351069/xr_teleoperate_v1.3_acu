@@ -1,0 +1,2 @@
+set(elfin_robot_msgs_MESSAGE_FILES "")
+set(elfin_robot_msgs_SERVICE_FILES "/home/ros/AcuRobot/src/elfin_robot-melodic/elfin_robot_msgs/srv/SetString.srv;/home/ros/AcuRobot/src/elfin_robot-melodic/elfin_robot_msgs/srv/SetInt16.srv;/home/ros/AcuRobot/src/elfin_robot-melodic/elfin_robot_msgs/srv/SetFloat64.srv;/home/ros/AcuRobot/src/elfin_robot-melodic/elfin_robot_msgs/srv/ElfinIODRead.srv;/home/ros/AcuRobot/src/elfin_robot-melodic/elfin_robot_msgs/srv/ElfinIODWrite.srv")

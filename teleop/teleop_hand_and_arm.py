@@ -24,14 +24,136 @@ from teleop.image_server.image_client import ImageClient
 from teleop.utils.episode_writer import EpisodeWriter
 from teleop.utils.ipc import IPC_Server
 from sshkeyboard import listen_keyboard, stop_listening
+from teleop.robot_control.acu_retargeting import AcuNeedleRetargeting
+from teleop.robot_control.acu_adaptive_impedance import (
+    AcuAdaptiveImpedanceController,
+    VelocityOutputLimits,
+    SimContactEnv,
+    AcuNeedleTeleopImpedanceRunner,
+)
 
 # for simulation
-from unitree_sdk2py.core.channel import ChannelPublisher
-from unitree_sdk2py.idl.std_msgs.msg.dds_ import String_
-def publish_reset_category(category: int,publisher): # Scene Reset signal
-    msg = String_(data=str(category))
+# NOTE: unitree_sdk2py is only required in simulation/motion scenarios.
+# Import lazily to avoid import errors in environments without unitree_sdk2py.
+# from unitree_sdk2py.core.channel import ChannelPublisher
+# from unitree_sdk2py.idl.std_msgs.msg.dds_ import String_
+
+def publish_reset_category(category: int, publisher):  # Scene Reset signal
+    # String_ type is provided by unitree_sdk2py in sim mode.
+    msg = publisher._msg_type(data=str(category))
     publisher.Write(msg)
     logger_mp.info(f"published reset category: {category}")
+
+def _make_pose_dict(position_xyz, quat_xyzw):
+    return {
+        "position": np.asarray(position_xyz, dtype=float).reshape(3),
+        "quat": np.asarray(quat_xyzw, dtype=float).reshape(4),
+    }
+
+
+def _quat_normalize(q: np.ndarray) -> np.ndarray:
+    q = np.asarray(q, dtype=float).reshape(4)
+    n = float(np.linalg.norm(q))
+    if n < 1e-12:
+        return np.array([0.0, 0.0, 0.0, 1.0], dtype=float)
+    return q / n
+
+
+def _interp_linear(p0: np.ndarray, p1: np.ndarray, t: float) -> np.ndarray:
+    t = float(np.clip(t, 0.0, 1.0))
+    return (1.0 - t) * p0 + t * p1
+
+
+def _rot_to_quat_xyzw(R: np.ndarray) -> np.ndarray:
+    """Rotation matrix -> quaternion (xyzw)."""
+    R = np.asarray(R, dtype=float).reshape(3, 3)
+    t = float(np.trace(R))
+    if t > 0.0:
+        s = np.sqrt(t + 1.0) * 2.0
+        w = 0.25 * s
+        x = (R[2, 1] - R[1, 2]) / s
+        y = (R[0, 2] - R[2, 0]) / s
+        z = (R[1, 0] - R[0, 1]) / s
+    else:
+        # find the major diagonal element
+        if R[0, 0] > R[1, 1] and R[0, 0] > R[2, 2]:
+            s = np.sqrt(1.0 + R[0, 0] - R[1, 1] - R[2, 2]) * 2.0
+            w = (R[2, 1] - R[1, 2]) / s
+            x = 0.25 * s
+            y = (R[0, 1] + R[1, 0]) / s
+            z = (R[0, 2] + R[2, 0]) / s
+        elif R[1, 1] > R[2, 2]:
+            s = np.sqrt(1.0 + R[1, 1] - R[0, 0] - R[2, 2]) * 2.0
+            w = (R[0, 2] - R[2, 0]) / s
+            x = (R[0, 1] + R[1, 0]) / s
+            y = 0.25 * s
+            z = (R[1, 2] + R[2, 1]) / s
+        else:
+            s = np.sqrt(1.0 + R[2, 2] - R[0, 0] - R[1, 1]) * 2.0
+            w = (R[1, 0] - R[0, 1]) / s
+            x = (R[0, 2] + R[2, 0]) / s
+            y = (R[1, 2] + R[2, 1]) / s
+            z = 0.25 * s
+
+    q = np.array([x, y, z, w], dtype=float)
+    n = float(np.linalg.norm(q))
+    if n < 1e-12:
+        return np.array([0.0, 0.0, 0.0, 1.0], dtype=float)
+    return q / n
+
+
+def _yaw_quat(delta_yaw_rad: float) -> np.ndarray:
+    """z-axis yaw quaternion (xyzw)."""
+    half = 0.5 * float(delta_yaw_rad)
+    return np.array([0.0, 0.0, np.sin(half), np.cos(half)], dtype=float)
+
+
+def _roll_quat(delta_roll_rad: float) -> np.ndarray:
+    """x-axis roll quaternion (xyzw)."""
+    half = 0.5 * float(delta_roll_rad)
+    return np.array([np.sin(half), 0.0, 0.0, np.cos(half)], dtype=float)
+
+
+def _quat_mul(q1: np.ndarray, q2: np.ndarray) -> np.ndarray:
+    """Quaternion multiply (xyzw)."""
+    x1, y1, z1, w1 = np.asarray(q1, dtype=float).reshape(4)
+    x2, y2, z2, w2 = np.asarray(q2, dtype=float).reshape(4)
+    return np.array(
+        [
+            w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2,
+            w1 * y2 - x1 * z2 + y1 * w2 + z1 * x2,
+            w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2,
+            w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2,
+        ],
+        dtype=float,
+    )
+
+
+def _quat_slerp(q0: np.ndarray, q1: np.ndarray, t: float) -> np.ndarray:
+    """Spherical linear interpolation between quaternions (xyzw)."""
+    t = float(np.clip(t, 0.0, 1.0))
+    q0 = _quat_normalize(q0)
+    q1 = _quat_normalize(q1)
+    dot = float(np.dot(q0, q1))
+    # handle double-cover: pick the shortest path
+    if dot < 0.0:
+        q1 = -q1
+        dot = -dot
+
+    dot = float(np.clip(dot, -1.0, 1.0))
+    if dot > 0.9995:
+        # very close: fallback to lerp
+        return _quat_normalize((1.0 - t) * q0 + t * q1)
+
+    theta_0 = float(np.arccos(dot))
+    sin_theta_0 = float(np.sin(theta_0))
+    theta = theta_0 * t
+    sin_theta = float(np.sin(theta))
+
+    s0 = float(np.sin(theta_0 - theta) / sin_theta_0)
+    s1 = float(sin_theta / sin_theta_0)
+    return _quat_normalize(s0 * q0 + s1 * q1)
+
 
 # state transition
 START          = False  # Enable to start robot following VR user motion  
@@ -92,8 +214,118 @@ if __name__ == '__main__':
     parser.add_argument('--task-name', type = str, default = 'pick cube', help = 'task name for recording')
     parser.add_argument('--task-desc', type = str, default = 'e.g. pick the red cube on the table.', help = 'task goal for recording')
 
+    # teleop_api path-following test inputs (ACU only)
+    parser.add_argument('--mpc-teleop-api', action='store_true', help='Use mpc_py.teleop_api TeleopAcuMPC with path following (ACU only)')
+    parser.add_argument('--mpc-test-input', action='store_true', help='Feed built-in waypoint test inputs instead of real XR right wrist pose (ACU only)')
+    parser.add_argument('--mpc-test-hold', type=float, default=1.0, help='Seconds to hold each test segment end before switching')
+    parser.add_argument('--mpc-test-speed', type=float, default=0.05, help='m/s along the segment for generating intermediate points')
+
+    # gate teleop reference streaming by controller trigger
+    parser.add_argument('--mpc-stream-on-trigger', action='store_true', help='Only ingest XR teleop reference when right controller trigger is pressed (ACU + controller mode)')
+    parser.add_argument('--mpc-trigger-threshold', type=float, default=0.2, help='Trigger threshold in [0,10] to start ingesting teleop reference')
+    parser.add_argument('--mpc-stream-toggle', action='store_true', help='Latch teleop streaming ON after the first right-trigger press (one-shot start)')
+
+    # Acu needle manipulation (行针手法) tracking (hand mode)
+    parser.add_argument('--acu-needle-teleop', action='store_true', help='Enable Acu needle manipulation retargeting (insert+twist) from right hand tracking; overrides MPC ingest/PF when enabled')
+    parser.add_argument('--acu-needle-mode', type=str, default='incremental', choices=['absolute', 'incremental'], help='Needle retargeting mode (absolute vs incremental)')
+    parser.add_argument('--acu-needle-insert-angle-deg', type=float, default=35.0, help='Insert gate angle threshold (deg) for dv_index vs horizontal')
+    parser.add_argument('--acu-needle-twist-angle-deg', type=float, default=20.0, help='Twist gate angle threshold (deg) for horizontal motion')
+    parser.add_argument('--acu-needle-circumference-mm', type=float, default=2.0, help='Needle circumference in mm for mapping lateral motion to twist angle')
+    parser.add_argument('--acu-needle-insert-gain', type=float, default=1.0, help='Insert gain')
+    parser.add_argument('--acu-needle-twist-gain', type=float, default=1.0, help='Twist gain')
+    parser.add_argument('--acu-needle-insert-positive-down', action='store_true', help='Define insertion positive direction as -Z of TeleVuer coordinates')
+
     args = parser.parse_args()
     logger_mp.info(f"args: {args}")
+
+    # ---- local helpers for needle retargeting (keep lightweight; no extra process) ----
+    def _angle_to_horizontal_rad(v: np.ndarray, eps: float = 1e-9) -> float:
+        vz = float(v[2])
+        vxy = float(np.linalg.norm(v[:2]))
+        return float(np.arctan2(abs(vz), max(vxy, eps)))
+
+    def _signed_angle_2d(a: np.ndarray, b: np.ndarray, eps: float = 1e-9) -> float:
+        a = np.asarray(a, dtype=float).reshape(2)
+        b = np.asarray(b, dtype=float).reshape(2)
+        na = float(np.linalg.norm(a))
+        nb = float(np.linalg.norm(b))
+        if na < eps or nb < eps:
+            return 0.0
+        au = a / na
+        bu = b / nb
+        cross = float(au[0] * bu[1] - au[1] * bu[0])
+        dot = float(np.clip(float(au[0] * bu[0] + au[1] * bu[1]), -1.0, 1.0))
+        return float(np.arctan2(cross, dot))
+
+    # needle retargeting shared memory
+    needle_right_hand_pos_array = None
+    needle_lock = None
+    needle_state_array = None
+    needle_action_array = None
+    needle_meta_array = None
+    needle_retargeter = None
+
+    # adaptive impedance (acu needle teleop)
+    acu_imp = None
+    acu_imp_runner = None
+
+    # ------------------------------
+    # MPC (from mpc_py/main.py) setup
+    # Only enabled for ACU arm.
+    # NOTE: initialization must happen after arm_ctrl is created.
+    # ------------------------------
+    mpc_ctl = None
+    mpc_qk = None
+    mpc_rough_plan = None
+    mpc_target_rough = None
+    mpc_step_i = 0
+
+    # teleop_api wrapper (preferred)
+    teleop_mpc_api = None
+
+    # ------------------------------
+    # ACU: run MPC path-following + arm control in a higher-rate thread
+    # (ingest teleop pose stays in main loop)
+    # ------------------------------
+    mpc_pf_thread = None
+    mpc_pf_stop = threading.Event()
+
+    def _acu_mpc_pf_thread(step_hz: float):
+        while not mpc_pf_stop.is_set():
+            t0 = time.time()
+            try:
+                if teleop_mpc_api is None:
+                    time.sleep(0.01)
+                    continue
+
+                # If trigger/toggle-gated streaming is enabled, do NOT run path following when not enabled.
+                if (args.mpc_stream_on_trigger or args.mpc_stream_toggle) and args.xr_mode == 'controller' and (not args.mpc_test_input) and (not mpc_ref_enabled):
+                    dt_sleep = max(0.0, (1.0 / max(step_hz, 1e-6)) - (time.time() - t0))
+                    time.sleep(dt_sleep)
+                    continue
+
+                # Read current robot joint state directly (no shared cache)
+                current_lr_arm_q_thread = arm_ctrl.get_current_dual_arm_q()
+                q_meas = np.asarray(current_lr_arm_q_thread, dtype=float).reshape(-1)[:8].copy()
+                q_meas[6] = 0.0
+
+                fk_meas = teleop_mpc_api.ctl.robot.fk(q_meas).copy()
+                cur_pose_for_pf = {"position": np.asarray(fk_meas.translation).reshape(3).copy()}
+
+                q_next = teleop_mpc_api.step_with_path_following(cur_pose_for_pf, time.time(), qk=q_meas)
+                if q_next is None:
+                    sol_q = q_meas.copy()
+                    sol_tauff = np.zeros_like(sol_q)
+                else:
+                    sol_q = np.asarray(q_next, dtype=float).reshape(-1)
+                    sol_tauff = np.zeros_like(sol_q)
+                    arm_ctrl.ctrl_dual_arm(sol_q, sol_tauff)
+                
+            except Exception as e:
+                logger_mp.error(f"[ACU MPC thread] step/control failed: {e}")
+
+            dt_sleep = max(0.0, (1.0 / max(step_hz, 1e-6)) - (time.time() - t0))
+            time.sleep(dt_sleep)
 
     try:
         # ipc communication. client usage: see utils/ipc.py
@@ -170,7 +402,8 @@ if __name__ == '__main__':
         tv_wrapper = TeleVuerWrapper(binocular=BINOCULAR, use_hand_tracking=args.xr_mode == "hand", img_shape=tv_img_shape, img_shm_name=tv_img_shm.name, 
                                     return_state_data=True, return_hand_rot_data = False,
                                     # enable Acu controller teleop mapping only for Acu + controller tracking
-                                    use_acu_controller_teleop=(is_acu and args.xr_mode == 'controller'),)
+                                    use_acu_controller_teleop=(is_acu and args.xr_mode == 'controller'),
+                                    use_acu_hand_teleop=(is_acu and args.xr_mode == 'hand'),)
 
         # arm
         if args.arm == "G1_29":
@@ -186,12 +419,83 @@ if __name__ == '__main__':
             arm_ik = H1_ArmIK()
             arm_ctrl = H1_ArmController(simulation_mode=args.sim)
         elif args.arm == "ACU":
-            # Acupuncture robot: single arm (8 DOF)
             arm_ik = Acu_ArmIK()
             arm_ctrl = Acu_ArmController(motion_mode=args.motion, simulation_mode=args.sim)
         
         current_lr_arm_q  = arm_ctrl.get_current_dual_arm_q()
         arm_ik.reset_init_joint_pos(current_lr_arm_q)
+
+        # ------------------------------
+        # MPC init (moved here, after arm_ctrl exists)
+        # ------------------------------
+        if args.arm == 'ACU':
+            if args.mpc_teleop_api:
+                try:
+                    from mpc_py.teleop_api import TeleopAcuMPC, TeleopMPCConfig
+
+                    urdf_path = os.path.join(parent_dir, 'assets', 'acu', 'acu.urdf')
+                    teleop_mpc_api = TeleopAcuMPC(
+                        TeleopMPCConfig(
+                            urdf_path=urdf_path,
+                            ee_frame='Acu_ee',
+                            dt=0.1,
+                            horizon_T=1.0,
+                            solver_backend='osqp',
+                        )
+                    )
+
+                    _init_q = np.asarray(current_lr_arm_q, dtype=float).reshape(-1)
+                    _init_q[6] = 0.0  
+                    _init_q = np.array([-0.0, 0.63453, 1.19118, -0.0, 1.29998, 3.13, -0.0, 0.0], dtype=float)
+                    q0 = _init_q[:8].copy() if _init_q.size >= 8 else np.array([-0.0, 0.63453, 1.19118, -0.0, 1.29998, 3.13, -0.0, 0.0], dtype=float)
+
+                    # rough goal only used to initialize internal mode/state; then we drive via path following.
+                    teleop_mpc_api.reset_with_rough_goal(q0=q0, goal_xyz=np.array([0.250, 0.450, -0.35], dtype=float))
+
+                    teleop_mpc_api.switch_to_accurate(v=np.array([-0.0, -0.5, 2.0], dtype=float), r=0.05)
+
+                    logger_mp.info('[MPC] teleop_api TeleopAcuMPC initialized.')
+                except Exception as e:
+                    logger_mp.error(f"[MPC] Failed to init teleop_api TeleopAcuMPC, fallback. err={e}")
+                    teleop_mpc_api = None
+
+            # keep legacy init for backward compatibility
+            if teleop_mpc_api is None:
+                try:
+                    from mpc_py.controller import AcuMPCController, MPCMode
+                    from mpc_py.planner_sd import compute_sd_rough, init_rough_plan
+
+                    try:
+                        import pinocchio as pin
+                    except Exception:  # pragma: no cover
+                        import pin  # type: ignore
+
+                    urdf_path = os.path.join(parent_dir, 'assets', 'acu', 'acu.urdf')
+                    mpc_ctl = AcuMPCController(
+                        urdf_path=urdf_path,
+                        dt=0.1,
+                        horizon_T=1.0,
+                        ee_frame='Acu_ee',
+                        solver_backend='osqp',
+                    )
+
+                    _init_q = np.asarray(current_lr_arm_q, dtype=float).reshape(-1)
+                    if _init_q.size >= 8:
+                        mpc_qk = _init_q[:8].copy()
+                    else:
+                        mpc_qk = np.array([-0.0, 0.63453, 1.19118, -0.0, 1.29998, 0.0, -0.0, 0.0], dtype=float)
+
+                    mpc_qk = np.array([-0.0, 0.63453, 1.19118, -0.0, 1.29998, 3.13, -0.0, 0.0], dtype=float)
+                    curpos = mpc_ctl.robot.fk(mpc_qk)
+                    cur_p = np.asarray(curpos.translation).reshape(3)
+                    O = np.array([0.250, 0.450, -0.35], dtype=float)
+                    mpc_rough_plan = init_rough_plan(P0=cur_p, O=O)
+                    mpc_target_rough = pin.SE3(np.asarray(curpos.rotation), O)
+
+                    logger_mp.info('[MPC] ACU MPC controller initialized.')
+                except Exception as e:
+                    logger_mp.error(f"[MPC] Failed to init ACU MPC controller, fallback to IK. err={e}")
+                    mpc_ctl = None
 
         # end-effector
         if args.ee == "dex3":
@@ -246,24 +550,87 @@ if __name__ == '__main__':
 
         # simulation mode
         if args.sim:
-            reset_pose_publisher = ChannelPublisher("rt/reset_pose/cmd", String_)
-            reset_pose_publisher.Init()
-            from teleop.utils.sim_state_topic import start_sim_state_subscribe
-            sim_state_subscriber = start_sim_state_subscribe()
+            try:
+                from unitree_sdk2py.core.channel import ChannelPublisher
+                from unitree_sdk2py.idl.std_msgs.msg.dds_ import String_
+
+                reset_pose_publisher = ChannelPublisher("rt/reset_pose/cmd", String_)
+                # stash msg type for publish_reset_category
+                reset_pose_publisher._msg_type = String_
+                reset_pose_publisher.Init()
+                from teleop.utils.sim_state_topic import start_sim_state_subscribe
+                sim_state_subscriber = start_sim_state_subscribe()
+            except Exception as e:
+                logger_mp.error(f"unitree_sdk2py not available for --sim mode: {e}")
+                args.sim = False
 
         # controller + motion mode
         if args.xr_mode == "controller" and args.motion:
-            from unitree_sdk2py.g1.loco.g1_loco_client import LocoClient
-            sport_client = LocoClient()
-            sport_client.SetTimeout(0.0001)
-            sport_client.Init()
-        
+            try:
+                from unitree_sdk2py.g1.loco.g1_loco_client import LocoClient
+                sport_client = LocoClient()
+                sport_client.SetTimeout(0.0001)
+                sport_client.Init()
+            except Exception as e:
+                logger_mp.error(f"unitree_sdk2py not available for --motion mode: {e}")
+                args.motion = False
+
         # record + headless mode
         if args.record and args.headless:
             recorder = EpisodeWriter(task_dir = args.task_dir + args.task_name, task_goal = args.task_desc, frequency = args.frequency, rerun_log = False)
         elif args.record and not args.headless:
             recorder = EpisodeWriter(task_dir = args.task_dir + args.task_name, task_goal = args.task_desc, frequency = args.frequency, rerun_log = True)
 
+        # after arm_ctrl is created and before main loop
+        if args.arm == 'ACU' and args.acu_needle_teleop:
+            needle_right_hand_pos_array = Array('d', 75, lock=True)
+            needle_lock = Lock()
+            needle_state_array = Array('d', 2, lock=False)
+            needle_action_array = Array('d', 2, lock=False)
+            needle_meta_array = Array('d', 3, lock=False)  # [ts, insert_vel, twist_vel]
+            needle_retargeter = AcuNeedleRetargeting(
+                needle_right_hand_pos_array,
+                data_lock=needle_lock,
+                needle_state_array_out=needle_state_array,
+                needle_action_array_out=needle_action_array,
+                needle_meta_array_out=needle_meta_array,
+                fps=float(max(1.0, args.frequency)),
+                needle_circumference_m=float(max(1e-9, args.acu_needle_circumference_mm * 1e-3)),
+                insert_angle_threshold_deg=float(args.acu_needle_insert_angle_deg),
+                twist_angle_threshold_deg=float(args.acu_needle_twist_angle_deg),
+                insert_gain=float(args.acu_needle_insert_gain),
+                twist_gain=float(args.acu_needle_twist_gain),
+                mode=str(args.acu_needle_mode),
+                insert_positive_down=bool(args.acu_needle_insert_positive_down),
+            )
+
+            # Init adaptive impedance controller (use simple default stable numbers; can be tuned)
+            # Filter coefficients: placeholder 2nd order IIR; replace with paper-identified coefficients if available.
+            acu_imp = AcuAdaptiveImpedanceController(
+                kf=1.0,
+                f_safe=20.0,  # N
+                filter_coeffs=(2.732e-5, 5.464e-5, 2.932e-5, -0.8415, -0.0929),
+                fr=20.0,  # N target during impedance mode
+                dt=float(1.0 / max(args.frequency, 1e-6)),
+                hysteresis=0.2,
+                latch=False,
+                v_limits=VelocityOutputLimits(vmax=30),
+                integrator_leak=0.02,
+            )
+            acu_imp_runner = AcuNeedleTeleopImpedanceRunner(
+                controller=acu_imp,
+                # env=SimContactEnv(ke=1.4, be=0.1, xe=0.0, mode='const', noise_mode='gaussian', noise_sigma=0.05, noise_seed=0),
+                env=SimContactEnv(ke=1.4, be=0.1, xe=0.0),
+                arm_ctrl=arm_ctrl,
+                needle_lock=needle_lock,
+                needle_action_array=needle_action_array,
+                needle_meta_array=needle_meta_array,
+                frequency_hz=float(max(1.0, args.frequency)),
+                joint_index=6,
+                reference_source='retargeting',
+                stop_after_s=8.0,
+                plot_save_path=os.path.join(os.getcwd(), 'acu_adaptive_impedance_retargeting_summary.png'),
+            )
 
         logger_mp.info("Please enter the start signal (enter 'r' to start the subsequent program)")
         while not START and not STOP:
@@ -271,10 +638,70 @@ if __name__ == '__main__':
         logger_mp.info("start program.")
         arm_ctrl.speed_gradual_max()
 
+        time.sleep(3.0)
         # For incremental Acu IK: cache last right wrist pose. The first iteration only records it.
         right_wrist_pose_last = None
+
+        # MPC teleop streaming gate state
+        mpc_ref_enabled = False
+        mpc_ref_prev_pressed = False
+        mpc_ref_latched = False
+        # Hand mode: run the "clear path + anchors + seed" init only once per session
+        # to avoid repeated triggers due to pinch jitter.
+        mpc_hand_init_done = False
+
+        # ACU needle teleop: start only after a single pinch trigger in hand mode
+        needle_ref_enabled = False
+        needle_init_done = False
+        needle_base_q = None  # cache once: first 6 DOF (and other non-needle joints) baseline
+        # step_once scheme: no background loop; runner is called once per main tick
+
+        # Anchors for ACU XR->robot mapping (only set when trigger is pressed)
+        args._acu_xr_p0 = None
+        args._acu_ee_p0 = None
+
+        # teleop_api test inputs (ACU only)
+        # will be overwritten by the initial EE FK orientation when the test path is initialized.
+        test_quat_xyzw = np.array([0.0, 0.0, 0.0, 1.0], dtype=float)
+        test_waypoints = None
+        test_seg_i = 0
+        test_seg_start_t = None
+        test_seg_p0 = None
+
         while not STOP:
             start_time = time.time()
+            now = time.time()
+
+            # --- Pure accurate test (ACU + TeleopAcuMPC) ---
+            # Only inject a minimal loop body here; skip the rest of the teleop pipeline.
+            if args.arm == 'ACU' and teleop_mpc_api is not None:
+                current_lr_arm_q = arm_ctrl.get_current_dual_arm_q()
+                q_meas = np.asarray(current_lr_arm_q, dtype=float).reshape(-1)[:8].copy()
+                q_meas[6] = 0.0
+                q_meas = teleop_mpc_api.state.qk.copy()
+
+                q_next = teleop_mpc_api.step(q_meas=q_meas)
+                sol_q = np.asarray(q_next, dtype=float).reshape(-1)
+                
+                # sol_q = np.array([-0.08047,  0.7515 ,  1.0407 ,  0.01011,  1.29989,  1.62477,  0.00004,  1.37585], dtype=float)
+                sol_tauff = np.zeros_like(sol_q) 
+
+                arm_ctrl.ctrl_dual_arm(sol_q, sol_tauff)
+
+                time_elapsed = time.time() - start_time
+                time.sleep(max(0.0, (1.0 / float(args.frequency)) - time_elapsed))
+                continue
+
+            print("i am here")
+
+            # If ACU needle impedance runner is active but has stopped, exit.
+            try:
+                if args.arm == 'ACU' and args.acu_needle_teleop and (acu_imp_runner is not None):
+                    if hasattr(acu_imp_runner, '_running') and (acu_imp_runner._running is False) and needle_ref_enabled:
+                        STOP = True
+                        break
+            except Exception:
+                pass
 
             if not args.headless:
                 tv_resized_image = cv2.resize(tv_img_array, (tv_img_shape[1] // 2, tv_img_shape[0] // 2))
@@ -304,6 +731,19 @@ if __name__ == '__main__':
                     recorder.save_episode()
                     if args.sim:
                         publish_reset_category(1, reset_pose_publisher)
+
+                # If recording action triggers a sim reset / scene reset, also allow re-init next time.
+                # (Keeps behavior intuitive when user starts a new episode.)
+                if args.arm == 'ACU' and args.xr_mode == 'hand':
+                    mpc_hand_init_done = False
+                    needle_ref_enabled = False  # 如果不是遥操获取，需要设置为True
+                    needle_init_done = False
+                    needle_base_q = None
+                    if acu_imp is not None:
+                        acu_imp.reset()
+                    if acu_imp_runner is not None:
+                        acu_imp_runner.reset()
+
             # get input data
             tele_data = tv_wrapper.get_motion_state_data()
             # ACU incremental mode: first frame only records last pose and skips IK/control.
@@ -311,8 +751,7 @@ if __name__ == '__main__':
                 right_wrist_pose_last = tele_data.right_arm_pose
                 # still allow recording/images/etc; just skip arm IK/control this cycle
                 time_elapsed = time.time() - start_time
-                sleep_time = max(0, (1 / args.frequency) - time_elapsed)
-                time.sleep(sleep_time)
+                time.sleep(max(0.0, (1.0 / args.frequency) - time_elapsed))
                 continue
             if (args.ee == "dex3" or args.ee == "inspire1" or args.ee == "brainco") and args.xr_mode == "hand":
                 with left_hand_pos_array.get_lock():
@@ -350,24 +789,440 @@ if __name__ == '__main__':
             current_lr_arm_q  = arm_ctrl.get_current_dual_arm_q()
             current_lr_arm_dq = arm_ctrl.get_current_dual_arm_dq()
 
+            # ------------------------------
+            # ACU needle manipulation retargeting override
+            # ------------------------------
+            if args.arm == 'ACU' and args.acu_needle_teleop:
+                # In this mode, do NOT use teleop_api MPC ingest/PF.
+                if args.xr_mode != 'hand':
+                    logger_mp.warning('[acu-needle-teleop] requires --xr-mode hand; fallback to normal pipeline.')
+                else:
+                    # Gate needle retargeting by pinch (trigger once to start)
+                    try:
+                        pinch_v = float(getattr(tele_data, 'right_pinch_value', 1e9))
+                    except Exception:
+                        pinch_v = 1e9
+
+                    pressed_now = (pinch_v <= float(args.mpc_trigger_threshold))
+                    if pressed_now and (not needle_init_done):
+                        needle_ref_enabled = True
+                        needle_init_done = True
+                        try:
+                            needle_base_q = np.asarray(current_lr_arm_q, dtype=float).reshape(-1)[:8].copy()
+                        except Exception:
+                            needle_base_q = None
+                        if acu_imp is not None:
+                            try:
+                                acu_imp.reset(x0=float(np.asarray(current_lr_arm_q, dtype=float).reshape(-1)[6]))
+                            except Exception:
+                                acu_imp.reset()
+                        if acu_imp_runner is not None:
+                            try:
+                                # acu_imp_runner.reset(
+                                #     x0=float(np.asarray(current_lr_arm_q, dtype=float).reshape(-1)[6]),
+                                #     base_q8=np.asarray(current_lr_arm_q, dtype=float).reshape(-1)[:8].copy(),
+                                # )
+                                acu_imp_runner.start_session(now=float(now))
+                            except Exception:
+                                acu_imp_runner.reset()
+                        logger_mp.info('[acu-needle-teleop] right pinch pressed: needle teleop enabled.')
+
+                    # Not enabled yet -> skip this override and fall back to normal pipeline.
+                    if not needle_ref_enabled:
+                        pass
+                    else:
+                        try:
+                            # Exit if runner has stopped (e.g., trajectory finished)
+                            if acu_imp_runner is not None and hasattr(acu_imp_runner, '_running') and (acu_imp_runner._running is False):
+                                STOP = True
+                                break
+
+                             # feed retargeter input
+                            rh = tele_data.right_hand_pos
+                            if rh is None:
+                                raise RuntimeError('right_hand_pos is None')
+                            rh = np.asarray(rh, dtype=float).reshape(25, 3)
+                            with needle_right_hand_pos_array.get_lock():
+                                needle_right_hand_pos_array[:] = rh.reshape(-1)
+
+                            if acu_imp_runner is None:
+                                raise RuntimeError('acu_imp_runner is None')
+                            try:
+                                acu_imp_runner.step_once(now=float(now))
+                            except StopIteration:
+                                STOP = True
+                                break
+
+                            time_elapsed = time.time() - start_time
+                            time.sleep(max(0.0, (1.0 / float(args.frequency)) - time_elapsed))
+                            continue
+                        except Exception as e:
+                            logger_mp.error(f"[acu-needle-teleop] failed, fallback to normal pipeline. err={e}")
+                            break
+
             # solve ik using motor data and wrist pose, then use ik results to control arms.
             time_ik_start = time.time()
+            uselast = False
             if args.arm == 'ACU':
-                sol_q, sol_tauff  = arm_ik.solve_ik(
-                    tele_data.left_arm_pose,
-                    tele_data.right_arm_pose,
-                    current_lr_arm_q,
-                    current_lr_arm_dq,
-                    right_wrist_last=right_wrist_pose_last,
-                )
-                right_wrist_pose_last = tele_data.right_arm_pose
+                # Prefer teleop_api path-following MPC when enabled.
+                if teleop_mpc_api is not None:
+                    # Start high-rate MPC thread once
+                    if mpc_pf_thread is None:
+                        pf_hz = float(max(1.0, args.frequency * 6.0))
+                        mpc_pf_stop.clear()
+                        mpc_pf_thread = threading.Thread(target=_acu_mpc_pf_thread, args=(pf_hz,), daemon=True)
+                        mpc_pf_thread.start()
+                        logger_mp.info(f"[MPC] ACU PF thread started at {pf_hz:.1f} Hz")
+
+                    # IMPORTANT: keep the original ingest/test_waypoints logic below unchanged.
+                    try:
+                        # initialize test waypoints using current FK on the first use
+                        if test_waypoints is None:
+                            q0 = np.asarray(current_lr_arm_q, dtype=float).reshape(-1)[:8]
+                            # q0 = np.array([-0.0, 0.63453, 1.19118, -0.0, 1.29998, 3.13, -0.0, 0.0], dtype=float)
+                            fk = teleop_mpc_api.ctl.robot.fk(q0)
+                            p_start = np.asarray(fk.translation).reshape(3).copy()
+                            test_quat_xyzw = _quat_normalize(_rot_to_quat_xyzw(np.asarray(fk.rotation)))
+
+                            now = time.time()
+                            teleop_mpc_api.ingest_teleop_pose(_make_pose_dict(p_start, test_quat_xyzw), now)
+
+                            # ------------------------------
+                            # Legacy test_waypoints (position-only)
+                            # Kept for reference; comment-out (do not delete).
+                            # ------------------------------
+                            # test_waypoints = [
+                            #     p_start.copy(),
+                            #     (p_start + np.array([-0.2, 0.5, 0.00], dtype=float)).copy(),
+                            #     (p_start + np.array([0.2, 0.5, 0.00], dtype=float)).copy(),
+                            #     (p_start + np.array([0.00, 0.00, 0.00], dtype=float)).copy(),
+                            #     (p_start + np.array([0.00, -0.5, 0.00], dtype=float)).copy(),
+                            # ]
+
+                            # ------------------------------
+                            # New test_waypoints (position + orientation)
+                            # ------------------------------
+                            # Change: rotate around X axis by ±30 degrees (instead of yaw around Z by ±10 degrees)
+                            q_roll_p30 = _roll_quat(np.deg2rad(30.0))
+                            q_roll_m30 = _roll_quat(np.deg2rad(-30.0))
+
+                            test_waypoints = [
+                                (p_start.copy(), test_quat_xyzw.copy()),
+                                ((p_start + np.array([-0.2, 0.5, 0.00], dtype=float)).copy(), _quat_normalize(_quat_mul(test_quat_xyzw, q_roll_p30))),
+                                ((p_start + np.array([0.2, 0.5, 0.00], dtype=float)).copy(), _quat_normalize(_quat_mul(test_quat_xyzw, q_roll_m30))),
+                                ((p_start + np.array([0.00, 0.00, 0.00], dtype=float)).copy(), test_quat_xyzw.copy()),
+                                ((p_start + np.array([0.00, -0.5, 0.00], dtype=float)).copy(), test_quat_xyzw.copy()),
+                            ]
+
+                            test_seg_i = 0
+                            test_seg_start_t = time.time()
+                            test_seg_p0 = test_waypoints[0][0].copy() if isinstance(test_waypoints[0], tuple) else test_waypoints[0].copy()
+
+                        now = time.time()
+                        if args.mpc_test_input:
+                            hold = float(max(0.0, args.mpc_test_hold))
+                            speed = float(max(1e-4, args.mpc_test_speed))
+
+                            wp0 = test_waypoints[test_seg_i]
+                            wp1 = test_waypoints[(test_seg_i + 1) % len(test_waypoints)]
+
+                            if isinstance(wp0, tuple):
+                                p0, q0_seg = wp0
+                            else:
+                                p0, q0_seg = wp0, test_quat_xyzw
+
+                            if isinstance(wp1, tuple):
+                                p1, q1_seg = wp1
+                            else:
+                                p1, q1_seg = wp1, q0_seg
+
+                            # dt = 1.0 / float(max(1e-6, args.frequency))
+                            dt = 1.0 / float(max(1e-6, 20))
+                            step = speed * dt
+
+                            if test_seg_p0 is None:
+                                test_seg_p0 = p0.copy()
+
+                            seg_vec = (p1 - p0)
+                            seg_len = float(np.linalg.norm(seg_vec))
+                            if seg_len < 1e-9:
+                                p_ref = p1.copy()
+                                alpha = 1.0
+                            else:
+                                seg_dir = seg_vec / seg_len
+                                dist_remain = float(np.linalg.norm(p1 - test_seg_p0))
+                                if dist_remain <= step:
+                                    p_ref = p1.copy()
+                                    test_seg_p0 = p1.copy()
+                                    alpha = 1.0
+                                else:
+                                    test_seg_p0 = test_seg_p0 + seg_dir * step
+                                    p_ref = test_seg_p0.copy()
+                                    alpha = float(np.clip(np.linalg.norm(test_seg_p0 - p0) / seg_len, 0.0, 1.0))
+
+                            # orientation policy: slerp with the same alpha as position progress
+                            q_ref = _quat_slerp(q0_seg, q1_seg, alpha)
+
+                            if alpha >= 1.0:
+                                if (now - float(test_seg_start_t)) >= hold:
+                                    test_seg_i = (test_seg_i + 1) % len(test_waypoints)
+                                    test_seg_start_t = now
+                                    wp = test_waypoints[test_seg_i]
+                                    test_seg_p0 = (wp[0].copy() if isinstance(wp, tuple) else wp.copy())
+
+                            teleop_ref = _make_pose_dict(p_ref, q_ref)
+
+                        else:
+                            # use XR as reference.
+                            # TeleVuerWrapper returns right_arm_pose as a 4x4 homogeneous matrix (np.ndarray)
+                            # under (basis) Robot convention (see tv_wrapper.py).
+                            rp = tele_data.right_arm_pose
+
+                            if args.xr_mode == 'hand':
+                                # Hand-tracking mode: keep orientation from wrist pose, but use index tip position.
+                                # right_hand_pos is (25,3) with OpenXR joint order; index tip is joint 10 (1-based) => idx 9 (0-based).
+                                try:
+                                    xr_p = np.asarray(rp[:3, 3], dtype=float).reshape(3)
+
+                                    if isinstance(rp, np.ndarray) and rp.shape == (4, 4):
+                                        xr_R = np.asarray(rp[:3, :3], dtype=float).reshape(3, 3)
+                                    else:
+                                        xr_R = np.eye(3, dtype=float)
+
+                                    if tele_data.right_hand_pos is not None and np.asarray(tele_data.right_hand_pos).shape[0] >= 10:
+                                        idx_tip = np.asarray(tele_data.right_hand_pos, dtype=float).reshape(25, 3)[9].copy()
+                                    else:
+                                        idx_tip = None
+
+                                    # Map position by anchors if available.
+                                    if idx_tip is not None and args._acu_xr_p0 is not None and args._acu_ee_p0 is not None:
+                                        pos = args._acu_ee_p0 + (idx_tip - args._acu_xr_p0)
+                                        # pos = args._acu_ee_p0 + (xr_p - args._acu_xr_p0)
+                                    else:
+                                        pos = None
+
+                                    quat = _rot_to_quat_xyzw(xr_R)
+                                    teleop_ref = _make_pose_dict(pos, quat) if pos is not None else None
+                                except Exception:
+                                    teleop_ref = None
+
+                            elif isinstance(rp, np.ndarray) and rp.shape == (4, 4):
+                                xr_p = np.asarray(rp[:3, 3], dtype=float).reshape(3)
+                                xr_R = np.asarray(rp[:3, :3], dtype=float).reshape(3, 3)
+
+                                # Only build mapped position if anchors are available.
+                                if args._acu_xr_p0 is not None and args._acu_ee_p0 is not None:
+                                    pos = args._acu_ee_p0 + (xr_p - args._acu_xr_p0)
+                                else:
+                                    # Not enabled yet (or just reset). Provide None to prevent ingest.
+                                    pos = None
+
+                                quat = _rot_to_quat_xyzw(xr_R)
+                                teleop_ref = _make_pose_dict(pos, quat) if pos is not None else None
+
+                            elif isinstance(rp, dict) and ("position" in rp or "pos" in rp):
+                                pos = rp.get("position", rp.get("pos"))
+                                quat = rp.get("quat", rp.get("orientation", test_quat_xyzw))
+                                teleop_ref = _make_pose_dict(pos, quat)
+                            else:
+                                teleop_ref = None
+
+                        # ---- Gate: ingest only when right trigger is pressed (optional) ----
+                        # Controller mode: use trigger as before.
+                        # Hand mode: use pinch distance/value as gate.
+                        if (args.mpc_stream_on_trigger or args.mpc_stream_toggle) and (not args.mpc_test_input):
+                            if args.xr_mode == 'hand':
+                                # TeleVuerWrapper: right_pinch_value is a distance-like value (scaled in tv_wrapper.py by *100).
+                                # Smaller value => stronger pinch.
+                                try:
+                                    pinch_v = float(getattr(tele_data, 'right_pinch_value', 1e9))
+                                except Exception:
+                                    pinch_v = 1e9
+
+                                # Use the same threshold semantics as controller trigger: "pressed" when pinch is small enough.
+                                pressed_now = (pinch_v <= float(args.mpc_trigger_threshold))
+
+                                # pinch "pressed" -> enable streaming; also do one-time init (clear path + anchors + seed)
+                                # NOTE: pinch may jitter and repeatedly generate rising edges; guard init with mpc_hand_init_done.
+                                if pressed_now:
+                                    if (not mpc_hand_init_done) and (not mpc_ref_enabled):
+                                        print("MPC teleop: right pinch pressed (init once).")
+                                        if args.mpc_stream_toggle:
+                                            mpc_ref_latched = True
+                                        mpc_ref_enabled = True
+
+                                        try:
+                                            teleop_mpc_api._path.clear()
+                                        except Exception:
+                                            pass
+
+                                        args._acu_xr_p0 = None
+                                        args._acu_ee_p0 = None
+                                        try:
+                                            # anchor xr p0 uses index tip in hand mode
+                                            if tele_data.right_hand_pos is not None:
+                                                _rh = np.asarray(tele_data.right_hand_pos, dtype=float).reshape(25, 3)
+                                                args._acu_xr_p0 = _rh[9].copy()
+                                                # args._acu_xr_p0 = np.asarray(rp[:3, 3], dtype=float).reshape(3).copy()
+                                            q_fk = np.asarray(current_lr_arm_q, dtype=float).reshape(-1)[:8]
+                                            fk0 = teleop_mpc_api.ctl.robot.fk(q_fk)
+                                            args._acu_ee_p0 = np.asarray(fk0.translation).reshape(3).copy()
+                                        except Exception:
+                                            args._acu_xr_p0 = None
+                                            args._acu_ee_p0 = None
+
+                                        try:
+                                            q_seed = np.asarray(current_lr_arm_q, dtype=float).reshape(-1)[:8]
+                                            fk_seed = teleop_mpc_api.ctl.robot.fk(q_seed)
+                                            p_seed = np.asarray(fk_seed.translation).reshape(3).copy()
+                                            q_seed_xyzw = _quat_normalize(_rot_to_quat_xyzw(np.asarray(fk_seed.rotation)))
+                                            teleop_mpc_api.ingest_teleop_pose(_make_pose_dict(p_seed, q_seed_xyzw), now)
+                                        except Exception:
+                                            pass
+
+                                        mpc_hand_init_done = True
+
+                                if args.mpc_stream_toggle:
+                                    mpc_ref_enabled = bool(mpc_ref_latched)
+                                else:
+                                    mpc_ref_enabled = bool(pressed_now)
+
+                                mpc_ref_prev_pressed = pressed_now
+
+                                if mpc_ref_enabled and (teleop_ref is not None):
+                                    teleop_mpc_api.ingest_teleop_pose(teleop_ref, now)
+
+                            else:
+                                # -------- existing controller gate logic --------
+                                trig_state = bool(getattr(tele_data.tele_state, 'right_trigger_state', False))
+                                trig_val_raw = getattr(tele_data, 'right_trigger_value', None)
+                                if trig_val_raw is None:
+                                    trig_val_raw = getattr(tele_data.tele_state, 'right_trigger_value', 0.0)
+                                try:
+                                    trig_val = float(trig_val_raw)
+                                except Exception:
+                                    trig_val = 0.0
+
+                                pressed_now = trig_state or (trig_val <= float(args.mpc_trigger_threshold))
+
+                                # rising edge: initialize anchors + clear path + seed
+                                if pressed_now and not mpc_ref_prev_pressed:
+                                    if args.mpc_stream_toggle:
+                                        mpc_ref_latched = True
+                                    # in hold-to-run mode, this just enables while pressed
+                                    mpc_ref_enabled = True
+
+                                    try:
+                                        teleop_mpc_api._path.clear()
+                                    except Exception:
+                                        pass
+
+                                    args._acu_xr_p0 = None
+                                    args._acu_ee_p0 = None
+                                    try:
+                                        if isinstance(rp, np.ndarray) and rp.shape == (4, 4):
+                                            args._acu_xr_p0 = np.asarray(rp[:3, 3], dtype=float).reshape(3).copy()
+                                        q_fk = np.asarray(current_lr_arm_q, dtype=float).reshape(-1)[:8]
+                                        fk0 = teleop_mpc_api.ctl.robot.fk(q_fk)
+                                        args._acu_ee_p0 = np.asarray(fk0.translation).reshape(3).copy()
+                                    except Exception:
+                                        args._acu_xr_p0 = None
+                                        args._acu_ee_p0 = None
+
+                                    # seed with current EE pose (FK)
+                                    try:
+                                        q_seed = np.asarray(current_lr_arm_q, dtype=float).reshape(-1)[:8]
+                                        fk_seed = teleop_mpc_api.ctl.robot.fk(q_seed)
+                                        p_seed = np.asarray(fk_seed.translation).reshape(3).copy()
+                                        q_seed_xyzw = _quat_normalize(_rot_to_quat_xyzw(np.asarray(fk_seed.rotation)))
+                                        teleop_mpc_api.ingest_teleop_pose(_make_pose_dict(p_seed, q_seed_xyzw), now)
+                                    except Exception:
+                                        pass
+
+                                # determine enabled state
+                                if args.mpc_stream_toggle:
+                                    mpc_ref_enabled = bool(mpc_ref_latched)
+                                else:
+                                    mpc_ref_enabled = bool(pressed_now)
+
+                                mpc_ref_prev_pressed = pressed_now
+
+                                if mpc_ref_enabled and (teleop_ref is not None):
+                                    teleop_mpc_api.ingest_teleop_pose(teleop_ref, now)
+
+                        else:
+                            if teleop_ref is not None:
+                                teleop_mpc_api.ingest_teleop_pose(teleop_ref, now)
+                        # ---------------------------------------------------------------
+
+                        # # measure current EE position for projection (sim/debug: use internal state.qk)
+                        # # q_meas = teleop_mpc_api.state.qk.copy()
+                        # q_meas = current_lr_arm_q[:8].copy()
+                        # # q_meas = arm_ctrl.get_current_dual_arm_q()[:8].copy()
+                        # q_meas[6] = 0.0  # fix last joint to zero for FK consistency
+                        # fk_meas = teleop_mpc_api.ctl.robot.fk(q_meas)
+                        # cur_pose_for_pf = {"position": np.asarray(fk_meas.translation).reshape(3).copy()}
+
+                        # # If trigger/toggle-gated streaming is enabled, do NOT run path following when not enabled.
+                        # if (args.mpc_stream_on_trigger or args.mpc_stream_toggle) and args.xr_mode == 'controller' and (not args.mpc_test_input) and (not mpc_ref_enabled):
+                        #     sol_q = q_meas.copy()
+                        #     sol_tauff = np.zeros_like(sol_q)
+                        # else:
+                        #     # NOTE: step_with_path_following + ctrl_dual_arm runs in the high-rate MPC thread.
+                        #     # Keep sol_q as the measured q for logging/recording in the main loop.
+                        #     sol_q = q_meas.copy()
+                        #     sol_tauff = np.zeros_like(sol_q)
+                    except Exception as e:
+                        logger_mp.error(f"[teleop_api MPC] step failed, fallback to IK. err={e}")
+                        sol_q, sol_tauff  = arm_ik.solve_ik(
+                            tele_data.left_arm_pose,
+                            tele_data.right_arm_pose,
+                            current_lr_arm_q,
+                            current_lr_arm_dq,
+                            right_wrist_last=right_wrist_pose_last,
+                        )
+                        right_wrist_pose_last = tele_data.right_arm_pose
+
+                else:
+                    # ------------------------------
+                    # Legacy MPC (rough planner) or IK fallback
+                    # ------------------------------
+                    if mpc_ctl is not None and mpc_qk is not None and mpc_rough_plan is not None:
+                        try:
+                            curpos = mpc_ctl.robot.fk(mpc_qk)
+                            P = np.asarray(curpos.translation).reshape(3)
+                            Sd, Vv, dot_value = compute_sd_rough(mpc_rough_plan, P=P)
+                            if mpc_rough_plan.flag == 1:
+                                break
+                            _res = mpc_ctl.step(qk=mpc_qk, Sd=Sd, mode=MPCMode.ROUGH, target_pose=mpc_target_rough)
+                            mpc_qk = _res.q_next.reshape(-1)
+                            sol_q = mpc_qk.copy()
+                            sol_tauff = np.zeros_like(sol_q)
+                            mpc_step_i += 1
+                            print(sol_q)
+                        except Exception as e:
+                            logger_mp.error(f"[MPC] step failed, fallback to IK. err={e}")
+                            sol_q, sol_tauff  = arm_ik.solve_ik(
+                                tele_data.left_arm_pose,
+                                tele_data.right_arm_pose,
+                                current_lr_arm_q,
+                                current_lr_arm_dq,
+                                right_wrist_last=right_wrist_pose_last,
+                            )
+                            right_wrist_pose_last = tele_data.right_arm_pose
+                    else:
+                        sol_q, sol_tauff  = arm_ik.solve_ik(tele_data.left_arm_pose, tele_data.right_arm_pose, current_lr_arm_q, current_lr_arm_dq)
             else:
                 sol_q, sol_tauff  = arm_ik.solve_ik(tele_data.left_arm_pose, tele_data.right_arm_pose, current_lr_arm_q, current_lr_arm_dq)
             time_ik_end = time.time()
+            
             # print(sol_q)
             # print(tele_data.right_arm_pose)
             logger_mp.debug(f"ik:\t{round(time_ik_end - time_ik_start, 6)}")
-            arm_ctrl.ctrl_dual_arm(sol_q, sol_tauff)
+
+            # Only control in main loop when ACU PF thread is not responsible.
+            if not (args.arm == 'ACU' and teleop_mpc_api is not None):
+                arm_ctrl.ctrl_dual_arm(sol_q, sol_tauff)
 
             # record data
             if args.record:
@@ -378,7 +1233,7 @@ if __name__ == '__main__':
                         left_ee_state = dual_hand_state_array[:7]
                         right_ee_state = dual_hand_state_array[-7:]
                         left_hand_action = dual_hand_action_array[:7]
-                        right_hand_action = dual_hand_action_array[-7:]
+                        right_hand_action = dual_hand_action_array[:7]
                         current_body_state = []
                         current_body_action = []
                 elif args.ee == "dex1" and args.xr_mode == "hand":
@@ -386,7 +1241,7 @@ if __name__ == '__main__':
                         left_ee_state = [dual_gripper_state_array[0]]
                         right_ee_state = [dual_gripper_state_array[1]]
                         left_hand_action = [dual_gripper_action_array[0]]
-                        right_hand_action = [dual_gripper_action_array[1]]
+                        right_hand_action = [dual_gripper_action_array[0]]
                         current_body_state = []
                         current_body_action = []
                 elif args.ee == "dex1" and args.xr_mode == "controller":
@@ -404,7 +1259,7 @@ if __name__ == '__main__':
                         left_ee_state = dual_hand_state_array[:6]
                         right_ee_state = dual_hand_state_array[-6:]
                         left_hand_action = dual_hand_action_array[:6]
-                        right_hand_action = dual_hand_action_array[-6:]
+                        right_hand_action = dual_hand_action_array[:6]
                         current_body_state = []
                         current_body_action = []
                 else:
@@ -419,7 +1274,6 @@ if __name__ == '__main__':
                 # wrist image
                 if WRIST:
                     current_wrist_image = wrist_img_array.copy()
-                # arm state and action
                 # arm state and action
                 if args.arm == 'ACU':
                     # single arm: store in right_arm by convention (keep schema stable)
@@ -513,6 +1367,12 @@ if __name__ == '__main__':
     except Exception as e:
         logger_mp.error(f"main process exception: {e}")
     finally:
+        try:
+            if acu_imp_runner is not None:
+                acu_imp_runner.stop()
+                acu_imp_runner.join(timeout=1.0)
+        except Exception:
+            pass
         arm_ctrl.ctrl_dual_arm_go_home()
 
         if args.ipc:
@@ -531,5 +1391,13 @@ if __name__ == '__main__':
 
         if args.record:
             recorder.close()
+
+        try:
+            mpc_pf_stop.set()
+            if mpc_pf_thread is not None:
+                mpc_pf_thread.join(timeout=1.0)
+        except Exception:
+            pass
+
         logger_mp.info("Finally, exiting program.")
         exit(0)

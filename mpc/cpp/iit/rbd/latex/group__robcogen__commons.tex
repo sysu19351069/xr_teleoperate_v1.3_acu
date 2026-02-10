@@ -1,0 +1,227 @@
+\doxysection{Rob\+Co\+Gen commons}
+\hypertarget{group__robcogen__commons}{}\label{group__robcogen__commons}\index{RobCoGen commons@{RobCoGen commons}}
+\doxysubsubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{group__robcogen__commons_gae1aaf71891395a01324c2240315882f5}\label{group__robcogen__commons_gae1aaf71891395a01324c2240315882f5} 
+\#define {\bfseries DScalar}~typename Derived\+::\+Scalar
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\footnotesize template$<$typename Derived $>$ }\\Force$<$ DScalar $>$ \mbox{\hyperlink{group__robcogen__commons_ga02196b9e20192b598f542ac6472111a1}{iit\+::rbd\+::vx\+Iv}} (const Velocity$<$ DScalar $>$ \&v, const Matrix\+Base$<$ Derived $>$ \&I)
+\item 
+{\footnotesize template$<$typename Derived $>$ }\\Force$<$ DScalar $>$ \mbox{\hyperlink{group__robcogen__commons_ga417f4d754ddff34ff1075bc396d7330f}{iit\+::rbd\+::vx\+Iv}} (const DScalar \&omegaz, const Matrix\+Base$<$ Derived $>$ \&I)
+\item 
+{\footnotesize template$<$typename S  = double$>$ }\\void \mbox{\hyperlink{group__robcogen__commons_ga775fe0d9260ef0946b76da8531bfffc4}{iit\+::rbd\+::motion\+Cross\+Product\+Mx}} (const Velocity$<$ S $>$ \&v, Mat66$<$ S $>$ \&vx)
+\item 
+{\footnotesize template$<$typename S  = double$>$ }\\void \mbox{\hyperlink{group__robcogen__commons_gaa77162e6aa47b2a52d8ef73c5d22e3c4}{iit\+::rbd\+::force\+Cross\+Product\+Mx}} (const Velocity$<$ S $>$ \&v, Mat66$<$ S $>$ \&vx)
+\item 
+\Hypertarget{group__robcogen__commons_ga211be89c2b57b106f7c0d5e743741391}\label{group__robcogen__commons_ga211be89c2b57b106f7c0d5e743741391} 
+{\footnotesize template$<$typename S  = double$>$ }\\void {\bfseries iit\+::rbd\+::fill\+Inertia} (S mass, const Vec3$<$ S $>$ \&com, const \mbox{\hyperlink{structiit_1_1rbd_1_1internal_1_1_symm_mat3x3_coefficients}{internal\+::\+Symm\+Mat3x3\+Coefficients}}$<$ S $>$ \&I3x3, \mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense}{Inertia\+Mat}}$<$ S $>$ \&I)
+\item 
+{\footnotesize template$<$typename Scalar  = double$>$ }\\void \mbox{\hyperlink{group__robcogen__commons_ga43b844382bdc866ffdf4b312aaa44a81}{iit\+::rbd\+::transform\+Inertia}} (const \mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense}{Inertia\+Mat}}$<$ Scalar $>$ \&I\+\_\+A, const Mat66$<$ Scalar $>$ \&XF, \mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense}{Inertia\+Mat}}$<$ Scalar $>$ \&I\+\_\+B)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Articulated inertia}
+Functions to compute and do the coordinate transform of articulated inertia propagated across a joint. See chapter 7 of the RBDA book, §7.2.\+2, equation (7.\+23).
+
+Two specialized functions are available for the two cases of revolute and prismatic joint (which connects the subtree with the mass-\/less handle), since the inertia exhibits two different sparsity patterns.
+
+Structure of the matrix for a prismatic joint\+: 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{[ia1,\ \ ia2,\ \ ia3,\ |\ \ ia4,\ \ ia5,\ \ \ 0\ \ ]}
+\DoxyCodeLine{[ia2,\ \ ia6,\ \ ia7,\ |\ \ ia8,\ \ ia9,\ \ \ 0\ \ ]}
+\DoxyCodeLine{[ia3,\ \ ia7,\ \ ia10,|\ \ ia11,\ ia12,\ \ 0\ \ ]\ \ \ \ \ [\ \ I\ \ \ |\ \ C\ \ ]}
+\DoxyCodeLine{\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/|-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ \ \ \ =\ \ |\ -\/-\/-\/-\/-\/|-\/-\/-\/-\/\ |}
+\DoxyCodeLine{[ia4,\ \ ia8,\ \ ia11,|\ ia13,\ ia14,\ \ \ 0\ \ ]\ \ \ \ \ [\ \ C\string^T\ |\ \ M\ \ ]}
+\DoxyCodeLine{[ia5,\ \ ia9,\ \ ia12,|\ ia14,\ ia15,\ \ \ 0\ \ ]}
+\DoxyCodeLine{[0\ \ ,\ \ \ \ 0,\ \ \ \ 0,\ |\ \ 0,\ \ \ \ \ 0,\ \ \ \ 0\ \ ]}
+
+\end{DoxyCode}
+
+
+Structure of the matrix for a revolute joint\+: 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{[ia1,\ \ ia2,\ \ 0,\ |\ ia4,\ \ ia5,\ \ ia6\ ]}
+\DoxyCodeLine{[ia2,\ \ ia7,\ \ 0,\ |\ ia8,\ \ ia9,\ \ ia10]\ \ \ \ [\ \ I\ \ \ |\ \ C\ \ ]}
+\DoxyCodeLine{[0\ \ ,\ \ \ \ 0,\ \ 0,\ |\ \ \ 0,\ \ \ \ 0,\ \ \ \ 0\ ]\ \ =\ |\ -\/-\/-\/-\/-\/|-\/-\/-\/-\/-\/|}
+\DoxyCodeLine{[-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ |\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ ]\ \ \ \ [\ \ C\string^T\ |\ \ M\ \ ]}
+\DoxyCodeLine{[ia4,\ \ ia8,\ \ 0,\ |\ ia11,\ ia12,\ ia13]}
+\DoxyCodeLine{[ia5,\ \ ia9,\ \ 0,\ |\ ia12,\ ia14,\ ia15]}
+\DoxyCodeLine{[ia6,\ ia10,\ \ 0,\ |\ ia13,\ ia15,\ ia16]}
+
+\end{DoxyCode}
+ \begin{DoxyCompactItemize}
+\item 
+{\footnotesize template$<$typename D1 , typename D2 , typename D3 $>$ }\\void \mbox{\hyperlink{group__robcogen__commons_gabf9d23d9d84faf49f6e7b051ad9b76db}{iit\+::rbd\+::ctransform\+\_\+\+Ia\+\_\+revolute}} (const Matrix\+Base$<$ D1 $>$ \&Ia\+\_\+A, const Matrix\+Base$<$ D2 $>$ \&XM, const Matrix\+Base$<$ D3 $>$ \&Ia\+\_\+\+B\+\_\+const)
+\item 
+\Hypertarget{group__robcogen__commons_ga60286411e07a9f0bcf0fd40162726a87}\label{group__robcogen__commons_ga60286411e07a9f0bcf0fd40162726a87} 
+{\footnotesize template$<$typename D1 , typename D2 , typename D3 $>$ }\\void {\bfseries iit\+::rbd\+::ctransform\+\_\+\+Ia\+\_\+prismatic} (const Matrix\+Base$<$ D1 $>$ \&Ia\+\_\+A, const Matrix\+Base$<$ D2 $>$ \&XM, const Matrix\+Base$<$ D3 $>$ \&Ia\+\_\+\+B\+\_\+const)
+\item 
+\Hypertarget{group__robcogen__commons_ga5afd494d2ba72312c020232817f09fe5}\label{group__robcogen__commons_ga5afd494d2ba72312c020232817f09fe5} 
+{\footnotesize template$<$typename D1 , typename D2 $>$ }\\void {\bfseries iit\+::rbd\+::ctransform\+\_\+\+Ia\+\_\+revolute} (const Matrix\+Base$<$ D1 $>$ \&Ia\+\_\+child, const \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core}{CTransform\+Core}}$<$ typename D1\+::\+Scalar $>$ \&child\+\_\+ct\+\_\+parent, const Matrix\+Base$<$ D2 $>$ \&Ia\+\_\+parent\+\_\+const)
+\item 
+\Hypertarget{group__robcogen__commons_ga9f6a8da3138529578be264708af454ab}\label{group__robcogen__commons_ga9f6a8da3138529578be264708af454ab} 
+{\footnotesize template$<$typename D1 , typename D2 $>$ }\\void {\bfseries iit\+::rbd\+::ctransform\+\_\+\+Ia\+\_\+prismatic} (const Matrix\+Base$<$ D1 $>$ \&Ia\+\_\+child, const \mbox{\hyperlink{structiit_1_1rbd_1_1_c_transform_core}{CTransform\+Core}}$<$ typename D1\+::\+Scalar $>$ \&child\+\_\+ct\+\_\+parent, const Matrix\+Base$<$ D2 $>$ \&Ia\+\_\+parent\+\_\+const)
+\item 
+{\footnotesize template$<$typename D1 , typename D2 $>$ }\\void \mbox{\hyperlink{group__robcogen__commons_gafac3a4b374a938576ddc3b8ad7625c91}{iit\+::rbd\+::compute\+\_\+\+Ia\+\_\+revolute}} (const Matrix\+Base$<$ D1 $>$ \&IA, const Vec6$<$ typename D1\+::\+Scalar $>$ \&U, const typename D1\+::\+Scalar \&D, const Matrix\+Base$<$ D2 $>$ \&Ia\+\_\+const)
+\item 
+\Hypertarget{group__robcogen__commons_ga2adb087f16902a1f7d9234c9f934e393}\label{group__robcogen__commons_ga2adb087f16902a1f7d9234c9f934e393} 
+{\footnotesize template$<$typename D1 , typename D2 $>$ }\\void {\bfseries iit\+::rbd\+::compute\+\_\+\+Ia\+\_\+prismatic} (const Matrix\+Base$<$ D1 $>$ \&IA, const Vec6$<$ typename D1\+::\+Scalar $>$ \&U, const typename D1\+::\+Scalar \&D, const Matrix\+Base$<$ D2 $>$ \&Ia\+\_\+const)
+\item 
+\Hypertarget{group__robcogen__commons_ga32dc47465d2b571c398071708b1c18d9}\label{group__robcogen__commons_ga32dc47465d2b571c398071708b1c18d9} 
+{\footnotesize template$<$typename D1 , typename D2 $>$ }\\void {\bfseries iit\+::rbd\+::propagate\+\_\+\+IA\+\_\+across\+\_\+prismatic\+\_\+joint} (const Matrix\+Base$<$ D1 $>$ \&IA, const Matrix\+Base$<$ D2 $>$ \&Ia\+\_\+const)
+\item 
+\Hypertarget{group__robcogen__commons_ga039997c7ccf8621c9b77765680113ae1}\label{group__robcogen__commons_ga039997c7ccf8621c9b77765680113ae1} 
+{\footnotesize template$<$typename D1 , typename D2 $>$ }\\void {\bfseries iit\+::rbd\+::propagate\+\_\+\+IA\+\_\+across\+\_\+revolute\+\_\+joint} (const Matrix\+Base$<$ D1 $>$ \&IA, const Matrix\+Base$<$ D2 $>$ \&Ia\+\_\+const)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Functions implementing some algebraic expressions recurring in the code generated by Rob\+Co\+Gen.
+
+This implementation is usually a bit more efficient than the straightforward way of doing the same thing, with matrix algebra.
+
+These functions were written specifically to be used within the code generated by Rob\+Co\+Gen; they expect parameters which have to satisfy maybe more constraints than one would expect from a public API. Similarly, no consistency checks are performed (e.\+g. verify that the matrix is 6x6). 
+
+\doxysubsection{Function Documentation}
+\Hypertarget{group__robcogen__commons_gafac3a4b374a938576ddc3b8ad7625c91}\label{group__robcogen__commons_gafac3a4b374a938576ddc3b8ad7625c91} 
+\index{RobCoGen commons@{RobCoGen commons}!compute\_Ia\_revolute@{compute\_Ia\_revolute}}
+\index{compute\_Ia\_revolute@{compute\_Ia\_revolute}!RobCoGen commons@{RobCoGen commons}}
+\doxysubsubsection{\texorpdfstring{compute\_Ia\_revolute()}{compute\_Ia\_revolute()}}
+{\footnotesize\ttfamily template$<$typename D1 , typename D2 $>$ \\
+void iit\+::rbd\+::compute\+\_\+\+Ia\+\_\+revolute (\begin{DoxyParamCaption}\item[{const Matrix\+Base$<$ D1 $>$ \&}]{IA,  }\item[{const Vec6$<$ typename D1\+::\+Scalar $>$ \&}]{U,  }\item[{const typename D1\+::\+Scalar \&}]{D,  }\item[{const Matrix\+Base$<$ D2 $>$ \&}]{Ia\+\_\+const }\end{DoxyParamCaption})}
+
+Propagate an articulated inertia across the joint supporting the handle of the articulated mechanism.
+
+
+\begin{DoxyParams}[1]{Parameters}
+ & {\em IA} & the regular articulated inertia of some subtree \\
+\hline
+ & {\em U} & the U term for the current joint (cfr. eq. 7.\+43 of RBDA) \\
+\hline
+ & {\em D} & the D term for the current joint (cfr. eq. 7.\+44 of RBDA) \\
+\hline
+\mbox{\texttt{ out}}  & {\em Ia\+\_\+const} & the articulated inertia for the same subtree, but propagated across the current joint. The matrix is assumed to be already initialized with zeros, at least in the row and column which is known to be zero. In other words, those elements are not computed nor assigned in this function. Note that the constness of the argument is casted away (trick required with Eigen), as this is an output argument. \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__robcogen__commons_gabf9d23d9d84faf49f6e7b051ad9b76db}\label{group__robcogen__commons_gabf9d23d9d84faf49f6e7b051ad9b76db} 
+\index{RobCoGen commons@{RobCoGen commons}!ctransform\_Ia\_revolute@{ctransform\_Ia\_revolute}}
+\index{ctransform\_Ia\_revolute@{ctransform\_Ia\_revolute}!RobCoGen commons@{RobCoGen commons}}
+\doxysubsubsection{\texorpdfstring{ctransform\_Ia\_revolute()}{ctransform\_Ia\_revolute()}}
+{\footnotesize\ttfamily template$<$typename D1 , typename D2 , typename D3 $>$ \\
+void iit\+::rbd\+::ctransform\+\_\+\+Ia\+\_\+revolute (\begin{DoxyParamCaption}\item[{const Matrix\+Base$<$ D1 $>$ \&}]{Ia\+\_\+A,  }\item[{const Matrix\+Base$<$ D2 $>$ \&}]{XM,  }\item[{const Matrix\+Base$<$ D3 $>$ \&}]{Ia\+\_\+\+B\+\_\+const }\end{DoxyParamCaption})}
+
+Coordinate transform of a spatial articulated inertia propagated across the joint.
+
+The implementation can be derived by expanding the symbolic expression of the coordinate transformation, which is {\ttfamily XM\texorpdfstring{$^\wedge$}{\string^}T \texorpdfstring{$\ast$}{*} Ia \texorpdfstring{$\ast$}{*} XM}, {\itshape using block-\/matrix expressions}. Express the coordinate transform {\ttfamily XM} in terms of the rotation matrix {\ttfamily R} and the translation vector {\ttfamily r}. Expand the product and then note the common factors {\ttfamily R} and {\ttfamily R\texorpdfstring{$^\wedge$}{\string^}T} which can be collected at the right and left of the expressions.
+
+That will highlight the common factors that I compute in this implementation, which include\+: {\ttfamily I + rx.\+T \texorpdfstring{$\ast$}{*} C.\+T + C \texorpdfstring{$\ast$}{*} rx} {\ttfamily C + rx.\+T \texorpdfstring{$\ast$}{*} M = C -\/ rx \texorpdfstring{$\ast$}{*} M} and a bunch of {\ttfamily R.\+T (...) R}.
+
+
+\begin{DoxyParams}[1]{Parameters}
+ & {\em Ia\+\_\+A} & the articulated inertia in A coordinates \\
+\hline
+ & {\em XM} & a spatial coordinate transform for motion vectors, in the form {\ttfamily A\+\_\+\+XM\+\_\+B} (that is, mapping forces from A to B coordinates) \\
+\hline
+\mbox{\texttt{ out}}  & {\em Ia\+\_\+\+B\+\_\+const} & the same articulated inertia, but expressed in B coordinates. Note that the constness is casted away (trick required with Eigen) \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__robcogen__commons_gaa77162e6aa47b2a52d8ef73c5d22e3c4}\label{group__robcogen__commons_gaa77162e6aa47b2a52d8ef73c5d22e3c4} 
+\index{RobCoGen commons@{RobCoGen commons}!forceCrossProductMx@{forceCrossProductMx}}
+\index{forceCrossProductMx@{forceCrossProductMx}!RobCoGen commons@{RobCoGen commons}}
+\doxysubsubsection{\texorpdfstring{forceCrossProductMx()}{forceCrossProductMx()}}
+{\footnotesize\ttfamily template$<$typename S  = double$>$ \\
+void iit\+::rbd\+::force\+Cross\+Product\+Mx (\begin{DoxyParamCaption}\item[{const Velocity$<$ S $>$ \&}]{v,  }\item[{Mat66$<$ S $>$ \&}]{vx }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Calculates the spatial cross product matrix, for force vectors.
+
+
+\begin{DoxyParams}[1]{Parameters}
+ & {\em v} & the spatial velocity defining the cross product \\
+\hline
+\mbox{\texttt{ out}}  & {\em vx} & the 6x6 matrix whose coefficients will be set; must be initialized with zeros (that is, this function does not assign the zero elements of the cross product matrix). \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__robcogen__commons_ga775fe0d9260ef0946b76da8531bfffc4}\label{group__robcogen__commons_ga775fe0d9260ef0946b76da8531bfffc4} 
+\index{RobCoGen commons@{RobCoGen commons}!motionCrossProductMx@{motionCrossProductMx}}
+\index{motionCrossProductMx@{motionCrossProductMx}!RobCoGen commons@{RobCoGen commons}}
+\doxysubsubsection{\texorpdfstring{motionCrossProductMx()}{motionCrossProductMx()}}
+{\footnotesize\ttfamily template$<$typename S  = double$>$ \\
+void iit\+::rbd\+::motion\+Cross\+Product\+Mx (\begin{DoxyParamCaption}\item[{const Velocity$<$ S $>$ \&}]{v,  }\item[{Mat66$<$ S $>$ \&}]{vx }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Calculates the spatial cross product matrix, for motion vectors.
+
+
+\begin{DoxyParams}[1]{Parameters}
+ & {\em v} & the spatial velocity defining the cross product \\
+\hline
+\mbox{\texttt{ out}}  & {\em vx} & the 6x6 matrix whose coefficients will be set; must be initialized with zeros (that is, this function does not assign the zero elements of the cross product matrix). \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyTemplParams}{Template Parameters}
+{\em the} & scalar type \\
+\hline
+\end{DoxyTemplParams}
+\Hypertarget{group__robcogen__commons_ga43b844382bdc866ffdf4b312aaa44a81}\label{group__robcogen__commons_ga43b844382bdc866ffdf4b312aaa44a81} 
+\index{RobCoGen commons@{RobCoGen commons}!transformInertia@{transformInertia}}
+\index{transformInertia@{transformInertia}!RobCoGen commons@{RobCoGen commons}}
+\doxysubsubsection{\texorpdfstring{transformInertia()}{transformInertia()}}
+{\footnotesize\ttfamily template$<$typename Scalar  = double$>$ \\
+void iit\+::rbd\+::transform\+Inertia (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense}{Inertia\+Mat}}$<$ Scalar $>$ \&}]{I\+\_\+A,  }\item[{const Mat66$<$ Scalar $>$ \&}]{XF,  }\item[{\mbox{\hyperlink{classiit_1_1rbd_1_1tpl_1_1_inertia_matrix_dense}{Inertia\+Mat}}$<$ Scalar $>$ \&}]{I\+\_\+B }\end{DoxyParamCaption})}
+
+Roto-\/translate a spatial inertia tensor.
+
+This function is basically an optimized implementation of the formula to do a coordinate transform for a spatial inertia\+: \[ XF \cdot I \cdot XF^T \] (see equation 2.\+66 of the RBDA book)
+
+
+\begin{DoxyParams}[1]{Parameters}
+ & {\em I\+\_\+A} & the spatial inertia tensor of a rigid body, expressed in reference frame {\ttfamily A} \\
+\hline
+ & {\em XF} & a spatial coordinate transform for force vectors, in the form {\ttfamily B\+\_\+\+XF\+\_\+A} (that is, mapping forces from A to B coordinates) \\
+\hline
+\mbox{\texttt{ out}}  & {\em I\+\_\+B} & the output tensor, expressing the same inertial properties with coordinates of frame {\ttfamily B} \\
+\hline
+\end{DoxyParams}
+\Hypertarget{group__robcogen__commons_ga417f4d754ddff34ff1075bc396d7330f}\label{group__robcogen__commons_ga417f4d754ddff34ff1075bc396d7330f} 
+\index{RobCoGen commons@{RobCoGen commons}!vxIv@{vxIv}}
+\index{vxIv@{vxIv}!RobCoGen commons@{RobCoGen commons}}
+\doxysubsubsection{\texorpdfstring{vxIv()}{vxIv()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily template$<$typename Derived $>$ \\
+Force$<$ DScalar $>$ iit\+::rbd\+::vx\+Iv (\begin{DoxyParamCaption}\item[{const DScalar \&}]{omegaz,  }\item[{const Matrix\+Base$<$ Derived $>$ \&}]{I }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Calculates the bias force in the special case in which the velocity is a pure rotation about the {\ttfamily z} axis. \begin{DoxySeeAlso}{See also}
+vx\+Iv(const Velocity\+Vector\&, const Inertia\+Matrix\+Dense\&)
+\end{DoxySeeAlso}
+
+\begin{DoxyParams}{Parameters}
+{\em omegaz} & the scalar rotation velocity about the {\ttfamily z} axis \\
+\hline
+{\em I} & the spatial inertia tensor of the rigid body \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+see vx\+Iv(const Velocity\+Vector\&, const Inertia\+Matrix\+Dense\&) 
+\end{DoxyReturn}
+\Hypertarget{group__robcogen__commons_ga02196b9e20192b598f542ac6472111a1}\label{group__robcogen__commons_ga02196b9e20192b598f542ac6472111a1} 
+\index{RobCoGen commons@{RobCoGen commons}!vxIv@{vxIv}}
+\index{vxIv@{vxIv}!RobCoGen commons@{RobCoGen commons}}
+\doxysubsubsection{\texorpdfstring{vxIv()}{vxIv()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily template$<$typename Derived $>$ \\
+Force$<$ DScalar $>$ iit\+::rbd\+::vx\+Iv (\begin{DoxyParamCaption}\item[{const Velocity$<$ DScalar $>$ \&}]{v,  }\item[{const Matrix\+Base$<$ Derived $>$ \&}]{I }\end{DoxyParamCaption})}
+
+Calculates the bias force acting on a rigid body with the given velocity and inertial properties.
+
+This function provides a hopefully efficient implementation of the term \[ v \times^{*} I v \] as described in Featherstone\textquotesingle{}s book about rigid body dynamics algorithms.
+
+
+\begin{DoxyParams}{Parameters}
+{\em v} & the spatial velocity of the body \\
+\hline
+{\em I} & the spatial inertia tensor of the body \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+the spatial force acting on the body due to its own velocity; from another point of view, the force required not to produce any acceleration. 
+\end{DoxyReturn}

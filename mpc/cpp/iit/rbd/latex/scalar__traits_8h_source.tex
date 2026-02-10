@@ -1,0 +1,87 @@
+\doxysection{scalar\+\_\+traits.\+h}
+\hypertarget{scalar__traits_8h_source}{}\label{scalar__traits_8h_source}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ IIT\_RBD\_TPL\_SCALAR\_TRAITS\_H}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ IIT\_RBD\_TPL\_SCALAR\_TRAITS\_H}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ "{}rbd.h"{}}}
+\DoxyCodeLine{00005\ }
+\DoxyCodeLine{00006\ \textcolor{keyword}{namespace\ }iit\ \{}
+\DoxyCodeLine{00007\ \textcolor{keyword}{namespace\ }rbd\ \{}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ }
+\DoxyCodeLine{00010\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00011\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{structiit_1_1rbd_1_1_basic_traits}{BasicTraits}}}
+\DoxyCodeLine{00012\ \{}
+\DoxyCodeLine{00013\ \ \ \ \ \textcolor{keyword}{typedef}\ T\ ValueType;}
+\DoxyCodeLine{00014\ \ \ \ \ \textcolor{keyword}{typedef}\ T\ Scalar;}
+\DoxyCodeLine{00015\ \};}
+\DoxyCodeLine{00016\ }
+\DoxyCodeLine{00017\ \textcolor{keyword}{template}\ \textcolor{keyword}{struct\ }BasicTraits<double>;}
+\DoxyCodeLine{00018\ \textcolor{keyword}{template}\ \textcolor{keyword}{struct\ }BasicTraits<float>;}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ BasicTrait>}
+\DoxyCodeLine{00022\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{structiit_1_1rbd_1_1_scalar_traits_commons}{ScalarTraitsCommons}}}
+\DoxyCodeLine{00023\ \{}
+\DoxyCodeLine{00024\ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ BasicTrait::Scalar\ \ \ \ Scalar;}
+\DoxyCodeLine{00025\ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ BasicTrait::ValueType\ ValueType;}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ rbd::Core<Scalar>\ CoreTypes;}
+\DoxyCodeLine{00028\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keywordtype}{int}\ R,\ \textcolor{keywordtype}{int}\ C>\ \textcolor{keyword}{using\ }PlainMatrix\ =\ rbd::PlainMatrix<Scalar,\ R,\ C>;}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00030\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keywordtype}{int}\ Dims>}
+\DoxyCodeLine{00031\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keyword}{static}\ PlainMatrix<Dims,\ 1>\ solve(}
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PlainMatrix<Dims,\ Dims>\&\ A,}
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PlainMatrix<Dims,\ 1>\&\ b)}
+\DoxyCodeLine{00034\ \ \ \ \ \{}
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ A.inverse()*b;}
+\DoxyCodeLine{00036\ \ \ \ \ \}}
+\DoxyCodeLine{00037\ \};}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \textcolor{keyword}{namespace\ }internal\ \{}
+\DoxyCodeLine{00041\ }
+\DoxyCodeLine{00042\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ FLOAT\_t>}
+\DoxyCodeLine{00043\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{structiit_1_1rbd_1_1internal_1_1_float_point_funcs}{FloatPointFuncs}}}
+\DoxyCodeLine{00044\ \{}
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{keyword}{typedef}\ FLOAT\_t\ Float\_t;}
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keyword}{static}\ Float\_t\ sin\ (\textcolor{keyword}{const}\ Float\_t\&\ x)\ \{\ \textcolor{keywordflow}{return}\ std::sin(x);\ \ \}}
+\DoxyCodeLine{00047\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keyword}{static}\ Float\_t\ cos\ (\textcolor{keyword}{const}\ Float\_t\&\ x)\ \{\ \textcolor{keywordflow}{return}\ std::cos(x);\ \ \}}
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keyword}{static}\ Float\_t\ tan\ (\textcolor{keyword}{const}\ Float\_t\&\ x)\ \{\ \textcolor{keywordflow}{return}\ std::tan(x);\ \ \}}
+\DoxyCodeLine{00049\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keyword}{static}\ Float\_t\ sinh(\textcolor{keyword}{const}\ Float\_t\&\ x)\ \{\ \textcolor{keywordflow}{return}\ std::sinh(x);\ \}}
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keyword}{static}\ Float\_t\ cosh(\textcolor{keyword}{const}\ Float\_t\&\ x)\ \{\ \textcolor{keywordflow}{return}\ std::cosh(x);\ \}}
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keyword}{static}\ Float\_t\ tanh(\textcolor{keyword}{const}\ Float\_t\&\ x)\ \{\ \textcolor{keywordflow}{return}\ std::tanh(x);\ \}}
+\DoxyCodeLine{00052\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keyword}{static}\ Float\_t\ exp\ (\textcolor{keyword}{const}\ Float\_t\&\ x)\ \{\ \textcolor{keywordflow}{return}\ std::exp(x);\ \ \}}
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keyword}{static}\ Float\_t\ abs\ (\textcolor{keyword}{const}\ Float\_t\&\ x)\ \{\ \textcolor{keywordflow}{return}\ std::abs(x);\ \ \}}
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keyword}{static}\ Float\_t\ fabs(\textcolor{keyword}{const}\ Float\_t\&\ x)\ \{\ \textcolor{keywordflow}{return}\ std::fabs(x);\ \}}
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keyword}{static}\ Float\_t\ sqrt(\textcolor{keyword}{const}\ Float\_t\&\ x)\ \{\ \textcolor{keywordflow}{return}\ std::sqrt(x);\ \}}
+\DoxyCodeLine{00056\ \};}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \}\ \textcolor{comment}{//\ namespace\ internal}}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ }
+\DoxyCodeLine{00062\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ SCALAR>}
+\DoxyCodeLine{00063\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{structiit_1_1rbd_1_1_scalar_traits}{ScalarTraits}}\ :\ \textcolor{keyword}{public}\ ScalarTraitsCommons<\ BasicTraits<SCALAR>\ >,}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{public}\ \mbox{\hyperlink{structiit_1_1rbd_1_1internal_1_1_float_point_funcs}{internal::FloatPointFuncs<SCALAR>}}}
+\DoxyCodeLine{00065\ \{}
+\DoxyCodeLine{00066\ \};}
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ \textcolor{comment}{//\ Explicit\ \_instantiation\_\ of\ the\ traits\ for\ double\ and\ float}}
+\DoxyCodeLine{00069\ \textcolor{keyword}{template}\ \textcolor{keyword}{struct\ }ScalarTraits<double>;}
+\DoxyCodeLine{00070\ \textcolor{keyword}{template}\ \textcolor{keyword}{struct\ }ScalarTraits<float>;}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00072\ \textcolor{keyword}{typedef}\ ScalarTraits<double>\ DoubleTraits;}
+\DoxyCodeLine{00073\ \textcolor{keyword}{typedef}\ ScalarTraits<float>\ \ FloatTraits;}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \}}
+\DoxyCodeLine{00078\ \}}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00081\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00082\ }
+
+\end{DoxyCode}

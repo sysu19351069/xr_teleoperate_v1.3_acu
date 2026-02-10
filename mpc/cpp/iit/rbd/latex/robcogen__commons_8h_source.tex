@@ -1,0 +1,882 @@
+\doxysection{robcogen\+\_\+commons.\+h}
+\hypertarget{robcogen__commons_8h_source}{}\label{robcogen__commons_8h_source}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ CPYHDR\ \{\ */}}
+\DoxyCodeLine{00002\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *\ This\ file\ is\ part\ of\ the\ 'iit-\/rbd'\ library.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ Copyright\ ©\ 2015-\/2024,\ Marco\ Frigerio}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *\ See\ the\ LICENSE\ file\ for\ more\ information.}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00008\ \textcolor{comment}{/*\ \}\ CPYHDR\ */}}
+\DoxyCodeLine{00009\ }
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#ifndef\ IIT\_RBD\_ROBCOGEN\_COMMON\_EXPRESSIONS\_}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#define\ IIT\_RBD\_ROBCOGEN\_COMMON\_EXPRESSIONS\_}}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ "{}rbd.h"{}}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ "{}InertiaMatrix.h"{}}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ "{}TransformsBase.h"{}}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ "{}internals.h"{}}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#include\ "{}compact\_transform.h"{}}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{keyword}{namespace\ }iit\ \{}
+\DoxyCodeLine{00022\ \textcolor{keyword}{namespace\ }rbd\ \{}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00041\ \textcolor{preprocessor}{\#define\ DScalar\ typename\ Derived::Scalar}}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00057\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Derived>}
+\DoxyCodeLine{00058\ Force<DScalar>\ \mbox{\hyperlink{group__robcogen__commons_ga02196b9e20192b598f542ac6472111a1}{vxIv}}(\textcolor{keyword}{const}\ Velocity<DScalar>\&\ v,\ \textcolor{keyword}{const}\ MatrixBase<Derived>\&\ I)}
+\DoxyCodeLine{00059\ \{}
+\DoxyCodeLine{00060\ \ \ \ \ \textcolor{keyword}{typedef}\ DScalar\ Scalar;}
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{comment}{//\ This\ is\ a\ "{}manual"{}\ implementation\ of\ the\ matrix\ product,\ as\ the\ obvious}}
+\DoxyCodeLine{00062\ \ \ \ \ \textcolor{comment}{//\ \ implementation\ (plain\ matrix-\/matrix-\/vector\ multiplication)\ would\ not}}
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{comment}{//\ \ exploit\ the\ (known)\ sparsity\ pattern\ and\ the\ fact\ that\ the\ first\ and\ last}}
+\DoxyCodeLine{00064\ \ \ \ \ \textcolor{comment}{//\ \ term\ (\ v\ cross*\ and\ v)\ have\ the\ same\ coefficients.}}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \ \ \ \ \textcolor{comment}{//\ Pre-\/compute\ some\ recurring\ quantities.}}
+\DoxyCodeLine{00067\ \ \ \ \ Scalar\ wx2\ =\ v(AX)*v(AX);}
+\DoxyCodeLine{00068\ \ \ \ \ Scalar\ wy2\ =\ v(AY)*v(AY);}
+\DoxyCodeLine{00069\ \ \ \ \ Scalar\ wz2\ =\ v(AZ)*v(AZ);}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ \ \ \ \ Scalar\ v\_AXAY\ =\ v(AX)*v(AY);}
+\DoxyCodeLine{00072\ \ \ \ \ Scalar\ v\_AXAZ\ =\ v(AX)*v(AZ);}
+\DoxyCodeLine{00073\ \ \ \ \ Scalar\ v\_AXLY\ =\ v(AX)*v(LY);}
+\DoxyCodeLine{00074\ \ \ \ \ Scalar\ v\_AXLZ\ =\ v(AX)*v(LZ);}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ \ \ \ \ Scalar\ v\_AYAZ\ =\ v(AY)*v(AZ);}
+\DoxyCodeLine{00077\ \ \ \ \ Scalar\ v\_AYLX\ =\ v(AY)*v(LX);}
+\DoxyCodeLine{00078\ \ \ \ \ Scalar\ v\_AYLZ\ =\ v(AY)*v(LZ);}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \ \ \ \ Scalar\ v\_AZLX\ =\ v(AZ)*v(LX);}
+\DoxyCodeLine{00081\ \ \ \ \ Scalar\ v\_AZLY\ =\ v(AZ)*v(LY);}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \ \ \ \ Scalar\ m\ \ \ =\ I(LX,LX);\ \textcolor{comment}{//\ the\ mass}}
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{comment}{//\ Copy\ some\ of\ the\ coefficients\ for\ more\ efficient\ access}}
+\DoxyCodeLine{00085\ \ \ \ \ \textcolor{comment}{//\ 'aa'\ stands\ for\ angular-\/angular,\ a\ 3x3\ sub-\/block\ of\ the\ spatial\ inertia}}
+\DoxyCodeLine{00086\ \ \ \ \ \mbox{\hyperlink{structiit_1_1rbd_1_1internal_1_1_symm_mat3x3_coefficients}{internal::SymmMat3x3Coefficients<Scalar>}}\ Iaa(}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \ \ I(AX,AX),\ I(AX,AY),\ I(AX,AZ),}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ I(AY,AY),\ I(AY,AZ),}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ I(AZ,AZ));}
+\DoxyCodeLine{00090\ \ \ \ \ Scalar\ cmX\ =\ I(AZ,\ LY);}
+\DoxyCodeLine{00091\ \ \ \ \ Scalar\ cmY\ =\ I(AX,\ LZ);}
+\DoxyCodeLine{00092\ \ \ \ \ Scalar\ cmZ\ =\ I(AY,\ LX);}
+\DoxyCodeLine{00093\ }
+\DoxyCodeLine{00094\ \ \ \ \ Force<DScalar>\ ret;}
+\DoxyCodeLine{00095\ \ \ \ \ ret(AX)\ =\ cmZ\ *\ (v\_AXLZ\ -\/\ v\_AZLX)}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \ \ \ \ +\ cmY\ *\ (v\_AXLY\ -\/\ v\_AYLX)}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \ \ \ \ +\ v\_AYAZ\ *\ (Iaa.ZZ\ -\/\ Iaa.YY)}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \ \ \ \ -\/\ v\_AXAZ*Iaa.XY\ -\/\ (wz2\ -\/\ wy2)*Iaa.YZ\ +\ v\_AXAY*Iaa.XZ;}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \ \ \ \ ret(AY)\ =\ cmZ\ *\ (v\_AYLZ\ -\/\ v\_AZLY)}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \ \ \ \ -\/\ cmX\ *\ (v\_AXLY\ -\/\ v\_AYLX)}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \ \ \ \ -\/\ v\_AXAZ\ *\ (Iaa.ZZ\ -\/\ Iaa.XX)}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \ \ \ \ +\ v\_AYAZ*Iaa.XY\ \ -\/\ v\_AXAY*Iaa.YZ\ +\ (wz2\ -\/\ wx2)*Iaa.XZ;}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \ \ \ \ ret(AZ)\ =\ cmX\ *\ (v\_AZLX\ -\/\ v\_AXLZ)}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \ \ \ \ -\/\ cmY\ *\ (v\_AYLZ\ -\/\ v\_AZLY)}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \ \ \ \ +\ v\_AXAY\ *\ (Iaa.YY\ -\/\ Iaa.XX)}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \ \ \ \ +\ v\_AXAZ*Iaa.YZ\ -\/\ Iaa.XZ*v\_AYAZ\ \ -\/\ (wy2\ -\/\ wx2)*Iaa.XY;}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00110\ \ \ \ \ ret(LX)\ =\ \ \ m\ *\ (v\_AYLZ\ -\/\ v\_AZLY)\ -\/\ cmX\ *\ (wz2\ +\ wy2)\ +\ v\_AXAZ*cmZ\ +\ v\_AXAY*cmY;}
+\DoxyCodeLine{00111\ \ \ \ \ ret(LY)\ =\ -\/\ m\ *\ (v\_AXLZ\ -\/\ v\_AZLX)\ -\/\ cmY\ *\ (wz2\ +\ wx2)\ +\ v\_AXAY*cmX\ +\ v\_AYAZ*cmZ;}
+\DoxyCodeLine{00112\ \ \ \ \ ret(LZ)\ =\ \ \ m\ *\ (v\_AXLY\ -\/\ v\_AYLX)\ -\/\ cmZ\ *\ (wy2\ +\ wx2)\ +\ v\_AXAZ*cmX\ +\ v\_AYAZ*cmY;}
+\DoxyCodeLine{00113\ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00114\ \}}
+\DoxyCodeLine{00115\ }
+\DoxyCodeLine{00125\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Derived>}
+\DoxyCodeLine{00126\ \textcolor{keyword}{inline}\ Force<DScalar>\ \mbox{\hyperlink{group__robcogen__commons_ga02196b9e20192b598f542ac6472111a1}{vxIv}}(\textcolor{keyword}{const}\ DScalar\&\ omegaz,\ \textcolor{keyword}{const}\ MatrixBase<Derived>\&\ I)}
+\DoxyCodeLine{00127\ \{}
+\DoxyCodeLine{00128\ \ \ \ \ DScalar\ wz2\ =\ omegaz*omegaz;}
+\DoxyCodeLine{00129\ \ \ \ \ Force<DScalar>\ ret;}
+\DoxyCodeLine{00130\ \ \ \ \ ret(AX)\ =\ -\/I(AY,AZ)\ *\ wz2;}
+\DoxyCodeLine{00131\ \ \ \ \ ret(AY)\ =\ \ I(AX,AY)\ *\ wz2;}
+\DoxyCodeLine{00132\ \ \ \ \ ret(AZ)\ =\ \ 0;}
+\DoxyCodeLine{00133\ \ \ \ \ ret(LX)\ =\ \ I(AY,LZ)\ *\ wz2;}
+\DoxyCodeLine{00134\ \ \ \ \ ret(LY)\ =\ \ I(AZ,LX)\ *\ wz2;}
+\DoxyCodeLine{00135\ \ \ \ \ ret(LZ)\ =\ \ 0;}
+\DoxyCodeLine{00136\ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00137\ \}}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00139\ \textcolor{comment}{//\ very\ important,\ un-\/define\ the\ convenience\ macros\ to\ avoid\ polluting\ the\ namespace}}
+\DoxyCodeLine{00140\ \textcolor{preprocessor}{\#undef\ DScalar}}
+\DoxyCodeLine{00141\ }
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00152\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ S\ =\ \textcolor{keywordtype}{double}>}
+\DoxyCodeLine{00153\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{group__robcogen__commons_ga775fe0d9260ef0946b76da8531bfffc4}{motionCrossProductMx}}(\textcolor{keyword}{const}\ Velocity<S>\&\ v,\ Mat66<S>\&\ vx)}
+\DoxyCodeLine{00154\ \{}
+\DoxyCodeLine{00155\ \ \ \ \ vx(AY,AZ)\ =\ vx(LY,LZ)\ =\ -\/\ (\ vx(AZ,AY)\ =\ vx(LZ,LY)\ =\ v(AX)\ );}
+\DoxyCodeLine{00156\ \ \ \ \ vx(AZ,AX)\ =\ vx(LZ,LX)\ =\ -\/\ (\ vx(AX,AZ)\ =\ vx(LX,LZ)\ =\ v(AY)\ );}
+\DoxyCodeLine{00157\ \ \ \ \ vx(AX,AY)\ =\ vx(LX,LY)\ =\ -\/\ (\ vx(AY,AX)\ =\ vx(LY,LX)\ =\ v(AZ)\ );}
+\DoxyCodeLine{00158\ }
+\DoxyCodeLine{00159\ \ \ \ \ vx(LY,AZ)\ =\ -\/\ (\ vx(LZ,AY)\ =\ v(LX)\ );}
+\DoxyCodeLine{00160\ \ \ \ \ vx(LZ,AX)\ =\ -\/\ (\ vx(LX,AZ)\ =\ v(LY)\ );}
+\DoxyCodeLine{00161\ \ \ \ \ vx(LX,AY)\ =\ -\/\ (\ vx(LY,AX)\ =\ v(LZ)\ );}
+\DoxyCodeLine{00162\ \}}
+\DoxyCodeLine{00171\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ S\ =\ \textcolor{keywordtype}{double}>}
+\DoxyCodeLine{00172\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{group__robcogen__commons_gaa77162e6aa47b2a52d8ef73c5d22e3c4}{forceCrossProductMx}}(\textcolor{keyword}{const}\ Velocity<S>\&\ v,\ Mat66<S>\&\ vx)}
+\DoxyCodeLine{00173\ \{}
+\DoxyCodeLine{00174\ \ \ \ \ vx(AY,AZ)\ =\ vx(LY,LZ)\ =\ -\/\ (\ vx(AZ,AY)\ =\ vx(LZ,LY)\ =\ v(AX)\ );}
+\DoxyCodeLine{00175\ \ \ \ \ vx(AZ,AX)\ =\ vx(LZ,LX)\ =\ -\/\ (\ vx(AX,AZ)\ =\ vx(LX,LZ)\ =\ v(AY)\ );}
+\DoxyCodeLine{00176\ \ \ \ \ vx(AX,AY)\ =\ vx(LX,LY)\ =\ -\/\ (\ vx(AY,AX)\ =\ vx(LY,LX)\ =\ v(AZ)\ );}
+\DoxyCodeLine{00177\ }
+\DoxyCodeLine{00178\ \ \ \ \ vx(AY,LZ)\ =\ -\/\ (\ vx(AZ,LY)\ =\ v(LX)\ );}
+\DoxyCodeLine{00179\ \ \ \ \ vx(AZ,LX)\ =\ -\/\ (\ vx(AX,LZ)\ =\ v(LY)\ );}
+\DoxyCodeLine{00180\ \ \ \ \ vx(AX,LY)\ =\ -\/\ (\ vx(AY,LX)\ =\ v(LZ)\ );}
+\DoxyCodeLine{00181\ \}}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ }
+\DoxyCodeLine{00184\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ S\ =\ \textcolor{keywordtype}{double}>}
+\DoxyCodeLine{00185\ \textcolor{keywordtype}{void}\ fillInertia(S\ mass,\ \textcolor{keyword}{const}\ Vec3<S>\&\ com,\ \textcolor{keyword}{const}\ internal::SymmMat3x3Coefficients<S>\&\ I3x3,}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ InertiaMat<S>\&\ I)}
+\DoxyCodeLine{00187\ \{}
+\DoxyCodeLine{00188\ \ \ \ \ I(AX,AX)\ =\ I3x3.XX;}
+\DoxyCodeLine{00189\ \ \ \ \ I(AY,AY)\ =\ I3x3.YY;}
+\DoxyCodeLine{00190\ \ \ \ \ I(AZ,AZ)\ =\ I3x3.ZZ;}
+\DoxyCodeLine{00191\ \ \ \ \ I(AY,AX)\ =\ I(AX,AY)\ =\ I3x3.XY;}
+\DoxyCodeLine{00192\ \ \ \ \ I(AZ,AX)\ =\ I(AX,AZ)\ =\ I3x3.XZ;}
+\DoxyCodeLine{00193\ \ \ \ \ I(AZ,AY)\ =\ I(AY,AZ)\ =\ I3x3.YZ;}
+\DoxyCodeLine{00194\ }
+\DoxyCodeLine{00195\ \ \ \ \ I(AX,LY)\ =\ I(LY,AX)\ =\ -\/\ (\ I(AY,LX)\ =\ I(LX,AY)\ =\ mass*com(Z)\ );}
+\DoxyCodeLine{00196\ \ \ \ \ I(AZ,LX)\ =\ I(LX,AZ)\ =\ -\/\ (\ I(AX,LZ)\ =\ I(LZ,AX)\ =\ mass*com(Y)\ );}
+\DoxyCodeLine{00197\ \ \ \ \ I(AY,LZ)\ =\ I(LZ,AY)\ =\ -\/\ (\ I(AZ,LY)\ =\ I(LY,AZ)\ =\ mass*com(X)\ );}
+\DoxyCodeLine{00198\ }
+\DoxyCodeLine{00199\ \ \ \ \ I(LX,LX)\ =\ I(LY,LY)\ =\ I(LZ,LZ)\ =\ mass;}
+\DoxyCodeLine{00200\ \}}
+\DoxyCodeLine{00201\ }
+\DoxyCodeLine{00202\ }
+\DoxyCodeLine{00217\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ Scalar\ =\ \textcolor{keywordtype}{double}>}
+\DoxyCodeLine{00218\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{group__robcogen__commons_ga43b844382bdc866ffdf4b312aaa44a81}{transformInertia}}(}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ InertiaMat<Scalar>\&\ I\_A,}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Mat66<Scalar>\&\ \ \ \ \ \ XF,}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ InertiaMat<Scalar>\&\ I\_B)}
+\DoxyCodeLine{00222\ \{}
+\DoxyCodeLine{00223\ \ \ \ \ \textcolor{comment}{//\ The\ coefficients\ of\ the\ 3x3\ rotation\ matrix}}
+\DoxyCodeLine{00224\ \ \ \ \ \mbox{\hyperlink{structiit_1_1rbd_1_1internal_1_1_mat3x3_coefficients}{internal::Mat3x3Coefficients<Scalar>}}\ E(}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \ \ \ \ \ \ XF(AX,AX),XF(AX,AY),XF(AX,AZ),}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \ \ \ \ \ \ XF(AY,AX),XF(AY,AY),XF(AY,AZ),}
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \ \ \ \ \ \ XF(AZ,AX),XF(AZ,AY),XF(AZ,AZ));}
+\DoxyCodeLine{00228\ \ \ \ \ Scalar\ mass\ =\ I\_A.getMass();}
+\DoxyCodeLine{00229\ }
+\DoxyCodeLine{00230\ \ \ \ \ \textcolor{comment}{//\ The\ relative\ position\ 'r'\ of\ the\ origin\ of\ frame\ B\ wrt\ A\ (in\ A\ coordinates).}}
+\DoxyCodeLine{00231\ \ \ \ \ \textcolor{comment}{//\ \ \ The\ vector\ is\ basically\ "{}reconstructed"{}\ from\ the\ matrix\ XF,\ which\ has}}
+\DoxyCodeLine{00232\ \ \ \ \ \textcolor{comment}{//\ this\ form:}}
+\DoxyCodeLine{00233\ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ |\ E\ \ \ -\/E\ rx\ |}}
+\DoxyCodeLine{00234\ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ |\ 0\ \ \ \ E\ \ \ \ |}}
+\DoxyCodeLine{00235\ \ \ \ \ \textcolor{comment}{//\ where\ 'rx'\ is\ the\ cross\ product\ matrix.\ The\ strategy\ is\ to\ compute}}
+\DoxyCodeLine{00236\ \ \ \ \ \textcolor{comment}{//\ \ E\string^T\ (-\/E\ rx)\ =\ -\/rx\ \ ,\ and\ then\ get\ the\ coordinates\ of\ 'r'\ from\ 'rx'.}}
+\DoxyCodeLine{00237\ \ \ \ \ \textcolor{comment}{//\ This\ code\ is\ a\ manual\ implementation\ of\ the\ E\ transpose\ multiplication,}}
+\DoxyCodeLine{00238\ \ \ \ \ \textcolor{comment}{//\ limited\ to\ the\ elements\ of\ interest.}}
+\DoxyCodeLine{00239\ \ \ \ \ \textcolor{comment}{//\ \ \ \ Note\ that\ this\ is\ necessary\ because,\ currently,\ spatial\ transforms\ do}}
+\DoxyCodeLine{00240\ \ \ \ \ \textcolor{comment}{//\ not\ carry\ explicitly\ the\ information\ about\ the\ translation\ vector.}}
+\DoxyCodeLine{00241\ \ \ \ \ Scalar\ rx\ =\ E.XY\ *\ XF(AX,LZ)\ +\ E.YY\ *\ XF(AY,LZ)\ +\ E.ZY\ *\ XF(AZ,LZ);}
+\DoxyCodeLine{00242\ \ \ \ \ Scalar\ ry\ =\ E.XZ\ *\ XF(AX,LX)\ +\ E.YZ\ *\ XF(AY,LX)\ +\ E.ZZ\ *\ XF(AZ,LX);}
+\DoxyCodeLine{00243\ \ \ \ \ Scalar\ rz\ =\ E.XX\ *\ XF(AX,LY)\ +\ E.YX\ *\ XF(AY,LY)\ +\ E.ZX\ *\ XF(AZ,LY);}
+\DoxyCodeLine{00244\ }
+\DoxyCodeLine{00245\ \ \ \ \ \textcolor{comment}{//\ The\ relative\ position\ of\ the\ CoM\ wrt\ A\ (in\ A\ coordinates)}}
+\DoxyCodeLine{00246\ \ \ \ \ Scalar\ comAx\ =\ I\_A(AZ,LY)/mass;}
+\DoxyCodeLine{00247\ \ \ \ \ Scalar\ comAy\ =\ I\_A(AX,LZ)/mass;}
+\DoxyCodeLine{00248\ \ \ \ \ Scalar\ comAz\ =\ I\_A(AY,LX)/mass;}
+\DoxyCodeLine{00249\ }
+\DoxyCodeLine{00250\ \ \ \ \ \textcolor{comment}{//\ The\ relative\ position\ of\ the\ CoM\ wrt\ B\ (in\ A\ coordinates)}}
+\DoxyCodeLine{00251\ \ \ \ \ \textcolor{keyword}{typename}\ Core<Scalar>::Vector3\ p(comAx-\/rx,\ comAy-\/ry,\ comAz-\/rz);}
+\DoxyCodeLine{00252\ }
+\DoxyCodeLine{00253\ \ \ \ \ \textcolor{comment}{//\ Pre-\/computation\ of\ some\ recurring\ squares}}
+\DoxyCodeLine{00254\ \ \ \ \ Scalar\ cx2\ =\ comAx*comAx;}
+\DoxyCodeLine{00255\ \ \ \ \ Scalar\ cy2\ =\ comAy*comAy;}
+\DoxyCodeLine{00256\ \ \ \ \ Scalar\ cz2\ =\ comAz*comAz;}
+\DoxyCodeLine{00257\ \ \ \ \ Scalar\ px2\ =\ p(X)*p(X);}
+\DoxyCodeLine{00258\ \ \ \ \ Scalar\ py2\ =\ p(Y)*p(Y);}
+\DoxyCodeLine{00259\ \ \ \ \ Scalar\ pz2\ =\ p(Z)*p(Z);}
+\DoxyCodeLine{00260\ }
+\DoxyCodeLine{00261\ \ \ \ \ \textcolor{comment}{//\ Manual\ implementation\ of\ the\ parallel\ axis\ theorem,\ to\ translate\ the}}
+\DoxyCodeLine{00262\ \ \ \ \ \textcolor{comment}{//\ \ 3x3\ tensor\ from\ frame\ A\ to\ frame\ B\ :}}
+\DoxyCodeLine{00263\ \ \ \ \ \mbox{\hyperlink{structiit_1_1rbd_1_1internal_1_1_symm_mat3x3_coefficients}{internal::SymmMat3x3Coefficients<Scalar>}}\ I\_translated(}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \ \ \ \ \ \ I\_A(AX,AX),\ I\_A(AX,AY),\ I\_A(AX,AZ)}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ I\_A(AY,AY),\ I\_A(AY,AZ)}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ I\_A(AZ,AZ));}
+\DoxyCodeLine{00267\ \ \ \ \ I\_translated.XX\ +=\ mass*(\ py2\ +\ pz2\ \ \ -\/\ cy2\ -\/\ cz2\ );}
+\DoxyCodeLine{00268\ \ \ \ \ I\_translated.YY\ +=\ mass*(\ px2\ +\ pz2\ \ \ -\/\ cx2\ -\/\ cz2\ );}
+\DoxyCodeLine{00269\ \ \ \ \ I\_translated.ZZ\ +=\ mass*(\ px2\ +\ py2\ \ \ -\/\ cx2\ -\/\ cy2\ );}
+\DoxyCodeLine{00270\ \ \ \ \ I\_translated.XY\ +=\ mass*(\ comAx*comAy\ -\/\ p(X)*p(Y)\ );}
+\DoxyCodeLine{00271\ \ \ \ \ I\_translated.XZ\ +=\ mass*(\ comAx*comAz\ -\/\ p(X)*p(Z)\ );}
+\DoxyCodeLine{00272\ \ \ \ \ I\_translated.YZ\ +=\ mass*(\ comAy*comAz\ -\/\ p(Y)*p(Z)\ );}
+\DoxyCodeLine{00273\ }
+\DoxyCodeLine{00274\ \ \ \ \ \textcolor{comment}{//\ Rotate\ the\ 3x3\ tensor}}
+\DoxyCodeLine{00275\ \ \ \ \ \mbox{\hyperlink{structiit_1_1rbd_1_1internal_1_1_symm_mat3x3_coefficients}{internal::SymmMat3x3Coefficients<Scalar>}}\ I3x3\_B;}
+\DoxyCodeLine{00276\ \ \ \ \ internal::rot\_symmetric\_EAET<Scalar>(E,\ I\_translated,\ I3x3\_B);}
+\DoxyCodeLine{00277\ \ \ \ \ \textcolor{comment}{//\ Rotate\ the\ CoM\ vector}}
+\DoxyCodeLine{00278\ \ \ \ \ \textcolor{keyword}{typename}\ Core<Scalar>::Vector3\ p\_B(}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \ \ \ \ \ \ E.XX*p(X)\ +\ E.XY*p(Y)\ +\ E.XZ*p(Z),}
+\DoxyCodeLine{00280\ \ \ \ \ \ \ \ \ \ \ \ \ E.YX*p(X)\ +\ E.YY*p(Y)\ +\ E.YZ*p(Z),}
+\DoxyCodeLine{00281\ \ \ \ \ \ \ \ \ \ \ \ \ E.ZX*p(X)\ +\ E.ZY*p(Y)\ +\ E.ZZ*p(Z)}
+\DoxyCodeLine{00282\ \ \ \ \ );}
+\DoxyCodeLine{00283\ }
+\DoxyCodeLine{00284\ \ \ \ \ \textcolor{comment}{//\ Finally\ copy\ the\ coefficients\ into\ the\ destination\ matrix}}
+\DoxyCodeLine{00285\ \ \ \ \ fillInertia(mass,\ p\_B,\ I3x3\_B,\ I\_B);}
+\DoxyCodeLine{00286\ \}}
+\DoxyCodeLine{00287\ }
+\DoxyCodeLine{00289\ }
+\DoxyCodeLine{00290\ }
+\DoxyCodeLine{00291\ }
+\DoxyCodeLine{00292\ \textcolor{preprocessor}{\#define\ block33\ template\ block<3,3>}}
+\DoxyCodeLine{00293\ }
+\DoxyCodeLine{00328\ }
+\DoxyCodeLine{00352\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ D1,\ \textcolor{keyword}{typename}\ D2,\ \textcolor{keyword}{typename}\ D3>}
+\DoxyCodeLine{00353\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{group__robcogen__commons_gabf9d23d9d84faf49f6e7b051ad9b76db}{ctransform\_Ia\_revolute}}(}
+\DoxyCodeLine{00354\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ MatrixBase<D1>\&\ Ia\_A,}
+\DoxyCodeLine{00355\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ MatrixBase<D2>\&\ XM,}
+\DoxyCodeLine{00356\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ MatrixBase<D3>\&\ Ia\_B\_const)}
+\DoxyCodeLine{00357\ \{}
+\DoxyCodeLine{00358\ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ D1::Scalar\ Scalar;\ \textcolor{comment}{//\ we\ assume\ D1\ D2\ D3\ use\ the\ same\ scalar\ type!}}
+\DoxyCodeLine{00359\ }
+\DoxyCodeLine{00360\ \ \ \ \ MatrixBase<D3>\&\ Ia\_B\ =\ \textcolor{keyword}{const\_cast<}MatrixBase<D3>\&\textcolor{keyword}{>}(Ia\_B\_const);}
+\DoxyCodeLine{00361\ \ \ \ \ \textcolor{comment}{//\ Get\ the\ coefficients\ of\ the\ 3x3\ rotation\ matrix\ B\_E\_A}}
+\DoxyCodeLine{00362\ \ \ \ \ \textcolor{comment}{//\ \ It\ is\ the\ transpose\ of\ the\ angular-\/angular\ block\ of\ the\ spatial\ transform}}
+\DoxyCodeLine{00363\ \ \ \ \ \mbox{\hyperlink{structiit_1_1rbd_1_1internal_1_1_mat3x3_coefficients}{internal::Mat3x3Coefficients<Scalar>}}\ E(}
+\DoxyCodeLine{00364\ \ \ \ \ \ \ \ \ \ \ \ \ XM(AX,AX),XM(AY,AX),XM(AZ,AX),}
+\DoxyCodeLine{00365\ \ \ \ \ \ \ \ \ \ \ \ \ XM(AX,AY),XM(AY,AY),XM(AZ,AY),}
+\DoxyCodeLine{00366\ \ \ \ \ \ \ \ \ \ \ \ \ XM(AX,AZ),XM(AY,AZ),XM(AZ,AZ));}
+\DoxyCodeLine{00367\ }
+\DoxyCodeLine{00368\ \ \ \ \ \textcolor{comment}{//\ Recover\ the\ translation\ vector.\ See\ comment\ in\ method\ 'transformInertia'}}
+\DoxyCodeLine{00369\ \ \ \ \ Scalar\ rx\ =\ E.XY\ *\ XM(LZ,AX)\ +\ E.YY\ *\ XM(LZ,AY)\ +\ E.ZY\ *\ XM(LZ,AZ);}
+\DoxyCodeLine{00370\ \ \ \ \ Scalar\ ry\ =\ E.XZ\ *\ XM(LX,AX)\ +\ E.YZ\ *\ XM(LX,AY)\ +\ E.ZZ\ *\ XM(LX,AZ);}
+\DoxyCodeLine{00371\ \ \ \ \ Scalar\ rz\ =\ E.XX\ *\ XM(LY,AX)\ +\ E.YX\ *\ XM(LY,AY)\ +\ E.ZX\ *\ XM(LY,AZ);}
+\DoxyCodeLine{00372\ }
+\DoxyCodeLine{00373\ \ \ \ \ \textcolor{comment}{//\ Angular-\/angular\ 3x3\ sub-\/block:}}
+\DoxyCodeLine{00374\ }
+\DoxyCodeLine{00375\ \ \ \ \ \mbox{\hyperlink{structiit_1_1rbd_1_1internal_1_1_symm_mat3x3_coefficients}{internal::SymmMat3x3Coefficients<Scalar>}}\ aux1,\ aux2;}
+\DoxyCodeLine{00376\ }
+\DoxyCodeLine{00377\ \ \ \ \ \textcolor{comment}{//\ \#\#\ compute\ \ I\ +\ (Crx\ +\ Crx\string^T)\ \ :}}
+\DoxyCodeLine{00378\ }
+\DoxyCodeLine{00379\ \ \ \ \ \textcolor{comment}{//\ copying\ the\ coefficients\ results\ in\ slightly\ fewer\ invocations\ of\ the}}
+\DoxyCodeLine{00380\ \ \ \ \ \textcolor{comment}{//\ \ operator(int,int),\ in\ the\ rest\ of\ the\ function}}
+\DoxyCodeLine{00381\ \ \ \ \ \mbox{\hyperlink{structiit_1_1rbd_1_1internal_1_1_mat3x3_coefficients}{internal::Mat3x3Coefficients<Scalar>}}\ C(}
+\DoxyCodeLine{00382\ \ \ \ \ \ \ \ \ \ \ \ \ Ia\_A(AX,LX),Ia\_A(AX,LY),Ia\_A(AX,LZ),}
+\DoxyCodeLine{00383\ \ \ \ \ \ \ \ \ \ \ \ \ Ia\_A(AY,LX),Ia\_A(AY,LY),Ia\_A(AY,LZ),}
+\DoxyCodeLine{00384\ \ \ \ \ \ \ \ \ \ \ \ \ Scalar(0),\ Scalar(0),\ Scalar(0));}
+\DoxyCodeLine{00385\ }
+\DoxyCodeLine{00386\ \ \ \ \ aux1.XX\ =\ Ia\_A(AX,AX)\ +\ 2*C.XY*rz\ -\/\ 2*C.XZ*ry;}
+\DoxyCodeLine{00387\ \ \ \ \ aux1.YY\ =\ Ia\_A(AY,AY)\ +\ 2*C.YZ*rx\ -\/\ 2*C.YX*rz;}
+\DoxyCodeLine{00388\ \ \ \ \ aux1.ZZ\ =\ Scalar(0);}
+\DoxyCodeLine{00389\ \ \ \ \ aux1.XY\ =\ Ia\_A(AX,AY)\ +\ C.YY*rz\ -\/\ C.XX*rz\ -\/\ C.YZ*ry\ +\ C.XZ*rx;}
+\DoxyCodeLine{00390\ \ \ \ \ aux1.XZ\ =\ C.XX*ry\ -\/\ C.XY*rx;}
+\DoxyCodeLine{00391\ \ \ \ \ aux1.YZ\ =\ C.YX*ry\ -\/\ C.YY*rx;}
+\DoxyCodeLine{00392\ }
+\DoxyCodeLine{00393\ \ \ \ \ \textcolor{comment}{//\ \#\#\ compute\ (-\/\ rx\ M)\ \ (note\ the\ minus)}}
+\DoxyCodeLine{00394\ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{structiit_1_1rbd_1_1internal_1_1_symm_mat3x3_coefficients}{internal::SymmMat3x3Coefficients<Scalar>}}\ M(}
+\DoxyCodeLine{00395\ \ \ \ \ \ \ \ \ \ \ \ \ Ia\_A(LX,LX),Ia\_A(LX,LY),Ia\_A(LX,LZ)}
+\DoxyCodeLine{00396\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,Ia\_A(LY,LY),Ia\_A(LY,LZ)}
+\DoxyCodeLine{00397\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,Ia\_A(LZ,LZ));}
+\DoxyCodeLine{00398\ \ \ \ \ \mbox{\hyperlink{structiit_1_1rbd_1_1internal_1_1_mat3x3_coefficients}{internal::Mat3x3Coefficients<Scalar>}}\ rxM;}
+\DoxyCodeLine{00399\ \ \ \ \ rxM.XX\ =\ rz*M.XY\ -\/\ ry*M.XZ;}
+\DoxyCodeLine{00400\ \ \ \ \ rxM.YY\ =\ rx*M.YZ\ -\/\ rz*M.XY;}
+\DoxyCodeLine{00401\ \ \ \ \ rxM.ZZ\ =\ ry*M.XZ\ -\/\ rx*M.YZ;}
+\DoxyCodeLine{00402\ \ \ \ \ rxM.XY\ =\ rz*M.YY\ -\/\ ry*M.YZ;}
+\DoxyCodeLine{00403\ \ \ \ \ rxM.YX\ =\ rx*M.XZ\ -\/\ rz*M.XX;}
+\DoxyCodeLine{00404\ \ \ \ \ rxM.XZ\ =\ rz*M.YZ\ -\/\ ry*M.ZZ;}
+\DoxyCodeLine{00405\ \ \ \ \ rxM.ZX\ =\ ry*M.XX\ -\/\ rx*M.XY;}
+\DoxyCodeLine{00406\ \ \ \ \ rxM.YZ\ =\ rx*M.ZZ\ -\/\ rz*M.XZ;}
+\DoxyCodeLine{00407\ \ \ \ \ rxM.ZY\ =\ ry*M.XY\ -\/\ rx*M.YY;}
+\DoxyCodeLine{00408\ }
+\DoxyCodeLine{00409\ \ \ \ \ \textcolor{comment}{//\ \#\#\ compute\ \ (I\ +\ (Crx\ +\ Crx\string^T))\ \ -\/\ \ (rxM)\ rx}}
+\DoxyCodeLine{00410\ \ \ \ \ aux1.XX\ +=\ rxM.XY*rz\ -\/\ rxM.XZ*ry;}
+\DoxyCodeLine{00411\ \ \ \ \ aux1.YY\ +=\ rxM.YZ*rx\ -\/\ rxM.YX*rz;}
+\DoxyCodeLine{00412\ \ \ \ \ aux1.ZZ\ +=\ rxM.ZX*ry\ -\/\ rxM.ZY*rx;}
+\DoxyCodeLine{00413\ \ \ \ \ aux1.XY\ +=\ rxM.XZ*rx\ -\/\ rxM.XX*rz;}
+\DoxyCodeLine{00414\ \ \ \ \ aux1.XZ\ +=\ rxM.XX*ry\ -\/\ rxM.XY*rx;}
+\DoxyCodeLine{00415\ \ \ \ \ aux1.YZ\ +=\ rxM.YX*ry\ -\/\ rxM.YY*rx;}
+\DoxyCodeLine{00416\ }
+\DoxyCodeLine{00417\ \ \ \ \ \textcolor{comment}{//\ \#\#\ compute\ \ E\ (\ ..\ )\ E\string^T}}
+\DoxyCodeLine{00418\ \ \ \ \ internal::rot\_symmetric\_EAET<Scalar>(E,\ aux1,\ aux2);}
+\DoxyCodeLine{00419\ }
+\DoxyCodeLine{00420\ \ \ \ \ \textcolor{comment}{//\ Copy\ the\ result,\ angular-\/angular\ block\ of\ the\ output}}
+\DoxyCodeLine{00421\ \ \ \ \ \ Ia\_B(AX,AX)\ =\ aux2.XX;}
+\DoxyCodeLine{00422\ \ \ \ \ \ Ia\_B(AY,AY)\ =\ aux2.YY;}
+\DoxyCodeLine{00423\ \ \ \ \ \ Ia\_B(AZ,AZ)\ =\ aux2.ZZ;}
+\DoxyCodeLine{00424\ \ \ \ \ \ Ia\_B(AY,AX)\ =\ Ia\_B(AX,AY)\ =\ aux2.XY;}
+\DoxyCodeLine{00425\ \ \ \ \ \ Ia\_B(AZ,AX)\ =\ Ia\_B(AX,AZ)\ =\ aux2.XZ;}
+\DoxyCodeLine{00426\ \ \ \ \ \ Ia\_B(AZ,AY)\ =\ Ia\_B(AY,AZ)\ =\ aux2.YZ;}
+\DoxyCodeLine{00427\ \ \ \ \ \textcolor{comment}{//\ aux2.write(Ia\_B.block33(AX,AX));\ //\ this\ is\ be\ equivalent,\ but\ it\ uses\ a\ block\ expression}}
+\DoxyCodeLine{00428\ }
+\DoxyCodeLine{00429\ }
+\DoxyCodeLine{00430\ \ \ \ \ \textcolor{comment}{//\ Angular-\/linear\ block\ (and\ linear-\/angular\ block)}}
+\DoxyCodeLine{00431\ \ \ \ \ \textcolor{comment}{//\ Calculate\ E\ (\ C\ -\/rxM\ )\ E\string^T}}
+\DoxyCodeLine{00432\ \ \ \ \ \textcolor{comment}{//\ \ -\/\ note\ that\ 'rxM'\ already\ contains\ the\ coefficients\ of\ \ (-\/\ rx\ *\ M)}}
+\DoxyCodeLine{00433\ \ \ \ \ \textcolor{comment}{//\ \ -\/\ for\ a\ revolute\ joint,\ the\ last\ line\ of\ C\ is\ zero}}
+\DoxyCodeLine{00434\ \ \ \ \ rxM.XX\ +=\ C.XX;}
+\DoxyCodeLine{00435\ \ \ \ \ rxM.XY\ +=\ C.XY;}
+\DoxyCodeLine{00436\ \ \ \ \ rxM.XZ\ +=\ C.XZ;}
+\DoxyCodeLine{00437\ \ \ \ \ rxM.YX\ +=\ C.YX;}
+\DoxyCodeLine{00438\ \ \ \ \ rxM.YY\ +=\ C.YY;}
+\DoxyCodeLine{00439\ \ \ \ \ rxM.YZ\ +=\ C.YZ;}
+\DoxyCodeLine{00440\ }
+\DoxyCodeLine{00441\ \ \ \ \ \mbox{\hyperlink{structiit_1_1rbd_1_1internal_1_1_mat3x3_coefficients}{internal::Mat3x3Coefficients<Scalar>}}\ aux3;}
+\DoxyCodeLine{00442\ \ \ \ \ internal::rot\_EAET<Scalar>(E,\ rxM,\ aux3);}
+\DoxyCodeLine{00443\ \ \ \ \ \textcolor{comment}{//\ copy\ the\ result,\ also\ to\ the\ symmetric\ 3x3\ block}}
+\DoxyCodeLine{00444\ \ \ \ \ Ia\_B(LX,AX)\ =\ Ia\_B(AX,LX)\ =\ aux3.XX;}
+\DoxyCodeLine{00445\ \ \ \ \ Ia\_B(LY,AX)\ =\ Ia\_B(AX,LY)\ =\ aux3.XY;}
+\DoxyCodeLine{00446\ \ \ \ \ Ia\_B(LZ,AX)\ =\ Ia\_B(AX,LZ)\ =\ aux3.XZ;}
+\DoxyCodeLine{00447\ \ \ \ \ Ia\_B(LX,AY)\ =\ Ia\_B(AY,LX)\ =\ aux3.YX;}
+\DoxyCodeLine{00448\ \ \ \ \ Ia\_B(LY,AY)\ =\ Ia\_B(AY,LY)\ =\ aux3.YY;}
+\DoxyCodeLine{00449\ \ \ \ \ Ia\_B(LZ,AY)\ =\ Ia\_B(AY,LZ)\ =\ aux3.YZ;}
+\DoxyCodeLine{00450\ \ \ \ \ Ia\_B(LX,AZ)\ =\ Ia\_B(AZ,LX)\ =\ aux3.ZX;}
+\DoxyCodeLine{00451\ \ \ \ \ Ia\_B(LY,AZ)\ =\ Ia\_B(AZ,LY)\ =\ aux3.ZY;}
+\DoxyCodeLine{00452\ \ \ \ \ Ia\_B(LZ,AZ)\ =\ Ia\_B(AZ,LZ)\ =\ aux3.ZZ;}
+\DoxyCodeLine{00453\ }
+\DoxyCodeLine{00454\ \ \ \ \ \textcolor{comment}{//\ Linear-\/linear\ block}}
+\DoxyCodeLine{00455\ \ \ \ \ internal::rot\_symmetric\_EAET<Scalar>(E,\ M,\ aux1);}
+\DoxyCodeLine{00456\ \ \ \ \ Ia\_B(LX,LX)\ =\ aux1.XX;}
+\DoxyCodeLine{00457\ \ \ \ \ Ia\_B(LY,LY)\ =\ aux1.YY;}
+\DoxyCodeLine{00458\ \ \ \ \ Ia\_B(LZ,LZ)\ =\ aux1.ZZ;}
+\DoxyCodeLine{00459\ \ \ \ \ Ia\_B(LY,LX)\ =\ Ia\_B(LX,LY)\ =\ aux1.XY;}
+\DoxyCodeLine{00460\ \ \ \ \ Ia\_B(LZ,LX)\ =\ Ia\_B(LX,LZ)\ =\ aux1.XZ;}
+\DoxyCodeLine{00461\ \ \ \ \ Ia\_B(LZ,LY)\ =\ Ia\_B(LY,LZ)\ =\ aux1.YZ;}
+\DoxyCodeLine{00462\ \ \ \ \ \textcolor{comment}{//aux1.write(Ia\_B.block33(LX,LX));\ //\ this\ is\ be\ equivalent,\ but\ it\ uses\ a\ block\ expression}}
+\DoxyCodeLine{00463\ \}}
+\DoxyCodeLine{00464\ }
+\DoxyCodeLine{00466\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ D1,\ \textcolor{keyword}{typename}\ D2,\ \textcolor{keyword}{typename}\ D3>}
+\DoxyCodeLine{00467\ \textcolor{keywordtype}{void}\ ctransform\_Ia\_prismatic(}
+\DoxyCodeLine{00468\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ MatrixBase<D1>\&\ Ia\_A,}
+\DoxyCodeLine{00469\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ MatrixBase<D2>\&\ XM,}
+\DoxyCodeLine{00470\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ MatrixBase<D3>\&\ Ia\_B\_const)}
+\DoxyCodeLine{00471\ \{}
+\DoxyCodeLine{00472\ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ D1::Scalar\ Scalar;\ \textcolor{comment}{//\ we\ assume\ D1\ D2\ D3\ use\ the\ same\ scalar\ type!}}
+\DoxyCodeLine{00473\ }
+\DoxyCodeLine{00474\ \ \ \ \ MatrixBase<D3>\&\ Ia\_B\ =\ \textcolor{keyword}{const\_cast<}MatrixBase<D3>\&\textcolor{keyword}{>}(Ia\_B\_const);}
+\DoxyCodeLine{00475\ \ \ \ \ \textcolor{comment}{//\ Get\ the\ coefficients\ of\ the\ 3x3\ rotation\ matrix\ B\_E\_A}}
+\DoxyCodeLine{00476\ \ \ \ \ \textcolor{comment}{//\ \ It\ is\ the\ transpose\ of\ the\ angular-\/angular\ block\ of\ the\ spatial\ transform}}
+\DoxyCodeLine{00477\ \ \ \ \ internal::Mat3x3Coefficients<Scalar>\ E(}
+\DoxyCodeLine{00478\ \ \ \ \ \ \ \ \ \ \ \ \ XM(AX,AX),XM(AY,AX),XM(AZ,AX),}
+\DoxyCodeLine{00479\ \ \ \ \ \ \ \ \ \ \ \ \ XM(AX,AY),XM(AY,AY),XM(AZ,AY),}
+\DoxyCodeLine{00480\ \ \ \ \ \ \ \ \ \ \ \ \ XM(AX,AZ),XM(AY,AZ),XM(AZ,AZ));}
+\DoxyCodeLine{00481\ }
+\DoxyCodeLine{00482\ \ \ \ \ \textcolor{comment}{//\ Recover\ the\ translation\ vector.\ See\ comment\ in\ method\ 'transformInertia'}}
+\DoxyCodeLine{00483\ \ \ \ \ Scalar\ rx\ =\ E.XY\ *\ XM(LZ,AX)\ +\ E.YY\ *\ XM(LZ,AY)\ +\ E.ZY\ *\ XM(LZ,AZ);}
+\DoxyCodeLine{00484\ \ \ \ \ Scalar\ ry\ =\ E.XZ\ *\ XM(LX,AX)\ +\ E.YZ\ *\ XM(LX,AY)\ +\ E.ZZ\ *\ XM(LX,AZ);}
+\DoxyCodeLine{00485\ \ \ \ \ Scalar\ rz\ =\ E.XX\ *\ XM(LY,AX)\ +\ E.YX\ *\ XM(LY,AY)\ +\ E.ZX\ *\ XM(LY,AZ);}
+\DoxyCodeLine{00486\ }
+\DoxyCodeLine{00487\ \ \ \ \ \textcolor{comment}{//\ Angular-\/angular\ 3x3\ sub-\/block:}}
+\DoxyCodeLine{00488\ }
+\DoxyCodeLine{00489\ \ \ \ \ internal::SymmMat3x3Coefficients<Scalar>\ aux1,\ aux2;}
+\DoxyCodeLine{00490\ }
+\DoxyCodeLine{00491\ \ \ \ \ \textcolor{comment}{//\ Remember\ that,\ for\ a\ prismatic\ joint,\ the\ structure\ of\ the\ matrix\ is\ as}}
+\DoxyCodeLine{00492\ \ \ \ \ \textcolor{comment}{//\ \ follows\ (note\ the\ zeros):}}
+\DoxyCodeLine{00493\ }
+\DoxyCodeLine{00494\ \ \ \ \ \textcolor{comment}{//\ \ \ \ [ia1,\ \ ia2,\ \ ia3,\ |\ \ ia4,\ \ ia5,\ \ \ 0\ \ ]}}
+\DoxyCodeLine{00495\ \ \ \ \ \textcolor{comment}{//\ \ \ \ [ia2,\ \ ia6,\ \ ia7,\ |\ \ ia8,\ \ ia9,\ \ \ 0\ \ ]}}
+\DoxyCodeLine{00496\ \ \ \ \ \textcolor{comment}{//\ \ \ \ [ia3,\ \ ia7,\ \ ia10,|\ \ ia11,\ ia12,\ \ 0\ \ ]}}
+\DoxyCodeLine{00497\ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/|-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00498\ \ \ \ \ \textcolor{comment}{//\ \ \ \ [ia4,\ \ ia8,\ \ ia11,|\ ia13,\ ia14,\ \ \ 0\ \ ]}}
+\DoxyCodeLine{00499\ \ \ \ \ \textcolor{comment}{//\ \ \ \ [ia5,\ \ ia9,\ \ ia12,|\ ia14,\ ia15,\ \ \ 0\ \ ]}}
+\DoxyCodeLine{00500\ \ \ \ \ \textcolor{comment}{//\ \ \ \ [0\ \ ,\ \ \ \ 0,\ \ \ \ 0,\ |\ \ 0,\ \ \ \ \ 0,\ \ \ \ 0\ \ ]}}
+\DoxyCodeLine{00501\ }
+\DoxyCodeLine{00502\ \ \ \ \ \textcolor{comment}{//\ \ \ \ [\ \ I\ \ \ |\ \ C\ \ ]}}
+\DoxyCodeLine{00503\ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ -\/-\/-\/-\/-\/|-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00504\ \ \ \ \ \textcolor{comment}{//\ \ \ \ [\ \ C\string^T\ |\ \ M\ \ ]}}
+\DoxyCodeLine{00505\ }
+\DoxyCodeLine{00506\ \ \ \ \ \textcolor{comment}{//\ copying\ the\ coefficients\ results\ in\ slightly\ fewer\ invocations\ of\ the}}
+\DoxyCodeLine{00507\ \ \ \ \ \textcolor{comment}{//\ \ operator(int,int),\ in\ the\ rest\ of\ the\ function}}
+\DoxyCodeLine{00508\ \ \ \ \ internal::Mat3x3Coefficients<Scalar>\ C(}
+\DoxyCodeLine{00509\ \ \ \ \ \ \ \ \ \ \ \ \ Ia\_A(AX,LX),\ Ia\_A(AX,LY),\ 0,}
+\DoxyCodeLine{00510\ \ \ \ \ \ \ \ \ \ \ \ \ Ia\_A(AY,LX),\ Ia\_A(AY,LY),\ 0,}
+\DoxyCodeLine{00511\ \ \ \ \ \ \ \ \ \ \ \ \ Ia\_A(AZ,LX),\ Ia\_A(AZ,LY),\ 0);}
+\DoxyCodeLine{00512\ }
+\DoxyCodeLine{00513\ \ \ \ \ \textcolor{comment}{//\ \#\#\ compute\ \ I\ +\ (Crx\ +\ Crx\string^T)\ \ :}}
+\DoxyCodeLine{00514\ \ \ \ \ aux1.XX\ =\ Ia\_A(AX,AX)\ +\ 2*C.XY*rz;}
+\DoxyCodeLine{00515\ \ \ \ \ aux1.YY\ =\ Ia\_A(AY,AY)\ -\/\ 2*C.YX*rz;}
+\DoxyCodeLine{00516\ \ \ \ \ aux1.ZZ\ =\ Ia\_A(AZ,AZ)\ +\ 2*C.ZX*ry\ -\/\ 2*C.ZY*rx;}
+\DoxyCodeLine{00517\ \ \ \ \ aux1.XY\ =\ Ia\_A(AX,AY)\ +\ (C.YY\ -\/\ C.XX)*rz;}
+\DoxyCodeLine{00518\ \ \ \ \ aux1.XZ\ =\ Ia\_A(AX,AZ)\ +\ C.ZY*rz\ +\ C.XX*ry\ -\/\ C.XY*rx;}
+\DoxyCodeLine{00519\ \ \ \ \ aux1.YZ\ =\ Ia\_A(AY,AZ)\ -\/\ C.ZX*rz\ +\ C.YX*ry\ -\/\ C.YY*rx;}
+\DoxyCodeLine{00520\ }
+\DoxyCodeLine{00521\ }
+\DoxyCodeLine{00522\ \ \ \ \ \textcolor{keyword}{const}\ internal::SymmMat3x3Coefficients<Scalar>\ M(}
+\DoxyCodeLine{00523\ \ \ \ \ \ \ \ \ \ \ \ \ Ia\_A(LX,LX),Ia\_A(LX,LY),\ 0}
+\DoxyCodeLine{00524\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,Ia\_A(LY,LY),\ 0}
+\DoxyCodeLine{00525\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ 0);}
+\DoxyCodeLine{00526\ \ \ \ \ \textcolor{comment}{//\ \#\#\ compute\ the\ term\ (-\/\ rx\ M)\ \ (note\ the\ minus)}}
+\DoxyCodeLine{00527\ \ \ \ \ internal::Mat3x3Coefficients<Scalar>\ rxM;}
+\DoxyCodeLine{00528\ \ \ \ \ rxM.XX\ =\ rz*M.XY;}
+\DoxyCodeLine{00529\ \ \ \ \ rxM.XY\ =\ rz*M.YY;}
+\DoxyCodeLine{00530\ \ \ \ \ rxM.YX\ =\ -\/\ rz*M.XX;}
+\DoxyCodeLine{00531\ \ \ \ \ rxM.YY\ =\ -\/\ rz*M.XY;}
+\DoxyCodeLine{00532\ \ \ \ \ rxM.ZX\ =\ ry*M.XX\ -\/\ rx*M.XY;}
+\DoxyCodeLine{00533\ \ \ \ \ rxM.ZY\ =\ ry*M.XY\ -\/\ rx*M.YY;}
+\DoxyCodeLine{00534\ \ \ \ \ rxM.XZ\ =\ 0.0;}
+\DoxyCodeLine{00535\ \ \ \ \ rxM.YZ\ =\ 0.0;}
+\DoxyCodeLine{00536\ \ \ \ \ rxM.ZZ\ =\ 0.0;}
+\DoxyCodeLine{00537\ }
+\DoxyCodeLine{00538\ \ \ \ \ \textcolor{comment}{//\ \#\#\ compute\ \ (I\ +\ (Crx\ +\ Crx\string^T))\ \ -\/\ \ (rxM)\ rx}}
+\DoxyCodeLine{00539\ \ \ \ \ aux1.XX\ +=\ rxM.XY*rz;}
+\DoxyCodeLine{00540\ \ \ \ \ aux1.YY\ +=\ -\/\ rxM.YX*rz;}
+\DoxyCodeLine{00541\ \ \ \ \ aux1.ZZ\ +=\ rxM.ZX*ry\ -\/\ rxM.ZY*rx;}
+\DoxyCodeLine{00542\ \ \ \ \ aux1.XY\ +=\ -\/\ rxM.XX*rz;}
+\DoxyCodeLine{00543\ \ \ \ \ aux1.XZ\ +=\ rxM.XX*ry\ -\/\ rxM.XY*rx;}
+\DoxyCodeLine{00544\ \ \ \ \ aux1.YZ\ +=\ rxM.YX*ry\ -\/\ rxM.YY*rx;}
+\DoxyCodeLine{00545\ }
+\DoxyCodeLine{00546\ \ \ \ \ \textcolor{comment}{//\ \#\#\ compute\ \ E\ (\ I\ +\ Crx\ +\ (Crx)\string^T\ -\/\ rx\ M\ rx\ )\ E\string^T}}
+\DoxyCodeLine{00547\ \ \ \ \ internal::rot\_symmetric\_EAET<Scalar>(E,\ aux1,\ aux2);}
+\DoxyCodeLine{00548\ }
+\DoxyCodeLine{00549\ \ \ \ \ \textcolor{comment}{//\ Copy\ the\ result,\ angular-\/angular\ block\ of\ the\ output}}
+\DoxyCodeLine{00550\ \ \ \ \ Ia\_B(AX,AX)\ =\ aux2.XX;}
+\DoxyCodeLine{00551\ \ \ \ \ Ia\_B(AY,AY)\ =\ aux2.YY;}
+\DoxyCodeLine{00552\ \ \ \ \ Ia\_B(AZ,AZ)\ =\ aux2.ZZ;}
+\DoxyCodeLine{00553\ \ \ \ \ Ia\_B(AY,AX)\ =\ Ia\_B(AX,AY)\ =\ aux2.XY;}
+\DoxyCodeLine{00554\ \ \ \ \ Ia\_B(AZ,AX)\ =\ Ia\_B(AX,AZ)\ =\ aux2.XZ;}
+\DoxyCodeLine{00555\ \ \ \ \ Ia\_B(AZ,AY)\ =\ Ia\_B(AY,AZ)\ =\ aux2.YZ;}
+\DoxyCodeLine{00556\ \ \ \ \ \textcolor{comment}{//\ aux2.write(Ia\_B.block33(AX,AX));\ //\ this\ is\ be\ equivalent,\ but\ it\ uses\ a\ block\ expression}}
+\DoxyCodeLine{00557\ }
+\DoxyCodeLine{00558\ }
+\DoxyCodeLine{00559\ \ \ \ \ \textcolor{comment}{//\ Angular-\/linear\ block\ (and\ linear-\/angular\ block)}}
+\DoxyCodeLine{00560\ \ \ \ \ \textcolor{comment}{//\ Calculate\ E\ (\ C\ -\/rxM\ )\ E\string^T}}
+\DoxyCodeLine{00561\ \ \ \ \ \textcolor{comment}{//\ \ -\/\ note\ that\ 'rxM'\ already\ contains\ the\ coefficients\ of\ \ (-\/\ rx\ *\ M)}}
+\DoxyCodeLine{00562\ \ \ \ \ \textcolor{comment}{//\ \ -\/\ for\ a\ prismatic\ joint,\ the\ last\ column\ of\ C\ is\ zero}}
+\DoxyCodeLine{00563\ \ \ \ \ rxM.XX\ +=\ C.XX;}
+\DoxyCodeLine{00564\ \ \ \ \ rxM.XY\ +=\ C.XY;}
+\DoxyCodeLine{00565\ \ \ \ \ \textcolor{comment}{//rxM.XZ\ stays\ zero}}
+\DoxyCodeLine{00566\ \ \ \ \ rxM.YX\ +=\ C.YX;}
+\DoxyCodeLine{00567\ \ \ \ \ rxM.YY\ +=\ C.YY;}
+\DoxyCodeLine{00568\ \ \ \ \ \textcolor{comment}{//rxM.YZ\ stays\ zero}}
+\DoxyCodeLine{00569\ \ \ \ \ rxM.ZX\ +=\ C.ZX;}
+\DoxyCodeLine{00570\ \ \ \ \ rxM.ZY\ +=\ C.ZY;}
+\DoxyCodeLine{00571\ }
+\DoxyCodeLine{00572\ \ \ \ \ internal::Mat3x3Coefficients<Scalar>\ aux3;}
+\DoxyCodeLine{00573\ \ \ \ \ internal::rot\_EAET<Scalar>(E,\ rxM,\ aux3);\ \textcolor{comment}{//\ TODO\ exploit\ the\ zeros\ in\ rxM}}
+\DoxyCodeLine{00574\ \ \ \ \ \textcolor{comment}{//\ copy\ the\ result,\ also\ to\ the\ symmetric\ 3x3\ block}}
+\DoxyCodeLine{00575\ \ \ \ \ Ia\_B(LX,AX)\ =\ Ia\_B(AX,LX)\ =\ aux3.XX;}
+\DoxyCodeLine{00576\ \ \ \ \ Ia\_B(LY,AX)\ =\ Ia\_B(AX,LY)\ =\ aux3.XY;}
+\DoxyCodeLine{00577\ \ \ \ \ Ia\_B(LZ,AX)\ =\ Ia\_B(AX,LZ)\ =\ aux3.XZ;}
+\DoxyCodeLine{00578\ \ \ \ \ Ia\_B(LX,AY)\ =\ Ia\_B(AY,LX)\ =\ aux3.YX;}
+\DoxyCodeLine{00579\ \ \ \ \ Ia\_B(LY,AY)\ =\ Ia\_B(AY,LY)\ =\ aux3.YY;}
+\DoxyCodeLine{00580\ \ \ \ \ Ia\_B(LZ,AY)\ =\ Ia\_B(AY,LZ)\ =\ aux3.YZ;}
+\DoxyCodeLine{00581\ \ \ \ \ Ia\_B(LX,AZ)\ =\ Ia\_B(AZ,LX)\ =\ aux3.ZX;}
+\DoxyCodeLine{00582\ \ \ \ \ Ia\_B(LY,AZ)\ =\ Ia\_B(AZ,LY)\ =\ aux3.ZY;}
+\DoxyCodeLine{00583\ \ \ \ \ Ia\_B(LZ,AZ)\ =\ Ia\_B(AZ,LZ)\ =\ aux3.ZZ;}
+\DoxyCodeLine{00584\ }
+\DoxyCodeLine{00585\ \ \ \ \ \textcolor{comment}{//\ Linear-\/linear\ block}}
+\DoxyCodeLine{00586\ \ \ \ \ internal::rot\_symmetric\_EAET<Scalar>(E,\ M,\ aux1);\ \textcolor{comment}{//\ TODO\ exploit\ the\ zeros\ in\ M}}
+\DoxyCodeLine{00587\ \ \ \ \ Ia\_B(LX,LX)\ =\ aux1.XX;}
+\DoxyCodeLine{00588\ \ \ \ \ Ia\_B(LY,LY)\ =\ aux1.YY;}
+\DoxyCodeLine{00589\ \ \ \ \ Ia\_B(LZ,LZ)\ =\ aux1.ZZ;}
+\DoxyCodeLine{00590\ \ \ \ \ Ia\_B(LY,LX)\ =\ Ia\_B(LX,LY)\ =\ aux1.XY;}
+\DoxyCodeLine{00591\ \ \ \ \ Ia\_B(LZ,LX)\ =\ Ia\_B(LX,LZ)\ =\ aux1.XZ;}
+\DoxyCodeLine{00592\ \ \ \ \ Ia\_B(LZ,LY)\ =\ Ia\_B(LY,LZ)\ =\ aux1.YZ;}
+\DoxyCodeLine{00593\ \ \ \ \ \textcolor{comment}{//aux1.write(Ia\_B.block33(LX,LX));\ //\ this\ is\ be\ equivalent,\ but\ it\ uses\ a\ block\ expression}}
+\DoxyCodeLine{00594\ \}}
+\DoxyCodeLine{00595\ }
+\DoxyCodeLine{00597\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ D1,\ \textcolor{keyword}{typename}\ D2>}
+\DoxyCodeLine{00598\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{group__robcogen__commons_gabf9d23d9d84faf49f6e7b051ad9b76db}{ctransform\_Ia\_revolute}}(}
+\DoxyCodeLine{00599\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ MatrixBase<D1>\&\ Ia\_child,}
+\DoxyCodeLine{00600\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ CTransformCore<typename\ D1::Scalar>\&\ child\_ct\_parent,}
+\DoxyCodeLine{00601\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ MatrixBase<D2>\&\ Ia\_parent\_const)}
+\DoxyCodeLine{00602\ \{}
+\DoxyCodeLine{00603\ \ \ \ \ \textcolor{keyword}{using\ }Scalar\ =\ \textcolor{keyword}{typename}\ D1::Scalar;\ \textcolor{comment}{//\ we\ assume\ D1\ D2\ use\ the\ same\ scalar\ type!}}
+\DoxyCodeLine{00604\ \ \ \ \ MatrixBase<D2>\&\ Ia\_parent\ =\ \textcolor{keyword}{const\_cast<}MatrixBase<D2>\&\textcolor{keyword}{>}(Ia\_parent\_const);}
+\DoxyCodeLine{00605\ }
+\DoxyCodeLine{00606\ \ \ \ \ \textcolor{comment}{//\ The\ translation\ vector\ from\ child\ origin\ to\ parent\ origin,\ in\ child\ coordinates}}
+\DoxyCodeLine{00607\ \ \ \ \ Scalar\ rx\ =\ child\_ct\_parent.r\_ab\_a(X);}
+\DoxyCodeLine{00608\ \ \ \ \ Scalar\ ry\ =\ child\_ct\_parent.r\_ab\_a(Y);}
+\DoxyCodeLine{00609\ \ \ \ \ Scalar\ rz\ =\ child\_ct\_parent.r\_ab\_a(Z);}
+\DoxyCodeLine{00610\ }
+\DoxyCodeLine{00611\ \ \ \ \ \textcolor{comment}{//\ copying\ the\ coefficients\ results\ in\ slightly\ fewer\ invocations\ of\ the}}
+\DoxyCodeLine{00612\ \ \ \ \ \textcolor{comment}{//\ \ operator(int,int),\ in\ the\ rest\ of\ the\ function}}
+\DoxyCodeLine{00613\ \ \ \ \ \textcolor{keyword}{const}\ internal::Mat3x3Coefficients<Scalar>\ C(}
+\DoxyCodeLine{00614\ \ \ \ \ \ \ \ \ \ \ \ \ Ia\_child(AX,LX),\ Ia\_child(AX,LY),\ Ia\_child(AX,LZ),}
+\DoxyCodeLine{00615\ \ \ \ \ \ \ \ \ \ \ \ \ Ia\_child(AY,LX),\ Ia\_child(AY,LY),\ Ia\_child(AY,LZ),}
+\DoxyCodeLine{00616\ \ \ \ \ \ \ \ \ \ \ \ \ Scalar(0),\ \ \ \ \ \ \ Scalar(0),\ \ \ \ \ \ \ Scalar(0));}
+\DoxyCodeLine{00617\ }
+\DoxyCodeLine{00618\ \ \ \ \ \textcolor{keyword}{const}\ internal::SymmMat3x3Coefficients<Scalar>\ M(}
+\DoxyCodeLine{00619\ \ \ \ \ \ \ \ \ \ \ \ \ Ia\_child(LX,LX),\ Ia\_child(LX,LY),\ Ia\_child(LX,LZ)}
+\DoxyCodeLine{00620\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ Ia\_child(LY,LY),\ Ia\_child(LY,LZ)}
+\DoxyCodeLine{00621\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ Ia\_child(LZ,LZ));}
+\DoxyCodeLine{00622\ }
+\DoxyCodeLine{00623\ \ \ \ \ \textcolor{comment}{//\ Angular-\/angular\ 3x3\ sub-\/block:}}
+\DoxyCodeLine{00624\ }
+\DoxyCodeLine{00625\ \ \ \ \ internal::SymmMat3x3Coefficients<Scalar>\ aux1,\ aux2;}
+\DoxyCodeLine{00626\ }
+\DoxyCodeLine{00627\ \ \ \ \ \textcolor{comment}{//\ compute\ (I\ +\ \ rx.T\ *\ C.T\ \ +\ \ C\ *\ rx)}}
+\DoxyCodeLine{00628\ }
+\DoxyCodeLine{00629\ \ \ \ \ aux1.XX\ =\ Ia\_child(AX,AX)\ +\ 2*C.XY*rz\ -\/\ 2*C.XZ*ry;}
+\DoxyCodeLine{00630\ \ \ \ \ aux1.YY\ =\ Ia\_child(AY,AY)\ +\ 2*C.YZ*rx\ -\/\ 2*C.YX*rz;}
+\DoxyCodeLine{00631\ \ \ \ \ \textcolor{comment}{//aux1.ZZ\ =\ Scalar(0);}}
+\DoxyCodeLine{00632\ \ \ \ \ aux1.XY\ =\ Ia\_child(AX,AY)\ +\ C.YY*rz\ -\/\ C.XX*rz\ -\/\ C.YZ*ry\ +\ C.XZ*rx;}
+\DoxyCodeLine{00633\ \ \ \ \ aux1.XZ\ =\ C.XX*ry\ -\/\ C.XY*rx;}
+\DoxyCodeLine{00634\ \ \ \ \ aux1.YZ\ =\ C.YX*ry\ -\/\ C.YY*rx;}
+\DoxyCodeLine{00635\ }
+\DoxyCodeLine{00636\ \ \ \ \ \textcolor{comment}{//\ compute\ (-\/\ rx\ M)\ \ (note\ the\ minus)}}
+\DoxyCodeLine{00637\ }
+\DoxyCodeLine{00638\ \ \ \ \ internal::Mat3x3Coefficients<Scalar>\ rxM;}
+\DoxyCodeLine{00639\ \ \ \ \ rxM.XX\ =\ rz*M.XY\ -\/\ ry*M.XZ;}
+\DoxyCodeLine{00640\ \ \ \ \ rxM.YY\ =\ rx*M.YZ\ -\/\ rz*M.XY;}
+\DoxyCodeLine{00641\ \ \ \ \ rxM.ZZ\ =\ ry*M.XZ\ -\/\ rx*M.YZ;}
+\DoxyCodeLine{00642\ \ \ \ \ rxM.XY\ =\ rz*M.YY\ -\/\ ry*M.YZ;}
+\DoxyCodeLine{00643\ \ \ \ \ rxM.YX\ =\ rx*M.XZ\ -\/\ rz*M.XX;}
+\DoxyCodeLine{00644\ \ \ \ \ rxM.XZ\ =\ rz*M.YZ\ -\/\ ry*M.ZZ;}
+\DoxyCodeLine{00645\ \ \ \ \ rxM.ZX\ =\ ry*M.XX\ -\/\ rx*M.XY;}
+\DoxyCodeLine{00646\ \ \ \ \ rxM.YZ\ =\ rx*M.ZZ\ -\/\ rz*M.XZ;}
+\DoxyCodeLine{00647\ \ \ \ \ rxM.ZY\ =\ ry*M.XY\ -\/\ rx*M.YY;}
+\DoxyCodeLine{00648\ }
+\DoxyCodeLine{00649\ \ \ \ \ \textcolor{comment}{//\ compute\ \ [\ (I\ +\ (Crx\ +\ Crx\string^T))\ \ -\/\ \ (rx\ M\ rx)\ \ ]}}
+\DoxyCodeLine{00650\ \ \ \ \ \textcolor{comment}{//\ that\ is\ \ [\ \ \ \ \ \ \ \ \ aux1\ \ \ \ \ \ \ \ \ +\ \ rxM\ *\ rx\ \ \ ]}}
+\DoxyCodeLine{00651\ \ \ \ \ aux1.XX\ +=\ rxM.XY*rz\ -\/\ rxM.XZ*ry;}
+\DoxyCodeLine{00652\ \ \ \ \ aux1.YY\ +=\ rxM.YZ*rx\ -\/\ rxM.YX*rz;}
+\DoxyCodeLine{00653\ \ \ \ \ aux1.ZZ\ \ =\ rxM.ZX*ry\ -\/\ rxM.ZY*rx;\ \textcolor{comment}{//\ note\ no\ '+='\ //not\ an\ error;\ see\ above,\ ZZ\ is\ zero}}
+\DoxyCodeLine{00654\ \ \ \ \ aux1.XY\ +=\ rxM.XZ*rx\ -\/\ rxM.XX*rz;}
+\DoxyCodeLine{00655\ \ \ \ \ aux1.XZ\ +=\ rxM.XX*ry\ -\/\ rxM.XY*rx;}
+\DoxyCodeLine{00656\ \ \ \ \ aux1.YZ\ +=\ rxM.YX*ry\ -\/\ rxM.YY*rx;}
+\DoxyCodeLine{00657\ }
+\DoxyCodeLine{00658\ \ \ \ \ \textcolor{comment}{//\ The\ coefficients\ of\ the\ 3x3\ rotation\ matrix\ \`{}parent\_E\_child`}}
+\DoxyCodeLine{00659\ \ \ \ \ internal::Mat3x3Coefficients<Scalar>\ E(\ child\_ct\_parent.a\_R\_b.transpose()\ );}
+\DoxyCodeLine{00660\ }
+\DoxyCodeLine{00661\ \ \ \ \ \textcolor{comment}{//\ compute\ \ R\string^T\ (\ ..\ )\ R}}
+\DoxyCodeLine{00662\ \ \ \ \ internal::rot\_symmetric\_EAET<Scalar>(E,\ aux1,\ aux2);}
+\DoxyCodeLine{00663\ }
+\DoxyCodeLine{00664\ \ \ \ \ \textcolor{comment}{//\ Copy\ the\ result,\ angular-\/angular\ block\ of\ the\ output}}
+\DoxyCodeLine{00665\ \ \ \ \ Ia\_parent(AX,AX)\ =\ aux2.XX;}
+\DoxyCodeLine{00666\ \ \ \ \ Ia\_parent(AY,AY)\ =\ aux2.YY;}
+\DoxyCodeLine{00667\ \ \ \ \ Ia\_parent(AZ,AZ)\ =\ aux2.ZZ;}
+\DoxyCodeLine{00668\ \ \ \ \ Ia\_parent(AY,AX)\ =\ Ia\_parent(AX,AY)\ =\ aux2.XY;}
+\DoxyCodeLine{00669\ \ \ \ \ Ia\_parent(AZ,AX)\ =\ Ia\_parent(AX,AZ)\ =\ aux2.XZ;}
+\DoxyCodeLine{00670\ \ \ \ \ Ia\_parent(AZ,AY)\ =\ Ia\_parent(AY,AZ)\ =\ aux2.YZ;}
+\DoxyCodeLine{00671\ \ \ \ \ \textcolor{comment}{//\ aux2.write(Ia\_B.block33(AX,AX));\ //\ this\ is\ be\ equivalent,\ but\ it\ uses\ a\ block\ expression}}
+\DoxyCodeLine{00672\ }
+\DoxyCodeLine{00673\ }
+\DoxyCodeLine{00674\ \ \ \ \ \textcolor{comment}{//\ Angular-\/linear\ block\ (and\ linear-\/angular\ block)}}
+\DoxyCodeLine{00675\ \ \ \ \ \textcolor{comment}{//\ Calculate\ E\ (\ C\ -\/rxM\ )\ E\string^T}}
+\DoxyCodeLine{00676\ \ \ \ \ \textcolor{comment}{//\ \ -\/\ note\ that\ \`{}rxM`\ already\ contains\ the\ coefficients\ of\ \ (-\/\ rx\ *\ M)}}
+\DoxyCodeLine{00677\ \ \ \ \ \textcolor{comment}{//\ \ -\/\ for\ a\ revolute\ joint,\ the\ last\ line\ of\ C\ is\ zero}}
+\DoxyCodeLine{00678\ \ \ \ \ rxM.XX\ +=\ C.XX;}
+\DoxyCodeLine{00679\ \ \ \ \ rxM.XY\ +=\ C.XY;}
+\DoxyCodeLine{00680\ \ \ \ \ rxM.XZ\ +=\ C.XZ;}
+\DoxyCodeLine{00681\ \ \ \ \ rxM.YX\ +=\ C.YX;}
+\DoxyCodeLine{00682\ \ \ \ \ rxM.YY\ +=\ C.YY;}
+\DoxyCodeLine{00683\ \ \ \ \ rxM.YZ\ +=\ C.YZ;}
+\DoxyCodeLine{00684\ }
+\DoxyCodeLine{00685\ \ \ \ \ internal::Mat3x3Coefficients<Scalar>\ aux3;}
+\DoxyCodeLine{00686\ \ \ \ \ internal::rot\_EAET<Scalar>(E,\ rxM,\ aux3);}
+\DoxyCodeLine{00687\ \ \ \ \ \textcolor{comment}{//\ copy\ the\ result,\ also\ to\ the\ symmetric\ 3x3\ block}}
+\DoxyCodeLine{00688\ \ \ \ \ Ia\_parent(LX,AX)\ =\ Ia\_parent(AX,LX)\ =\ aux3.XX;}
+\DoxyCodeLine{00689\ \ \ \ \ Ia\_parent(LY,AX)\ =\ Ia\_parent(AX,LY)\ =\ aux3.XY;}
+\DoxyCodeLine{00690\ \ \ \ \ Ia\_parent(LZ,AX)\ =\ Ia\_parent(AX,LZ)\ =\ aux3.XZ;}
+\DoxyCodeLine{00691\ \ \ \ \ Ia\_parent(LX,AY)\ =\ Ia\_parent(AY,LX)\ =\ aux3.YX;}
+\DoxyCodeLine{00692\ \ \ \ \ Ia\_parent(LY,AY)\ =\ Ia\_parent(AY,LY)\ =\ aux3.YY;}
+\DoxyCodeLine{00693\ \ \ \ \ Ia\_parent(LZ,AY)\ =\ Ia\_parent(AY,LZ)\ =\ aux3.YZ;}
+\DoxyCodeLine{00694\ \ \ \ \ Ia\_parent(LX,AZ)\ =\ Ia\_parent(AZ,LX)\ =\ aux3.ZX;}
+\DoxyCodeLine{00695\ \ \ \ \ Ia\_parent(LY,AZ)\ =\ Ia\_parent(AZ,LY)\ =\ aux3.ZY;}
+\DoxyCodeLine{00696\ \ \ \ \ Ia\_parent(LZ,AZ)\ =\ Ia\_parent(AZ,LZ)\ =\ aux3.ZZ;}
+\DoxyCodeLine{00697\ }
+\DoxyCodeLine{00698\ \ \ \ \ \textcolor{comment}{//\ Linear-\/linear\ block}}
+\DoxyCodeLine{00699\ \ \ \ \ internal::rot\_symmetric\_EAET<Scalar>(E,\ M,\ aux1);}
+\DoxyCodeLine{00700\ \ \ \ \ Ia\_parent(LX,LX)\ =\ aux1.XX;}
+\DoxyCodeLine{00701\ \ \ \ \ Ia\_parent(LY,LY)\ =\ aux1.YY;}
+\DoxyCodeLine{00702\ \ \ \ \ Ia\_parent(LZ,LZ)\ =\ aux1.ZZ;}
+\DoxyCodeLine{00703\ \ \ \ \ Ia\_parent(LY,LX)\ =\ Ia\_parent(LX,LY)\ =\ aux1.XY;}
+\DoxyCodeLine{00704\ \ \ \ \ Ia\_parent(LZ,LX)\ =\ Ia\_parent(LX,LZ)\ =\ aux1.XZ;}
+\DoxyCodeLine{00705\ \ \ \ \ Ia\_parent(LZ,LY)\ =\ Ia\_parent(LY,LZ)\ =\ aux1.YZ;}
+\DoxyCodeLine{00706\ \ \ \ \ \textcolor{comment}{//aux1.write(Ia\_B.block33(LX,LX));\ //\ this\ is\ be\ equivalent,\ but\ it\ uses\ a\ block\ expression}}
+\DoxyCodeLine{00707\ \}}
+\DoxyCodeLine{00708\ }
+\DoxyCodeLine{00710\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ D1,\ \textcolor{keyword}{typename}\ D2>}
+\DoxyCodeLine{00711\ \textcolor{keywordtype}{void}\ ctransform\_Ia\_prismatic(}
+\DoxyCodeLine{00712\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ MatrixBase<D1>\&\ Ia\_child,}
+\DoxyCodeLine{00713\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ CTransformCore<typename\ D1::Scalar>\&\ child\_ct\_parent,}
+\DoxyCodeLine{00714\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ MatrixBase<D2>\&\ Ia\_parent\_const)}
+\DoxyCodeLine{00715\ \{}
+\DoxyCodeLine{00716\ \ \ \ \ \textcolor{keyword}{using\ }Scalar\ =\ \textcolor{keyword}{typename}\ D1::Scalar;\ \textcolor{comment}{//\ we\ assume\ D1\ D2\ use\ the\ same\ scalar\ type!}}
+\DoxyCodeLine{00717\ \ \ \ \ MatrixBase<D2>\&\ Ia\_parent\ =\ \textcolor{keyword}{const\_cast<}MatrixBase<D2>\&\textcolor{keyword}{>}(Ia\_parent\_const);}
+\DoxyCodeLine{00718\ }
+\DoxyCodeLine{00719\ \ \ \ \ \textcolor{comment}{//\ The\ translation\ vector\ from\ child\ origin\ to\ parent\ origin,\ in\ child\ coordinates}}
+\DoxyCodeLine{00720\ \ \ \ \ Scalar\ rx\ =\ child\_ct\_parent.r\_ab\_a(X);}
+\DoxyCodeLine{00721\ \ \ \ \ Scalar\ ry\ =\ child\_ct\_parent.r\_ab\_a(Y);}
+\DoxyCodeLine{00722\ \ \ \ \ Scalar\ rz\ =\ child\_ct\_parent.r\_ab\_a(Z);}
+\DoxyCodeLine{00723\ }
+\DoxyCodeLine{00724\ \ \ \ \ \textcolor{comment}{//\ Angular-\/angular\ 3x3\ sub-\/block:}}
+\DoxyCodeLine{00725\ }
+\DoxyCodeLine{00726\ \ \ \ \ internal::SymmMat3x3Coefficients<Scalar>\ aux1,\ aux2;}
+\DoxyCodeLine{00727\ }
+\DoxyCodeLine{00728\ \ \ \ \ \textcolor{comment}{//\ copying\ the\ coefficients\ results\ in\ slightly\ fewer\ invocations\ of\ the}}
+\DoxyCodeLine{00729\ \ \ \ \ \textcolor{comment}{//\ \ operator(int,int),\ in\ the\ rest\ of\ the\ function}}
+\DoxyCodeLine{00730\ \ \ \ \ \textcolor{keyword}{const}\ internal::Mat3x3Coefficients<Scalar>\ C(}
+\DoxyCodeLine{00731\ \ \ \ \ \ \ \ \ \ \ \ \ Ia\_child(AX,LX),\ Ia\_child(AX,LY),\ 0,}
+\DoxyCodeLine{00732\ \ \ \ \ \ \ \ \ \ \ \ \ Ia\_child(AY,LX),\ Ia\_child(AY,LY),\ 0,}
+\DoxyCodeLine{00733\ \ \ \ \ \ \ \ \ \ \ \ \ Ia\_child(AZ,LX),\ Ia\_child(AZ,LY),\ 0);}
+\DoxyCodeLine{00734\ \ \ \ \ \textcolor{keyword}{const}\ internal::SymmMat3x3Coefficients<Scalar>\ M(}
+\DoxyCodeLine{00735\ \ \ \ \ \ \ \ \ \ \ \ \ Ia\_child(LX,LX),\ Ia\_child(LX,LY),\ 0}
+\DoxyCodeLine{00736\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ Ia\_child(LY,LY),\ 0}
+\DoxyCodeLine{00737\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ 0);}
+\DoxyCodeLine{00738\ \ \ \ \ \textcolor{comment}{//\ compute\ \ (I\ +\ (Crx\ +\ Crx\string^T))}}
+\DoxyCodeLine{00739\ \ \ \ \ aux1.XX\ =\ Ia\_child(AX,AX)\ +\ 2*C.XY*rz;}
+\DoxyCodeLine{00740\ \ \ \ \ aux1.YY\ =\ Ia\_child(AY,AY)\ -\/\ 2*C.YX*rz;}
+\DoxyCodeLine{00741\ \ \ \ \ aux1.ZZ\ =\ Ia\_child(AZ,AZ)\ +\ 2*C.ZX*ry\ -\/\ 2*C.ZY*rx;}
+\DoxyCodeLine{00742\ \ \ \ \ aux1.XY\ =\ Ia\_child(AX,AY)\ +\ (C.YY\ -\/\ C.XX)*rz;}
+\DoxyCodeLine{00743\ \ \ \ \ aux1.XZ\ =\ Ia\_child(AX,AZ)\ +\ C.ZY*rz\ +\ C.XX*ry\ -\/\ C.XY*rx;}
+\DoxyCodeLine{00744\ \ \ \ \ aux1.YZ\ =\ Ia\_child(AY,AZ)\ -\/\ C.ZX*rz\ +\ C.YX*ry\ -\/\ C.YY*rx;}
+\DoxyCodeLine{00745\ }
+\DoxyCodeLine{00746\ \ \ \ \ \textcolor{comment}{//\ compute\ the\ term\ (-\/\ rx\ M)\ \ (note\ the\ minus)}}
+\DoxyCodeLine{00747\ \ \ \ \ internal::Mat3x3Coefficients<Scalar>\ rxM;}
+\DoxyCodeLine{00748\ \ \ \ \ rxM.XX\ =\ rz*M.XY;}
+\DoxyCodeLine{00749\ \ \ \ \ rxM.XY\ =\ rz*M.YY;}
+\DoxyCodeLine{00750\ \ \ \ \ rxM.YX\ =\ -\/\ rz*M.XX;}
+\DoxyCodeLine{00751\ \ \ \ \ rxM.YY\ =\ -\/\ rz*M.XY;}
+\DoxyCodeLine{00752\ \ \ \ \ rxM.ZX\ =\ ry*M.XX\ -\/\ rx*M.XY;}
+\DoxyCodeLine{00753\ \ \ \ \ rxM.ZY\ =\ ry*M.XY\ -\/\ rx*M.YY;}
+\DoxyCodeLine{00754\ \ \ \ \ rxM.XZ\ =\ 0.0;}
+\DoxyCodeLine{00755\ \ \ \ \ rxM.YZ\ =\ 0.0;}
+\DoxyCodeLine{00756\ \ \ \ \ rxM.ZZ\ =\ 0.0;}
+\DoxyCodeLine{00757\ }
+\DoxyCodeLine{00758\ \ \ \ \ \textcolor{comment}{//\ compute\ \ [(I\ +\ (Crx\ +\ Crx\string^T))\ \ -\/\ \ (rxM)\ rx\ ]}}
+\DoxyCodeLine{00759\ \ \ \ \ aux1.XX\ +=\ rxM.XY*rz;}
+\DoxyCodeLine{00760\ \ \ \ \ aux1.YY\ +=\ -\/\ rxM.YX*rz;}
+\DoxyCodeLine{00761\ \ \ \ \ aux1.ZZ\ +=\ rxM.ZX*ry\ -\/\ rxM.ZY*rx;}
+\DoxyCodeLine{00762\ \ \ \ \ aux1.XY\ +=\ -\/\ rxM.XX*rz;}
+\DoxyCodeLine{00763\ \ \ \ \ aux1.XZ\ +=\ rxM.XX*ry\ -\/\ rxM.XY*rx;}
+\DoxyCodeLine{00764\ \ \ \ \ aux1.YZ\ +=\ rxM.YX*ry\ -\/\ rxM.YY*rx;}
+\DoxyCodeLine{00765\ }
+\DoxyCodeLine{00766\ \ \ \ \ \textcolor{comment}{//\ The\ coefficients\ of\ the\ 3x3\ rotation\ matrix\ \`{}parent\_E\_child`}}
+\DoxyCodeLine{00767\ \ \ \ \ internal::Mat3x3Coefficients<Scalar>\ E(\ child\_ct\_parent.a\_R\_b.transpose()\ );}
+\DoxyCodeLine{00768\ }
+\DoxyCodeLine{00769\ \ \ \ \ \textcolor{comment}{//\ compute\ \ R\string^T\ (\ I\ +\ Crx\ +\ (Crx)\string^T\ -\/\ rx\ M\ rx\ )\ R}}
+\DoxyCodeLine{00770\ \ \ \ \ internal::rot\_symmetric\_EAET<Scalar>(E,\ aux1,\ aux2);}
+\DoxyCodeLine{00771\ }
+\DoxyCodeLine{00772\ \ \ \ \ \textcolor{comment}{//\ Copy\ the\ result,\ angular-\/angular\ block\ of\ the\ output}}
+\DoxyCodeLine{00773\ \ \ \ \ Ia\_parent(AX,AX)\ =\ aux2.XX;}
+\DoxyCodeLine{00774\ \ \ \ \ Ia\_parent(AY,AY)\ =\ aux2.YY;}
+\DoxyCodeLine{00775\ \ \ \ \ Ia\_parent(AZ,AZ)\ =\ aux2.ZZ;}
+\DoxyCodeLine{00776\ \ \ \ \ Ia\_parent(AY,AX)\ =\ Ia\_parent(AX,AY)\ =\ aux2.XY;}
+\DoxyCodeLine{00777\ \ \ \ \ Ia\_parent(AZ,AX)\ =\ Ia\_parent(AX,AZ)\ =\ aux2.XZ;}
+\DoxyCodeLine{00778\ \ \ \ \ Ia\_parent(AZ,AY)\ =\ Ia\_parent(AY,AZ)\ =\ aux2.YZ;}
+\DoxyCodeLine{00779\ \ \ \ \ \textcolor{comment}{//\ aux2.write(Ia\_B.block33(AX,AX));\ //\ this\ is\ be\ equivalent,\ but\ it\ uses\ a\ block\ expression}}
+\DoxyCodeLine{00780\ }
+\DoxyCodeLine{00781\ \ \ \ \ \textcolor{comment}{//\ Angular-\/linear\ block\ (and\ linear-\/angular\ block)}}
+\DoxyCodeLine{00782\ \ \ \ \ \textcolor{comment}{//\ Calculate\ R\string^T\ (\ C\ -\/rxM\ )\ R}}
+\DoxyCodeLine{00783\ \ \ \ \ \textcolor{comment}{//\ \ -\/\ note\ that\ 'rxM'\ already\ contains\ the\ coefficients\ of\ \ (-\/\ rx\ *\ M)}}
+\DoxyCodeLine{00784\ \ \ \ \ \textcolor{comment}{//\ \ -\/\ for\ a\ prismatic\ joint,\ the\ last\ column\ of\ C\ is\ zero}}
+\DoxyCodeLine{00785\ \ \ \ \ rxM.XX\ +=\ C.XX;}
+\DoxyCodeLine{00786\ \ \ \ \ rxM.XY\ +=\ C.XY;}
+\DoxyCodeLine{00787\ \ \ \ \ \textcolor{comment}{//rxM.XZ\ stays\ zero}}
+\DoxyCodeLine{00788\ \ \ \ \ rxM.YX\ +=\ C.YX;}
+\DoxyCodeLine{00789\ \ \ \ \ rxM.YY\ +=\ C.YY;}
+\DoxyCodeLine{00790\ \ \ \ \ \textcolor{comment}{//rxM.YZ\ stays\ zero}}
+\DoxyCodeLine{00791\ \ \ \ \ rxM.ZX\ +=\ C.ZX;}
+\DoxyCodeLine{00792\ \ \ \ \ rxM.ZY\ +=\ C.ZY;}
+\DoxyCodeLine{00793\ }
+\DoxyCodeLine{00794\ \ \ \ \ internal::Mat3x3Coefficients<Scalar>\ aux3;}
+\DoxyCodeLine{00795\ \ \ \ \ internal::rot\_EAET<Scalar>(E,\ rxM,\ aux3);\ \textcolor{comment}{//\ TODO\ exploit\ the\ zeros\ in\ rxM}}
+\DoxyCodeLine{00796\ \ \ \ \ \textcolor{comment}{//\ copy\ the\ result,\ also\ to\ the\ symmetric\ 3x3\ block}}
+\DoxyCodeLine{00797\ \ \ \ \ Ia\_parent(LX,AX)\ =\ Ia\_parent(AX,LX)\ =\ aux3.XX;}
+\DoxyCodeLine{00798\ \ \ \ \ Ia\_parent(LY,AX)\ =\ Ia\_parent(AX,LY)\ =\ aux3.XY;}
+\DoxyCodeLine{00799\ \ \ \ \ Ia\_parent(LZ,AX)\ =\ Ia\_parent(AX,LZ)\ =\ aux3.XZ;}
+\DoxyCodeLine{00800\ \ \ \ \ Ia\_parent(LX,AY)\ =\ Ia\_parent(AY,LX)\ =\ aux3.YX;}
+\DoxyCodeLine{00801\ \ \ \ \ Ia\_parent(LY,AY)\ =\ Ia\_parent(AY,LY)\ =\ aux3.YY;}
+\DoxyCodeLine{00802\ \ \ \ \ Ia\_parent(LZ,AY)\ =\ Ia\_parent(AY,LZ)\ =\ aux3.YZ;}
+\DoxyCodeLine{00803\ \ \ \ \ Ia\_parent(LX,AZ)\ =\ Ia\_parent(AZ,LX)\ =\ aux3.ZX;}
+\DoxyCodeLine{00804\ \ \ \ \ Ia\_parent(LY,AZ)\ =\ Ia\_parent(AZ,LY)\ =\ aux3.ZY;}
+\DoxyCodeLine{00805\ \ \ \ \ Ia\_parent(LZ,AZ)\ =\ Ia\_parent(AZ,LZ)\ =\ aux3.ZZ;}
+\DoxyCodeLine{00806\ }
+\DoxyCodeLine{00807\ \ \ \ \ \textcolor{comment}{//\ Linear-\/linear\ block}}
+\DoxyCodeLine{00808\ \ \ \ \ internal::rot\_symmetric\_EAET<Scalar>(E,\ M,\ aux1);\ \textcolor{comment}{//\ TODO\ exploit\ the\ zeros\ in\ M}}
+\DoxyCodeLine{00809\ \ \ \ \ Ia\_parent(LX,LX)\ =\ aux1.XX;}
+\DoxyCodeLine{00810\ \ \ \ \ Ia\_parent(LY,LY)\ =\ aux1.YY;}
+\DoxyCodeLine{00811\ \ \ \ \ Ia\_parent(LZ,LZ)\ =\ aux1.ZZ;}
+\DoxyCodeLine{00812\ \ \ \ \ Ia\_parent(LY,LX)\ =\ Ia\_parent(LX,LY)\ =\ aux1.XY;}
+\DoxyCodeLine{00813\ \ \ \ \ Ia\_parent(LZ,LX)\ =\ Ia\_parent(LX,LZ)\ =\ aux1.XZ;}
+\DoxyCodeLine{00814\ \ \ \ \ Ia\_parent(LZ,LY)\ =\ Ia\_parent(LY,LZ)\ =\ aux1.YZ;}
+\DoxyCodeLine{00815\ \ \ \ \ \textcolor{comment}{//aux1.write(Ia\_B.block33(LX,LX));\ //\ this\ is\ be\ equivalent,\ but\ it\ uses\ a\ block\ expression}}
+\DoxyCodeLine{00816\ \}}
+\DoxyCodeLine{00817\ }
+\DoxyCodeLine{00818\ \textcolor{preprocessor}{\#undef\ block33}}
+\DoxyCodeLine{00819\ }
+\DoxyCodeLine{00836\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ D1,\ \textcolor{keyword}{typename}\ D2>}
+\DoxyCodeLine{00837\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{group__robcogen__commons_gafac3a4b374a938576ddc3b8ad7625c91}{compute\_Ia\_revolute}}(}
+\DoxyCodeLine{00838\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ MatrixBase<D1>\&\ IA,}
+\DoxyCodeLine{00839\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Vec6<typename\ D1::Scalar>\&\ U,}
+\DoxyCodeLine{00840\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{typename}\ D1::Scalar\&\ \ \ \ \ \ \ D,}
+\DoxyCodeLine{00841\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ MatrixBase<D2>\&\ Ia\_const)}
+\DoxyCodeLine{00842\ \{}
+\DoxyCodeLine{00843\ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ D1::Scalar\ Scalar;\ \textcolor{comment}{//\ we\ assume\ D1\ D2\ use\ the\ same\ scalar\ type!}}
+\DoxyCodeLine{00844\ }
+\DoxyCodeLine{00845\ \ \ \ \ MatrixBase<D2>\&\ Ia\ =\ \textcolor{keyword}{const\_cast<}MatrixBase<D2>\&\textcolor{keyword}{>}(Ia\_const);}
+\DoxyCodeLine{00846\ }
+\DoxyCodeLine{00847\ \ \ \ \ Scalar\ UD\_AX\ =\ U(AX)\ /\ D;}
+\DoxyCodeLine{00848\ \ \ \ \ Scalar\ UD\_AY\ =\ U(AY)\ /\ D;}
+\DoxyCodeLine{00849\ \ \ \ \ \textcolor{comment}{//Scalar\ UD\_AZ\ =\ U(AZ)\ /\ D;}}
+\DoxyCodeLine{00850\ \ \ \ \ Scalar\ UD\_LX\ =\ U(LX)\ /\ D;}
+\DoxyCodeLine{00851\ \ \ \ \ Scalar\ UD\_LY\ =\ U(LY)\ /\ D;}
+\DoxyCodeLine{00852\ \ \ \ \ Scalar\ UD\_LZ\ =\ U(LZ)\ /\ D;}
+\DoxyCodeLine{00853\ }
+\DoxyCodeLine{00854\ \ \ \ \ Ia(AX,AX)\ =\ IA(AX,AX)\ -\/\ U(AX)*UD\_AX;}
+\DoxyCodeLine{00855\ \ \ \ \ Ia(AX,AY)\ =\ Ia(AY,AX)\ =\ IA(AX,AY)\ -\/\ U(AX)*UD\_AY;}
+\DoxyCodeLine{00856\ \ \ \ \ \textcolor{comment}{//Ia(AX,AZ)\ =\ Ia(AZ,AX)\ =\ 0;\ //\ it\ is\ assumed\ to\ be\ set\ already}}
+\DoxyCodeLine{00857\ \ \ \ \ Ia(AX,LX)\ =\ Ia(LX,AX)\ =\ IA(AX,LX)\ -\/\ U(AX)*UD\_LX;}
+\DoxyCodeLine{00858\ \ \ \ \ Ia(AX,LY)\ =\ Ia(LY,AX)\ =\ IA(AX,LY)\ -\/\ U(AX)*UD\_LY;}
+\DoxyCodeLine{00859\ \ \ \ \ Ia(AX,LZ)\ =\ Ia(LZ,AX)\ =\ IA(AX,LZ)\ -\/\ U(AX)*UD\_LZ;}
+\DoxyCodeLine{00860\ }
+\DoxyCodeLine{00861\ \ \ \ \ Ia(AY,AY)\ =\ IA(AY,AY)\ -\/\ U(AY)*UD\_AY;}
+\DoxyCodeLine{00862\ \ \ \ \ \textcolor{comment}{//Ia(AY,AZ)\ =\ Ia(AZ,AY)\ =\ 0;\ //\ it\ is\ assumed\ to\ be\ set\ already}}
+\DoxyCodeLine{00863\ \ \ \ \ Ia(AY,LX)\ =\ Ia(LX,AY)\ =\ IA(AY,LX)\ -\/\ U(AY)*UD\_LX;}
+\DoxyCodeLine{00864\ \ \ \ \ Ia(AY,LY)\ =\ Ia(LY,AY)\ =\ IA(AY,LY)\ -\/\ U(AY)*UD\_LY;}
+\DoxyCodeLine{00865\ \ \ \ \ Ia(AY,LZ)\ =\ Ia(LZ,AY)\ =\ IA(AY,LZ)\ -\/\ U(AY)*UD\_LZ;}
+\DoxyCodeLine{00866\ }
+\DoxyCodeLine{00867\ \ \ \ \ \textcolor{comment}{//The\ whole\ row\ AZ\ it\ is\ assumed\ to\ be\ already\ set\ to\ zero}}
+\DoxyCodeLine{00868\ }
+\DoxyCodeLine{00869\ \ \ \ \ Ia(LX,LX)\ =\ IA(LX,LX)\ -\/\ U(LX)*UD\_LX;}
+\DoxyCodeLine{00870\ \ \ \ \ Ia(LX,LY)\ =\ Ia(LY,LX)\ =\ IA(LX,LY)\ -\/\ U(LX)*UD\_LY;}
+\DoxyCodeLine{00871\ \ \ \ \ Ia(LX,LZ)\ =\ Ia(LZ,LX)\ =\ IA(LX,LZ)\ -\/\ U(LX)*UD\_LZ;}
+\DoxyCodeLine{00872\ }
+\DoxyCodeLine{00873\ \ \ \ \ Ia(LY,LY)\ =\ IA(LY,LY)\ -\/\ U(LY)*UD\_LY;}
+\DoxyCodeLine{00874\ \ \ \ \ Ia(LY,LZ)\ =\ Ia(LZ,LY)\ =\ IA(LY,LZ)\ -\/\ U(LY)*UD\_LZ;}
+\DoxyCodeLine{00875\ }
+\DoxyCodeLine{00876\ \ \ \ \ Ia(LZ,LZ)\ =\ IA(LZ,LZ)\ -\/\ U(LZ)*UD\_LZ;}
+\DoxyCodeLine{00877\ \}}
+\DoxyCodeLine{00878\ }
+\DoxyCodeLine{00880\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ D1,\ \textcolor{keyword}{typename}\ D2>}
+\DoxyCodeLine{00881\ \textcolor{keywordtype}{void}\ compute\_Ia\_prismatic(}
+\DoxyCodeLine{00882\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ MatrixBase<D1>\&\ IA,}
+\DoxyCodeLine{00883\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Vec6<typename\ D1::Scalar>\&\ U,}
+\DoxyCodeLine{00884\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{typename}\ D1::Scalar\&\ \ \ \ \ \ \ D,}
+\DoxyCodeLine{00885\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ MatrixBase<D2>\&\ Ia\_const)}
+\DoxyCodeLine{00886\ \{}
+\DoxyCodeLine{00887\ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ D1::Scalar\ Scalar;\ \textcolor{comment}{//\ we\ assume\ D1\ D2\ use\ the\ same\ scalar\ type!}}
+\DoxyCodeLine{00888\ }
+\DoxyCodeLine{00889\ \ \ \ \ MatrixBase<D2>\&\ Ia\ =\ \textcolor{keyword}{const\_cast<}MatrixBase<D2>\&\textcolor{keyword}{>}(Ia\_const);}
+\DoxyCodeLine{00890\ }
+\DoxyCodeLine{00891\ \ \ \ \ Scalar\ UD\_AX\ =\ U(AX)\ /\ D;}
+\DoxyCodeLine{00892\ \ \ \ \ Scalar\ UD\_AY\ =\ U(AY)\ /\ D;}
+\DoxyCodeLine{00893\ \ \ \ \ Scalar\ UD\_AZ\ =\ U(AZ)\ /\ D;}
+\DoxyCodeLine{00894\ \ \ \ \ Scalar\ UD\_LX\ =\ U(LX)\ /\ D;}
+\DoxyCodeLine{00895\ \ \ \ \ Scalar\ UD\_LY\ =\ U(LY)\ /\ D;}
+\DoxyCodeLine{00896\ \ \ \ \ \textcolor{comment}{//Scalar\ UD\_LZ\ =\ U(LZ)\ /\ D;}}
+\DoxyCodeLine{00897\ }
+\DoxyCodeLine{00898\ \ \ \ \ Ia(AX,AX)\ =\ IA(AX,AX)\ -\/\ U(AX)*UD\_AX;}
+\DoxyCodeLine{00899\ \ \ \ \ Ia(AX,AY)\ =\ Ia(AY,AX)\ =\ IA(AX,AY)\ -\/\ U(AX)*UD\_AY;}
+\DoxyCodeLine{00900\ \ \ \ \ Ia(AX,AZ)\ =\ Ia(AZ,AX)\ =\ IA(AX,AZ)\ -\/\ U(AX)*UD\_AZ;}
+\DoxyCodeLine{00901\ \ \ \ \ Ia(AX,LX)\ =\ Ia(LX,AX)\ =\ IA(AX,LX)\ -\/\ U(AX)*UD\_LX;}
+\DoxyCodeLine{00902\ \ \ \ \ Ia(AX,LY)\ =\ Ia(LY,AX)\ =\ IA(AX,LY)\ -\/\ U(AX)*UD\_LY;}
+\DoxyCodeLine{00903\ \ \ \ \ \textcolor{comment}{//Ia(AX,LZ)\ =\ Ia(LZ,AX)\ =\ 0;\ //\ it\ is\ assumed\ to\ be\ set\ already}}
+\DoxyCodeLine{00904\ }
+\DoxyCodeLine{00905\ \ \ \ \ Ia(AY,AY)\ =\ IA(AY,AY)\ -\/\ U(AY)*UD\_AY;}
+\DoxyCodeLine{00906\ \ \ \ \ Ia(AY,AZ)\ =\ Ia(AZ,AY)\ =\ IA(AY,AZ)\ -\/\ U(AY)*UD\_AZ;}
+\DoxyCodeLine{00907\ \ \ \ \ Ia(AY,LX)\ =\ Ia(LX,AY)\ =\ IA(AY,LX)\ -\/\ U(AY)*UD\_LX;}
+\DoxyCodeLine{00908\ \ \ \ \ Ia(AY,LY)\ =\ Ia(LY,AY)\ =\ IA(AY,LY)\ -\/\ U(AY)*UD\_LY;}
+\DoxyCodeLine{00909\ \ \ \ \ \textcolor{comment}{//Ia(AY,LZ)\ =\ Ia(LZ,AY)\ =\ 0;\ //\ it\ is\ assumed\ to\ be\ set\ already}}
+\DoxyCodeLine{00910\ }
+\DoxyCodeLine{00911\ \ \ \ \ Ia(AZ,AZ)\ =\ IA(AZ,AZ)\ -\/\ U(AZ)*UD\_AZ;}
+\DoxyCodeLine{00912\ \ \ \ \ Ia(AZ,LX)\ =\ Ia(LX,AZ)\ =\ IA(AZ,LX)\ -\/\ U(AZ)*UD\_LX;}
+\DoxyCodeLine{00913\ \ \ \ \ Ia(AZ,LY)\ =\ Ia(LY,AZ)\ =\ IA(AZ,LY)\ -\/\ U(AZ)*UD\_LY;}
+\DoxyCodeLine{00914\ \ \ \ \ \textcolor{comment}{//Ia(AZ,LZ)\ =\ Ia(LZ,AZ)\ =\ 0;\ //\ it\ is\ assumed\ to\ be\ set\ already}}
+\DoxyCodeLine{00915\ }
+\DoxyCodeLine{00916\ \ \ \ \ Ia(LX,LX)\ =\ IA(LX,LX)\ -\/\ U(LX)*UD\_LX;}
+\DoxyCodeLine{00917\ \ \ \ \ Ia(LX,LY)\ =\ Ia(LY,LX)\ =\ IA(LX,LY)\ -\/\ U(LX)*UD\_LY;}
+\DoxyCodeLine{00918\ \ \ \ \ \textcolor{comment}{//Ia(LX,LZ)\ =\ Ia(LZ,LX)\ =\ 0;\ //\ it\ is\ assumed\ to\ be\ set\ already}}
+\DoxyCodeLine{00919\ }
+\DoxyCodeLine{00920\ \ \ \ \ Ia(LY,LY)\ =\ IA(LY,LY)\ -\/\ U(LY)*UD\_LY;}
+\DoxyCodeLine{00921\ \ \ \ \ \textcolor{comment}{//Ia(LY,LZ)\ =\ Ia(LZ,LY)\ =\ 0;\ //\ it\ is\ assumed\ to\ be\ set\ already}}
+\DoxyCodeLine{00922\ }
+\DoxyCodeLine{00923\ \ \ \ \ \textcolor{comment}{//Ia(LZ,LZ)\ =\ 0;\ //\ it\ is\ assumed\ to\ be\ set\ already}}
+\DoxyCodeLine{00924\ \}}
+\DoxyCodeLine{00925\ }
+\DoxyCodeLine{00927\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ D1,\ \textcolor{keyword}{typename}\ D2>}
+\DoxyCodeLine{00928\ \textcolor{keywordtype}{void}\ propagate\_IA\_across\_prismatic\_joint(}
+\DoxyCodeLine{00929\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ MatrixBase<D1>\&\ IA,}
+\DoxyCodeLine{00930\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ MatrixBase<D2>\&\ Ia\_const)}
+\DoxyCodeLine{00931\ \{}
+\DoxyCodeLine{00932\ \ \ \ \ \textcolor{keyword}{using\ }Scalar\ =\ \textcolor{keyword}{typename}\ D1::Scalar;\ \textcolor{comment}{//\ we\ assume\ D1\ D2\ use\ the\ same\ scalar\ type!}}
+\DoxyCodeLine{00933\ \ \ \ \ \textcolor{keyword}{auto}\&\ Ia\ =\ \textcolor{keyword}{const\_cast<}MatrixBase<D2>\&\textcolor{keyword}{>}(Ia\_const);}
+\DoxyCodeLine{00934\ \ \ \ \ Scalar\ U\_AX\ =\ IA(AX,LZ);}
+\DoxyCodeLine{00935\ \ \ \ \ Scalar\ U\_AY\ =\ IA(AY,LZ);}
+\DoxyCodeLine{00936\ \ \ \ \ Scalar\ U\_AZ\ =\ IA(AZ,LZ);}
+\DoxyCodeLine{00937\ \ \ \ \ Scalar\ U\_LX\ =\ IA(LX,LZ);}
+\DoxyCodeLine{00938\ \ \ \ \ Scalar\ U\_LY\ =\ IA(LY,LZ);}
+\DoxyCodeLine{00939\ \ \ \ \ Scalar\ D\ \ \ \ =\ IA(LZ,LZ);}
+\DoxyCodeLine{00940\ }
+\DoxyCodeLine{00941\ \ \ \ \ Scalar\ UD\_AY\ =\ U\_AY\ /\ D;}
+\DoxyCodeLine{00942\ \ \ \ \ Scalar\ UD\_AZ\ =\ U\_AZ\ /\ D;}
+\DoxyCodeLine{00943\ \ \ \ \ Scalar\ UD\_LX\ =\ U\_LX\ /\ D;}
+\DoxyCodeLine{00944\ \ \ \ \ Scalar\ UD\_LY\ =\ U\_LY\ /\ D;}
+\DoxyCodeLine{00945\ \ \ \ \ \textcolor{comment}{//Scalar\ UD\_LZ\ =\ 1;\ //it\ is\ (U\_LZ\ /\ D);}}
+\DoxyCodeLine{00946\ }
+\DoxyCodeLine{00947\ \ \ \ \ Ia(AX,AX)\ =\ \ \ \ \ \ \ \ \ \ \ \ \ IA(AX,AX)\ -\/\ U\_AX\ *\ U\_AX\ /\ D;}
+\DoxyCodeLine{00948\ \ \ \ \ Ia(AX,AY)\ =\ Ia(AY,AX)\ =\ IA(AX,AY)\ -\/\ U\_AX*UD\_AY;}
+\DoxyCodeLine{00949\ \ \ \ \ Ia(AX,AZ)\ =\ Ia(AZ,AX)\ =\ IA(AX,AZ)\ -\/\ U\_AX*UD\_AZ;}
+\DoxyCodeLine{00950\ \ \ \ \ Ia(AX,LX)\ =\ Ia(LX,AX)\ =\ IA(AX,LX)\ -\/\ U\_AX*UD\_LX;}
+\DoxyCodeLine{00951\ \ \ \ \ Ia(AX,LY)\ =\ Ia(LY,AX)\ =\ IA(AX,LY)\ -\/\ U\_AX*UD\_LY;}
+\DoxyCodeLine{00952\ \ \ \ \ \textcolor{comment}{//Ia(AX,LZ)\ =\ Ia(LZ,AX)\ =\ 0;\ //\ it\ is\ assumed\ to\ be\ set\ already}}
+\DoxyCodeLine{00953\ }
+\DoxyCodeLine{00954\ \ \ \ \ Ia(AY,AY)\ =\ \ \ \ \ \ \ \ \ \ \ \ \ IA(AY,AY)\ -\/\ U\_AY*UD\_AY;}
+\DoxyCodeLine{00955\ \ \ \ \ Ia(AY,AZ)\ =\ Ia(AZ,AY)\ =\ IA(AY,AZ)\ -\/\ U\_AY*UD\_AZ;}
+\DoxyCodeLine{00956\ \ \ \ \ Ia(AY,LX)\ =\ Ia(LX,AY)\ =\ IA(AY,LX)\ -\/\ U\_AY*UD\_LX;}
+\DoxyCodeLine{00957\ \ \ \ \ Ia(AY,LY)\ =\ Ia(LY,AY)\ =\ IA(AY,LY)\ -\/\ U\_AY*UD\_LY;}
+\DoxyCodeLine{00958\ \ \ \ \ \textcolor{comment}{//Ia(AY,LZ)\ =\ Ia(LZ,AY)\ =\ 0;\ //\ it\ is\ assumed\ to\ be\ set\ already}}
+\DoxyCodeLine{00959\ }
+\DoxyCodeLine{00960\ \ \ \ \ Ia(AZ,AZ)\ =\ \ \ \ \ \ \ \ \ \ \ \ \ IA(AZ,AZ)\ -\/\ U\_AZ*UD\_AZ;}
+\DoxyCodeLine{00961\ \ \ \ \ Ia(AZ,LX)\ =\ Ia(LX,AZ)\ =\ IA(AZ,LX)\ -\/\ U\_AZ*UD\_LX;}
+\DoxyCodeLine{00962\ \ \ \ \ Ia(AZ,LY)\ =\ Ia(LY,AZ)\ =\ IA(AZ,LY)\ -\/\ U\_AZ*UD\_LY;}
+\DoxyCodeLine{00963\ \ \ \ \ \textcolor{comment}{//Ia(AZ,LZ)\ =\ Ia(LZ,AZ)\ =\ 0;\ //\ it\ is\ assumed\ to\ be\ set\ already}}
+\DoxyCodeLine{00964\ }
+\DoxyCodeLine{00965\ \ \ \ \ Ia(LX,LX)\ =\ \ \ \ \ \ \ \ \ \ \ \ \ IA(LX,LX)\ -\/\ U\_LX*UD\_LX;}
+\DoxyCodeLine{00966\ \ \ \ \ Ia(LX,LY)\ =\ Ia(LY,LX)\ =\ IA(LX,LY)\ -\/\ U\_LX*UD\_LY;}
+\DoxyCodeLine{00967\ \ \ \ \ \textcolor{comment}{//Ia(LX,LZ)\ =\ Ia(LZ,LX)\ =\ 0;\ //\ it\ is\ assumed\ to\ be\ set\ already}}
+\DoxyCodeLine{00968\ }
+\DoxyCodeLine{00969\ \ \ \ \ Ia(LY,LY)\ =\ IA(LY,LY)\ -\/\ U\_LY*UD\_LY;}
+\DoxyCodeLine{00970\ \ \ \ \ \textcolor{comment}{//Ia(LY,LZ)\ =\ Ia(LZ,LY)\ =\ 0;\ //\ it\ is\ assumed\ to\ be\ set\ already}}
+\DoxyCodeLine{00971\ }
+\DoxyCodeLine{00972\ \ \ \ \ \textcolor{comment}{//Ia(LZ,LZ)\ =\ 0;\ //\ it\ is\ assumed\ to\ be\ set\ already}}
+\DoxyCodeLine{00973\ \}}
+\DoxyCodeLine{00974\ }
+\DoxyCodeLine{00976\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ D1,\ \textcolor{keyword}{typename}\ D2>}
+\DoxyCodeLine{00977\ \textcolor{keywordtype}{void}\ propagate\_IA\_across\_revolute\_joint(}
+\DoxyCodeLine{00978\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ MatrixBase<D1>\&\ IA,}
+\DoxyCodeLine{00979\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ MatrixBase<D2>\&\ Ia\_const)}
+\DoxyCodeLine{00980\ \{}
+\DoxyCodeLine{00981\ \ \ \ \ \textcolor{keyword}{using\ }Scalar\ =\ \textcolor{keyword}{typename}\ D1::Scalar;\ \textcolor{comment}{//\ we\ assume\ D1\ D2\ use\ the\ same\ scalar\ type!}}
+\DoxyCodeLine{00982\ \ \ \ \ \textcolor{keyword}{auto}\&\ Ia\ =\ \textcolor{keyword}{const\_cast<}MatrixBase<D2>\&\textcolor{keyword}{>}(Ia\_const);}
+\DoxyCodeLine{00983\ \ \ \ \ Scalar\ U\_AX\ =\ IA(AX,AZ);}
+\DoxyCodeLine{00984\ \ \ \ \ Scalar\ U\_AY\ =\ IA(AY,AZ);}
+\DoxyCodeLine{00985\ \ \ \ \ Scalar\ D\ \ \ \ =\ IA(AZ,AZ);}
+\DoxyCodeLine{00986\ \ \ \ \ Scalar\ U\_LX\ =\ IA(LX,AZ);}
+\DoxyCodeLine{00987\ \ \ \ \ Scalar\ U\_LY\ =\ IA(LY,AZ);}
+\DoxyCodeLine{00988\ \ \ \ \ Scalar\ U\_LZ\ =\ IA(LZ,AZ);}
+\DoxyCodeLine{00989\ }
+\DoxyCodeLine{00990\ \ \ \ \ Scalar\ UD\_AY\ =\ U\_AY\ /\ D;}
+\DoxyCodeLine{00991\ \ \ \ \ \textcolor{comment}{//Scalar\ UD\_AZ\ =\ 1;\ //it\ is\ (U\_AZ\ /\ D);}}
+\DoxyCodeLine{00992\ \ \ \ \ Scalar\ UD\_LX\ =\ U\_LX\ /\ D;}
+\DoxyCodeLine{00993\ \ \ \ \ Scalar\ UD\_LY\ =\ U\_LY\ /\ D;}
+\DoxyCodeLine{00994\ \ \ \ \ Scalar\ UD\_LZ\ =\ U\_LZ\ /\ D;}
+\DoxyCodeLine{00995\ }
+\DoxyCodeLine{00996\ \ \ \ \ Ia(AX,AX)\ =\ \ \ \ \ \ \ \ \ \ \ \ \ IA(AX,AX)\ -\/\ U\_AX\ *\ U\_AX\ /\ D;}
+\DoxyCodeLine{00997\ \ \ \ \ Ia(AX,AY)\ =\ Ia(AY,AX)\ =\ IA(AX,AY)\ -\/\ U\_AX*UD\_AY;}
+\DoxyCodeLine{00998\ \ \ \ \ \textcolor{comment}{//Ia(AX,AZ)\ =\ Ia(AZ,AX)\ =\ 0;\ //\ it\ is\ assumed\ to\ be\ set\ already}}
+\DoxyCodeLine{00999\ \ \ \ \ Ia(AX,LX)\ =\ Ia(LX,AX)\ =\ IA(AX,LX)\ -\/\ U\_AX*UD\_LX;}
+\DoxyCodeLine{01000\ \ \ \ \ Ia(AX,LY)\ =\ Ia(LY,AX)\ =\ IA(AX,LY)\ -\/\ U\_AX*UD\_LY;}
+\DoxyCodeLine{01001\ \ \ \ \ Ia(AX,LZ)\ =\ Ia(LZ,AX)\ =\ IA(AX,LZ)\ -\/\ U\_AX*UD\_LZ;}
+\DoxyCodeLine{01002\ }
+\DoxyCodeLine{01003\ \ \ \ \ Ia(AY,AY)\ =\ \ \ \ \ \ \ \ \ \ \ \ \ IA(AY,AY)\ -\/\ U\_AY*UD\_AY;}
+\DoxyCodeLine{01004\ \ \ \ \ \textcolor{comment}{//Ia(AY,AZ)\ =\ Ia(AZ,AY)\ =\ 0;\ //\ it\ is\ assumed\ to\ be\ set\ already}}
+\DoxyCodeLine{01005\ \ \ \ \ Ia(AY,LX)\ =\ Ia(LX,AY)\ =\ IA(AY,LX)\ -\/\ U\_AY*UD\_LX;}
+\DoxyCodeLine{01006\ \ \ \ \ Ia(AY,LY)\ =\ Ia(LY,AY)\ =\ IA(AY,LY)\ -\/\ U\_AY*UD\_LY;}
+\DoxyCodeLine{01007\ \ \ \ \ Ia(AY,LZ)\ =\ Ia(LZ,AY)\ =\ IA(AY,LZ)\ -\/\ U\_AY*UD\_LZ;}
+\DoxyCodeLine{01008\ }
+\DoxyCodeLine{01009\ \ \ \ \ \textcolor{comment}{//The\ whole\ row\ AZ\ it\ is\ assumed\ to\ be\ already\ set\ to\ zero}}
+\DoxyCodeLine{01010\ }
+\DoxyCodeLine{01011\ \ \ \ \ Ia(LX,LX)\ =\ \ \ \ \ \ \ \ \ \ \ \ \ IA(LX,LX)\ -\/\ U\_LX*UD\_LX;}
+\DoxyCodeLine{01012\ \ \ \ \ Ia(LX,LY)\ =\ Ia(LY,LX)\ =\ IA(LX,LY)\ -\/\ U\_LX*UD\_LY;}
+\DoxyCodeLine{01013\ \ \ \ \ Ia(LX,LZ)\ =\ Ia(LZ,LX)\ =\ IA(LX,LZ)\ -\/\ U\_LX*UD\_LZ;}
+\DoxyCodeLine{01014\ }
+\DoxyCodeLine{01015\ \ \ \ \ Ia(LY,LY)\ =\ \ \ \ \ \ \ \ \ \ \ \ \ IA(LY,LY)\ -\/\ U\_LY*UD\_LY;}
+\DoxyCodeLine{01016\ \ \ \ \ Ia(LY,LZ)\ =\ Ia(LZ,LY)\ =\ IA(LY,LZ)\ -\/\ U\_LY*UD\_LZ;}
+\DoxyCodeLine{01017\ }
+\DoxyCodeLine{01018\ \ \ \ \ Ia(LZ,LZ)\ =\ \ \ \ \ \ \ \ \ \ \ \ \ IA(LZ,LZ)\ -\/\ U\_LZ*UD\_LZ;}
+\DoxyCodeLine{01019\ \}}
+\DoxyCodeLine{01021\ }
+\DoxyCodeLine{01022\ }
+\DoxyCodeLine{01023\ }
+\DoxyCodeLine{01024\ }
+\DoxyCodeLine{01025\ \}}
+\DoxyCodeLine{01026\ \}}
+\DoxyCodeLine{01027\ }
+\DoxyCodeLine{01028\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

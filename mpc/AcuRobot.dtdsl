@@ -1,0 +1,19 @@
+Robot AcuRobot
+
+Frames {
+    fr_base0, fr_link1, fr_link2, fr_link3, fr_link4, fr_link5, fr_link6, fr_link7, fr_link8
+    fr_j1, fr_j2, fr_j3, fr_j4, fr_j5, fr_j6, fr_j7, fr_j8,
+    ee
+}
+
+Transforms
+{
+    fr_base0  <- ee
+    fr_j6     <- ee
+}
+
+Jacobians
+{
+    base = fr_base0   target = ee
+    base = fr_base0   target = fr_link6
+}

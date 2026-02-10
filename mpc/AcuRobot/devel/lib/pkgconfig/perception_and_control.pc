@@ -1,0 +1,8 @@
+prefix=/home/ros/AcuRobot/devel
+
+Name: perception_and_control
+Description: Description of perception_and_control
+Version: 0.0.0
+Cflags: -I/home/ros/AcuRobot/src/perception_and_control/include
+Libs: -L${prefix}/lib 
+Requires: 
