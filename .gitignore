@@ -22,3 +22,6 @@ __MACOSX/
 teleop/data/
 episode_0*
 .vscode/
+# Large mesh files
+assets/acu/meshes-old/
+assets/acu/meshes/*.ST
