@@ -1,7 +1,7 @@
 import time
 import threading
 from dataclasses import dataclass
-from typing import Optional, Tuple, Callable
+from typing import Optional, Tuple, Callable, Dict, Any, List
 
 import numpy as np
 import os
@@ -36,6 +36,155 @@ def _save_summary_plots(out_path: str, t_s, x_ref, x_m, p_m, f_safe: float):
     fig.tight_layout()
     fig.savefig(out_path, dpi=150)
     plt.close(fig)
+
+
+def _save_needle_teleop_summary_plots(
+    out_path: str,
+    t_s: List[float],
+    ins_ref: List[float],
+    ins_vel_ref: List[float],
+    xm: List[float],
+    v_cmd: List[float],
+    x_cmd: List[float],
+    pm: List[float],
+    mode_imp: List[float],
+    f_safe: float,
+    hyst_cur: List[float],
+    dfdt: List[float],
+    ke_hat: List[float],
+    be_hat: List[float],
+    xe_hat: List[float],
+    xr: List[float],
+    xc: List[float],
+    dx: List[float],
+    dF: List[float],
+    tws_ref: List[float],
+    tws_vel_ref: List[float],
+    title: str = 'Acu needle teleop adaptive impedance summary',
+):
+    """Save a scientifically-oriented multi-panel summary plot.
+
+    Conventions:
+      - ins_ref/ins_vel_ref are retargeting references (after any unit conversion)
+      - xm is measured/estimated needle joint position
+      - x_cmd is integrated command position published to the arm
+      - mode_imp is 0/1; shaded regions indicate impedance mode
+      - hoisted signals: xr (adaptive ref), dx (impedance filter output), xc=xr+dx
+      - twist signals are shown in a separate panel.
+    """
+    import matplotlib  # type: ignore
+    matplotlib.use('Agg', force=True)
+    import matplotlib.pyplot as plt  # type: ignore
+
+    t = np.asarray(t_s, dtype=float)
+    if t.size < 2:
+        raise ValueError('not enough samples to plot')
+
+    def _to_np(v):
+        return np.asarray(v, dtype=float)
+
+    ins_ref_n = _to_np(ins_ref)
+    xm_n = _to_np(xm)
+    x_cmd_n = _to_np(x_cmd)
+    pm_n = _to_np(pm)
+    mode_n = _to_np(mode_imp)
+
+    fig = plt.figure(figsize=(12, 14))
+    gs = fig.add_gridspec(6, 1, hspace=0.35)
+
+    def shade_impedance(ax):
+        # Shade regions where mode_imp==1 (impedance mode)
+        m = mode_n > 0.5
+        if m.size != t.size:
+            return
+        in_seg = False
+        t_start = None
+        for i in range(t.size):
+            if m[i] and (not in_seg):
+                in_seg = True
+                t_start = t[i]
+            if in_seg and ((not m[i]) or (i == t.size - 1)):
+                t_end = t[i] if (not m[i]) else t[i]
+                if t_start is not None:
+                    ax.axvspan(t_start, t_end, color='orange', alpha=0.12, lw=0)
+                in_seg = False
+
+    # 1) Insertion tracking
+    ax1 = fig.add_subplot(gs[0, 0])
+    ax1.set_title(title)
+    ax1.plot(t, ins_ref_n, label='ins_ref (retargeting)')
+    ax1.plot(t, x_cmd_n, label='x_cmd (integrated command)')
+    ax1.plot(t, xm_n, label='x_m (measured/estimated)')
+    ax1.set_ylabel('Insertion / joint pos')
+    ax1.grid(True)
+    ax1.legend(loc='upper right', ncols=2)
+    shade_impedance(ax1)
+
+    # 2) Adaptive reference decomposition (only meaningful in impedance mode)
+    ax2 = fig.add_subplot(gs[1, 0], sharex=ax1)
+    ax2.plot(t, _to_np(xr), label='x_r (adaptive ref)')
+    ax2.plot(t, _to_np(dx), label='d_x = H(z)*(F_r-F_e)')
+    ax2.plot(t, _to_np(xc), label='x_c = x_r + d_x')
+    ax2.set_ylabel('Refs / filter')
+    ax2.grid(True)
+    ax2.legend(loc='upper right', ncols=2)
+    shade_impedance(ax2)
+
+    # 3) Force tracking
+    ax3 = fig.add_subplot(gs[2, 0], sharex=ax1)
+    ax3.plot(t, pm_n, label='F_e (measured/sim)')
+    ax3.plot(t, np.full_like(t, float(f_safe)), '--', label='F_safe')
+    ax3.plot(t, _to_np(dF), label='dF = F_r - F_e')
+    ax3.set_ylabel('Force (N)')
+    ax3.grid(True)
+    ax3.legend(loc='upper right', ncols=2)
+    shade_impedance(ax3)
+
+    # 4) Gating / hysteresis / dfdt
+    ax4 = fig.add_subplot(gs[3, 0], sharex=ax1)
+    ax4.plot(t, mode_n, label='mode_imp (0/1)')
+    ax4.plot(t, _to_np(hyst_cur), label='hysteresis_current')
+    ax4.plot(t, _to_np(dfdt), label='|dF/dt| (N/s)')
+    ax4.set_ylabel('Gate signals')
+    ax4.grid(True)
+    ax4.legend(loc='upper right', ncols=3)
+
+    # 5) Adaptive parameters
+    ax5 = fig.add_subplot(gs[4, 0], sharex=ax1)
+    ax5.plot(t, _to_np(ke_hat), label='K_e_hat')
+    ax5.plot(t, _to_np(be_hat), label='B_e_hat')
+    ax5.plot(t, _to_np(xe_hat), label='x_e_hat')
+    ax5.set_ylabel('Env params')
+    ax5.grid(True)
+    ax5.legend(loc='upper right', ncols=3)
+    shade_impedance(ax5)
+
+    # 6) Twist tracking
+    ax6 = fig.add_subplot(gs[5, 0], sharex=ax1)
+    ax6.plot(t, _to_np(tws_ref), label='twist_ref')
+    ax6.plot(t, _to_np(tws_vel_ref), label='twist_vel_ref')
+    ax6.set_xlabel('t (s)')
+    ax6.set_ylabel('Twist (rad, rad/s)')
+    ax6.grid(True)
+    ax6.legend(loc='upper right', ncols=2)
+
+    fig.tight_layout()
+    fig.savefig(out_path, dpi=150)
+    plt.close(fig)
+
+
+def _save_csv(path: str, rows: List[Dict[str, Any]]):
+    import csv
+
+    if not rows:
+        return
+    keys = list(rows[0].keys())
+    os.makedirs(os.path.dirname(path) or '.', exist_ok=True)
+    with open(path, 'w', newline='') as f:
+        w = csv.DictWriter(f, fieldnames=keys)
+        w.writeheader()
+        for r in rows:
+            w.writerow(r)
 
 
 class IIR2Filter:
@@ -288,6 +437,11 @@ class SafeForceSwitch:
                 self.enabled = False
                 self._last_toggle_t = float(now)
         return bool(self.enabled)
+
+    @property
+    def hysteresis_current(self) -> float:
+        """Current hysteresis used internally (after adaptation/smoothing)."""
+        return float(self._hyst_cur)
 
 
 @dataclass
@@ -554,6 +708,8 @@ class AcuNeedleTeleopImpedanceRunner:
         plot_on_finish: bool = True,
         plot_save_path: Optional[str] = None,
         stop_after_s: Optional[float] = None,
+        save_csv_on_finish: bool = True,
+        csv_save_path: Optional[str] = None,
     ):
         self.ctrl = controller
         self.env = env if env is not None else SimContactEnv()
@@ -594,6 +750,41 @@ class AcuNeedleTeleopImpedanceRunner:
         self.stop_after_s = None if stop_after_s is None else float(max(0.0, stop_after_s))
         self._session_t0: Optional[float] = None
 
+        self.save_csv_on_finish = bool(save_csv_on_finish)
+        self.csv_save_path = csv_save_path
+
+        # rich log buffers (sample-aligned)
+        self._rows: List[Dict[str, Any]] = []
+
+        self._gate_hyst_buf: List[float] = []
+        self._gate_dfdt_buf: List[float] = []
+
+        self._ke_hat_buf: List[float] = []
+        self._be_hat_buf: List[float] = []
+        self._xe_hat_buf: List[float] = []
+
+        self._mode_buf: List[float] = []
+        self._xr_buf: List[float] = []
+        self._xc_buf: List[float] = []
+        self._dx_buf: List[float] = []
+        self._dF_buf: List[float] = []
+
+        self._v_cmd_buf: List[float] = []
+        self._x_cmd_buf: List[float] = []
+
+        self._ins_ref_buf: List[float] = []
+        self._ins_vel_ref_buf: List[float] = []
+        self._tws_ref_buf: List[float] = []
+        self._tws_vel_ref_buf: List[float] = []
+
+        self._pm_prev_log: Optional[float] = None
+        self._t_prev_log: Optional[float] = None
+
+        self._tws_meas_buf: List[float] = []
+        self._tws_meas_vel_buf: List[float] = []
+        self._tws_prev_meas: Optional[float] = None
+        self._tws_prev_meas_t: Optional[float] = None
+
     def start_session(self, now: Optional[float] = None):
         """Mark the start of a retargeting test session (e.g., after needle_ref_enabled becomes True)."""
         if now is None:
@@ -625,6 +816,37 @@ class AcuNeedleTeleopImpedanceRunner:
 
         self._session_t0 = None
 
+        self._rows.clear()
+
+        self._gate_hyst_buf.clear()
+        self._gate_dfdt_buf.clear()
+
+        self._ke_hat_buf.clear()
+        self._be_hat_buf.clear()
+        self._xe_hat_buf.clear()
+
+        self._mode_buf.clear()
+        self._xr_buf.clear()
+        self._xc_buf.clear()
+        self._dx_buf.clear()
+        self._dF_buf.clear()
+
+        self._v_cmd_buf.clear()
+        self._x_cmd_buf.clear()
+
+        self._ins_ref_buf.clear()
+        self._ins_vel_ref_buf.clear()
+        self._tws_ref_buf.clear()
+        self._tws_vel_ref_buf.clear()
+
+        self._pm_prev_log = None
+        self._t_prev_log = None
+
+        self._tws_meas_buf.clear()
+        self._tws_meas_vel_buf.clear()
+        self._tws_prev_meas = None
+        self._tws_prev_meas_t = None
+
     def configure_io(self, arm_ctrl=None, needle_lock=None, needle_action_array=None, needle_meta_array=None):
         self.arm_ctrl = arm_ctrl if arm_ctrl is not None else self.arm_ctrl
         self.needle_lock = needle_lock if needle_lock is not None else self.needle_lock
@@ -644,6 +866,49 @@ class AcuNeedleTeleopImpedanceRunner:
                 ins_vel = 0.0
         return ins, ins_vel, tws
 
+    def _finalize_and_save_plots(self):
+        if not (self.log_data and self.plot_on_finish and len(self._t_buf) > 2):
+            return
+        save_path = self.plot_save_path
+        if save_path is None:
+            save_path = os.path.join(os.getcwd(), 'acu_adaptive_impedance_summary.png')
+
+        _save_needle_teleop_summary_plots(
+            out_path=save_path,
+            t_s=list(self._t_buf),
+            ins_ref=list(self._ins_ref_buf),
+            ins_vel_ref=list(self._ins_vel_ref_buf),
+            xm=list(self._xm_buf),
+            v_cmd=list(self._v_cmd_buf),
+            x_cmd=list(self._x_cmd_buf),
+            pm=list(self._pm_buf),
+            mode_imp=list(self._mode_buf),
+            f_safe=float(self.ctrl.switch.f_safe),
+            hyst_cur=list(self._gate_hyst_buf),
+            dfdt=list(self._gate_dfdt_buf),
+            ke_hat=list(self._ke_hat_buf),
+            be_hat=list(self._be_hat_buf),
+            xe_hat=list(self._xe_hat_buf),
+            xr=list(self._xr_buf),
+            xc=list(self._xc_buf),
+            dx=list(self._dx_buf),
+            dF=list(self._dF_buf),
+            tws_ref=list(self._tws_ref_buf),
+            tws_vel_ref=list(self._tws_vel_ref_buf),
+        )
+        logger_mp.info(f"[acu-needle-imp-runner] saved summary plot: {save_path}")
+
+        if self.save_csv_on_finish:
+            csv_path = self.csv_save_path
+            if csv_path is None:
+                root, _ = os.path.splitext(save_path)
+                csv_path = root + '.csv'
+            try:
+                _save_csv(csv_path, self._rows)
+                logger_mp.info(f"[acu-needle-imp-runner] saved csv: {csv_path}")
+            except Exception as e:
+                logger_mp.warning(f"[acu-needle-imp-runner] failed to save csv: {e}")
+
     def step_once(self, now: Optional[float] = None, fr: Optional[float] = None) -> dict:
         """Single step: read q/dq + retargeting, compute x_cmd, publish ctrl_dual_arm."""
         if self.arm_ctrl is None:
@@ -655,6 +920,16 @@ class AcuNeedleTeleopImpedanceRunner:
         q = np.asarray(self.arm_ctrl.get_current_dual_arm_q(), dtype=float).reshape(-1)[:8]
         # dq is not used for xm/xm_dot in this test mode
 
+        # twist measurement: use joint index 7 (8th dof) if available
+        tws_meas = float(q[-1]) if q.size >= 8 else float('nan')
+        if self._tws_prev_meas is not None and self._tws_prev_meas_t is not None:
+            dt_tw = float(max(1e-6, float(now) - float(self._tws_prev_meas_t)))
+            tws_meas_vel = float((tws_meas - float(self._tws_prev_meas)) / dt_tw)
+        else:
+            tws_meas_vel = 0.0
+        self._tws_prev_meas = float(tws_meas)
+        self._tws_prev_meas_t = float(now)
+
         if self._base_q8 is None:
             self._base_q8 = q.copy()
 
@@ -664,23 +939,10 @@ class AcuNeedleTeleopImpedanceRunner:
             t_rel = float(now) - float(self._traj_t0)
             # Trajectory is defined up to 10s in the provided polynomial profile.
             if t_rel > 10.0:
-                # finalize plots before exit
-                if self.log_data and self.plot_on_finish and len(self._t_buf) > 2:
-                    try:
-                        save_path = self.plot_save_path
-                        if save_path is None:
-                            save_path = os.path.join(os.getcwd(), 'acu_adaptive_impedance_summary.png')
-                        _save_summary_plots(
-                            out_path=save_path,
-                            t_s=list(self._t_buf),
-                            x_ref=list(self._x_ref_buf),
-                            x_m=list(self._xm_buf),
-                            p_m=list(self._pm_buf),
-                            f_safe=float(self.ctrl.switch.f_safe),
-                        )
-                        logger_mp.info(f"[acu-needle-imp-runner] saved summary plot: {save_path}")
-                    except Exception as e:
-                        logger_mp.warning(f"[acu-needle-imp-runner] failed to save summary plot: {e}")
+                try:
+                    self._finalize_and_save_plots()
+                except Exception as e:
+                    logger_mp.warning(f"[acu-needle-imp-runner] failed to save summary plot: {e}")
                 self.stop()
                 raise StopIteration('trajectory finished (t_rel > 10s)')
             # Use controller internal dt for integration consistency
@@ -692,6 +954,15 @@ class AcuNeedleTeleopImpedanceRunner:
             ins_ref = ins_ref * 1e3  
             ins_vel_ref = ins_vel_ref * 1e3
 
+            # read twist velocity from meta if available
+            tws_vel_ref = 0.0
+            if self.needle_lock is not None and self.needle_meta_array is not None:
+                try:
+                    with self.needle_lock:
+                        tws_vel_ref = float(self.needle_meta_array[2])
+                except Exception:
+                    tws_vel_ref = 0.0
+
             if self._traj_t0 is None:
                 self._traj_t0 = float(now)
             t_rel = float(now) - float(self._traj_t0)
@@ -699,22 +970,10 @@ class AcuNeedleTeleopImpedanceRunner:
             # retargeting test auto-stop (e.g., 5s after session starts)
             if self.stop_after_s is not None and self._session_t0 is not None:
                 if (float(now) - float(self._session_t0)) > float(self.stop_after_s):
-                    if self.log_data and self.plot_on_finish and len(self._t_buf) > 2:
-                        try:
-                            save_path = self.plot_save_path
-                            if save_path is None:
-                                save_path = os.path.join(os.getcwd(), 'acu_adaptive_impedance_summary.png')
-                            _save_summary_plots(
-                                out_path=save_path,
-                                t_s=list(self._t_buf),
-                                x_ref=list(self._x_ref_buf),
-                                x_m=list(self._xm_buf),
-                                p_m=list(self._pm_buf),
-                                f_safe=float(self.ctrl.switch.f_safe),
-                            )
-                            logger_mp.info(f"[acu-needle-imp-runner] saved summary plot: {save_path}")
-                        except Exception as e:
-                            logger_mp.warning(f"[acu-needle-imp-runner] failed to save summary plot: {e}")
+                    try:
+                        self._finalize_and_save_plots()
+                    except Exception as e:
+                        logger_mp.warning(f"[acu-needle-imp-runner] failed to save summary plot: {e}")
                     self.stop()
                     raise StopIteration(f'retargeting session finished (> {self.stop_after_s:.3f}s)')
 
@@ -727,8 +986,6 @@ class AcuNeedleTeleopImpedanceRunner:
             self._last_cmd_ts = float(now)
         xm = float(self._last_cmd_x)
         xm_dot = float(self._last_cmd_v)
-
-        print(ins_ref)
 
         out = self.step(
             ins_ref=ins_ref,
@@ -746,6 +1003,9 @@ class AcuNeedleTeleopImpedanceRunner:
         sol_q[-1] = float(tws_ref)
         sol_tauff = np.zeros_like(sol_q)
         self.arm_ctrl.ctrl_dual_arm(sol_q, sol_tauff)
+        
+        self.arm_ctrl.get_current_dual_arm_dq().reshape(-1)[:8]
+
 
         # update last commanded state so next step uses commands as (xm, xm_dot)
         try:
@@ -759,10 +1019,75 @@ class AcuNeedleTeleopImpedanceRunner:
         if self.log_data:
             try:
                 self._t_buf.append(float(t_rel))
-                # self._x_ref_buf.append(float(out.get('x_ref', 0.0)))
-                self._x_ref_buf.append(float(ins_ref))
+                self._ins_ref_buf.append(float(ins_ref))
+                self._ins_vel_ref_buf.append(float(ins_vel_ref))
+                self._tws_ref_buf.append(float(tws_ref))
+                # if trajectory mode, tws_vel_ref is 0
+                if self.reference_source == 'trajectory':
+                    self._tws_vel_ref_buf.append(0.0)
+                else:
+                    self._tws_vel_ref_buf.append(float(tws_vel_ref))
+
                 self._xm_buf.append(float(xm))
                 self._pm_buf.append(float(out.get('pm', float('nan'))))
+
+                self._mode_buf.append(1.0 if bool(out.get('mode_impedance', False)) else 0.0)
+                self._xr_buf.append(float(out.get('xr', float('nan'))))
+                self._xc_buf.append(float(out.get('xc', float('nan'))))
+                self._dx_buf.append(float(out.get('dx', float('nan'))))
+                self._dF_buf.append(float(out.get('dF', float('nan'))))
+
+                self._v_cmd_buf.append(float(out.get('v_cmd', float('nan'))))
+                self._x_cmd_buf.append(float(out.get('x_cmd', float('nan'))))
+
+                self._ke_hat_buf.append(float(out.get('ke_hat', float('nan'))))
+                self._be_hat_buf.append(float(out.get('be_hat', float('nan'))))
+                self._xe_hat_buf.append(float(out.get('xe_hat', float('nan'))))
+
+                # gating diagnostics: hysteresis_current and |dF/dt|
+                self._gate_hyst_buf.append(float(self.ctrl.switch.hysteresis_current))
+
+                pm_now = float(out.get('pm', float('nan')))
+                if self._pm_prev_log is not None and self._t_prev_log is not None:
+                    dt_gate = float(max(1e-6, float(now) - float(self._t_prev_log)))
+                    self._gate_dfdt_buf.append(abs((pm_now - float(self._pm_prev_log)) / dt_gate))
+                else:
+                    self._gate_dfdt_buf.append(0.0)
+                self._pm_prev_log = pm_now
+                self._t_prev_log = float(now)
+
+                self._tws_meas_buf.append(float(tws_meas))
+                self._tws_meas_vel_buf.append(float(tws_meas_vel))
+
+                # also keep a row-wise log for CSV
+                self._rows.append(
+                    {
+                        't': float(t_rel),
+                        'ins_ref': float(ins_ref),
+                        'ins_vel_ref': float(ins_vel_ref),
+                        'tws_ref': float(tws_ref),
+                        'tws_vel_ref': float(self._tws_vel_ref_buf[-1]),
+                        'xm': float(xm),
+                        'xm_dot': float(xm_dot),
+                        'pm': float(pm_now),
+                        'mode_impedance': int(bool(out.get('mode_impedance', False))),
+                        'xr': float(out.get('xr', float('nan'))),
+                        'dx': float(out.get('dx', float('nan'))),
+                        'xc': float(out.get('xc', float('nan'))),
+                        'x_ref': float(out.get('x_ref', float('nan'))),
+                        'v_cmd': float(out.get('v_cmd', float('nan'))),
+                        'x_cmd': float(out.get('x_cmd', float('nan'))),
+                        'dF': float(out.get('dF', float('nan'))),
+                        'ke_hat': float(out.get('ke_hat', float('nan'))),
+                        'be_hat': float(out.get('be_hat', float('nan'))),
+                        'xe_hat': float(out.get('xe_hat', float('nan'))),
+                        'hysteresis_current': float(self.ctrl.switch.hysteresis_current),
+                        'dfdt_abs': float(self._gate_dfdt_buf[-1]),
+                        'f_safe': float(self.ctrl.switch.f_safe),
+                        'tws_meas': float(tws_meas),
+                        'tws_meas_vel': float(tws_meas_vel),
+                    }
+                )
             except Exception:
                 pass
 
@@ -815,6 +1140,10 @@ class AcuNeedleTeleopImpedanceRunner:
           xm/xm_dot: measured joint7 position/velocity
           now: timestamp for synchronization
           fr: optional desired force
+
+        Returns:
+          xr: adaptive reference position
+          f_hat: predicted force
         """
         pm = self.env.force(xm=xm, xm_dot=xm_dot, now=now)
         out = self.ctrl.step(

@@ -111,9 +111,9 @@ class WaypointPath:
         min_dist: float = 0.003,
         min_ang: float = np.deg2rad(1.0),
         reach_eps: float = 0.001,
-        win_fwd: int = 12,
+        win_fwd: int = 10,
         win_back: int = 1,
-        max_track_steps: int = 5,
+        max_track_steps: int = 30,
     ):
         self._wpts: Deque[Waypoint] = deque()
         self.max_points = int(max_points)
@@ -283,6 +283,7 @@ class WaypointPath:
                 best_s = s_clamped
 
         self._active_i = best_i
+        # print(self._active_i)
         self._bump_track_counter(best_i)
         # if stuck for too long, force-pop and re-select once
         if self._force_pop_if_stuck():
@@ -306,8 +307,8 @@ class WaypointPath:
         seg_i: int,
         proj_s: float,
         cur_p: np.ndarray,
-        base_step: float = 0.02,
-        min_step: float = 0.005,
+        base_step: float = 0.001,
+        min_step: float = 0.001,
         max_step: float = 0.05,
         eps_step: float = 1e-4,
     ) -> Tuple[np.ndarray, np.ndarray, float]:
@@ -337,6 +338,7 @@ class WaypointPath:
         # lookahead is "how much should move forward along the segment", so adapt to remaining distance
         dist_to_end = float(np.linalg.norm(b.p - proj_p))
         step = float(np.clip(max(base_step, 0.5 * dist_to_end), min_step, max_step))
+        # step = float(np.clip(0.5 * dist_to_end, min_step, max_step))
         step = float(min(step, dist_to_end))
 
         # If we are not exactly at the end but step collapses to 0, force a tiny forward progress.
@@ -541,6 +543,8 @@ class TeleopAcuMPC:
         target_pose = pin.SE3(np.asarray(R).copy(), np.asarray(target_p).reshape(3).copy())
 
         Sd = (p_des - cur_p).reshape(3)
+        # print(Sd)
+        # print(np.linalg.norm(Sd))
 
         # store debug info for inspection
         try:
@@ -552,6 +556,8 @@ class TeleopAcuMPC:
                 "cur_p": np.asarray(cur_p).reshape(3).copy(),
                 "proj_p": np.asarray(proj).reshape(3).copy(),
                 "p_des": np.asarray(p_des).reshape(3).copy(),
+                "target_p": np.asarray(target_p).reshape(3).copy(),
+                "target_q": np.asarray(target_q).reshape(4).copy(),
                 "Sd_norm": float(np.linalg.norm(Sd)),
                 "wpts_len": int(len(self._path._wpts)),
             }

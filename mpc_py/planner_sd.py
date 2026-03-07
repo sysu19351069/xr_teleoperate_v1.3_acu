@@ -129,7 +129,7 @@ def _rodrigues(axis: np.ndarray, angle: float) -> np.ndarray:
 
 def init_accurate_plan(*, curpos: np.ndarray, v: np.ndarray, r: float = 0.05) -> AccuratePlanState:
     """初始化精定位规划，并生成目标位姿 obj。
-
+​
     严格对齐 C++ accurate_positioning.cpp：
     - 输入 curpos 为当前“针头”位姿（世界系 4x4）
     - trans: 由 z 旋到 v 的旋转（AngleAxis，轴=z×v，角=acos(v·z/|v||z|)）

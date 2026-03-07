@@ -28,6 +28,11 @@ class EpisodeWriter():
         self.frequency = frequency
         self.image_size = image_size
 
+        # video writing
+        self._video_writers = {}  # color_key -> cv2.VideoWriter
+        self._video_paths = {}    # color_key -> output path
+        self._video_fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+
         self.rerun_log = rerun_log
         if self.rerun_log:
             logger_mp.info("==> RerunLogger initializing...\n")
@@ -115,13 +120,38 @@ class EpisodeWriter():
             f.write('"data": [\n')
         self.first_item = True   # Flag to handle commas in JSON array
 
+        # reset video writers for new episode
+        self._release_video_writers()
+        self._video_writers = {}
+        self._video_paths = {}
+
         if self.rerun_log:
             self.online_logger = RerunLogger(prefix="online/", IdxRangeBoundary = 60, memory_limit="300MB")
 
         self.is_available = False  # After the episode is created, the class is marked as unavailable until the episode is successfully saved
         logger_mp.info(f"==> New episode created: {self.episode_dir}")
         return True  # Return True if the episode is successfully created
-        
+
+    def _release_video_writers(self):
+        for _, vw in list(self._video_writers.items()):
+            try:
+                vw.release()
+            except Exception:
+                pass
+        self._video_writers = {}
+
+    def _ensure_video_writer(self, *, color_key: str, frame_bgr: np.ndarray) -> None:
+        if color_key in self._video_writers:
+            return
+        h, w = frame_bgr.shape[:2]
+        # write to episode root
+        out_path = os.path.join(self.episode_dir, f"{color_key}.mp4")
+        vw = cv2.VideoWriter(out_path, self._video_fourcc, float(self.frequency), (int(w), int(h)))
+        if not vw.isOpened():
+            raise RuntimeError(f"VideoWriter open failed: {out_path}")
+        self._video_writers[color_key] = vw
+        self._video_paths[color_key] = out_path
+
     def add_item(self, colors, depths=None, states=None, actions=None, tactiles=None, audios=None, sim_state=None):
         # Increment the item ID
         self.item_id += 1
@@ -170,6 +200,13 @@ class EpisodeWriter():
                     logger_mp.info(f"Failed to save color image.")
                 item_data['colors'][color_key] = os.path.join('colors', color_name)
 
+                # Write video frame (BGR)
+                try:
+                    self._ensure_video_writer(color_key=str(color_key), frame_bgr=color)
+                    self._video_writers[str(color_key)].write(color)
+                except Exception as e:
+                    logger_mp.info(f"Failed to write video frame for {color_key}: {e}")
+
         # Save depths
         if depths:
             for idx_depth, (depth_key, depth) in enumerate(depths.items()):
@@ -195,7 +232,7 @@ class EpisodeWriter():
         # Log data if necessary
         if self.rerun_log:
             curent_record_time = time.time()
-            logger_mp.info(f"==> episode_id:{self.episode_id}  item_id:{idx}  current_time:{curent_record_time}")
+            # logger_mp.info(f"==> episode_id:{self.episode_id}  item_id:{idx}  current_time:{curent_record_time}")
             self.rerun_logger.log_item_data(item_data)
 
     def save_episode(self):
@@ -212,6 +249,9 @@ class EpisodeWriter():
         with open(self.json_path, "a", encoding="utf-8") as f:
             f.write("\n]\n}")      # Close the JSON array and object
 
+        # finalize videos
+        self._release_video_writers()
+
         self.need_save = False     # Reset the save flag
         self.is_available = True   # Mark the class as available after saving
         logger_mp.info(f"==> Episode saved successfully to {self.json_path}.")
@@ -227,3 +267,6 @@ class EpisodeWriter():
             time.sleep(0.01)
         self.stop_worker = True
         self.worker_thread.join()
+
+        # release videos if any
+        self._release_video_writers()
