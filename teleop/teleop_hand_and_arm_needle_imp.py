@@ -591,7 +591,7 @@ if __name__ == '__main__':
                 frequency_hz=float(max(1.0, args.frequency)),
                 joint_index=6,
                 reference_source='retargeting',
-                stop_after_s=12.0,
+                stop_after_s=10.0,
                 plot_save_path=os.path.join(os.getcwd(), 'acu_adaptive_impedance_retargeting_summary.png'),
             )
 
@@ -636,15 +636,6 @@ if __name__ == '__main__':
             now = time.time()
 
 
-            # If ACU needle impedance runner is active but has stopped, exit.
-            try:
-                if args.arm == 'ACU' and args.acu_needle_teleop and (acu_imp_runner is not None):
-                    if hasattr(acu_imp_runner, '_running') and (acu_imp_runner._running is False) and needle_ref_enabled:
-                        STOP = True
-                        break
-            except Exception:
-                pass
-
             if not args.headless:
                 tv_resized_image = cv2.resize(tv_img_array, (tv_img_shape[1] // 2, tv_img_shape[0] // 2))
                 cv2.imshow("record image", tv_resized_image)
@@ -685,6 +676,15 @@ if __name__ == '__main__':
                         acu_imp.reset()
                     if acu_imp_runner is not None:
                         acu_imp_runner.reset()
+            # If ACU needle impedance runner is active but has stopped, exit.
+            try:
+                if args.arm == 'ACU' and args.acu_needle_teleop and (acu_imp_runner is not None):
+                    if hasattr(acu_imp_runner, '_running') and (acu_imp_runner._running is False) and needle_ref_enabled:
+                        
+                        # STOP = True
+                        continue
+            except Exception:
+                pass
 
             # get input data
             tele_data = tv_wrapper.get_motion_state_data()
@@ -839,6 +839,14 @@ if __name__ == '__main__':
                         right_ee_state = dual_hand_state_array[-6:]
                         left_hand_action = dual_hand_action_array[:6]
                         right_hand_action = dual_hand_action_array[:6]
+                        current_body_state = []
+                        current_body_action = []
+                elif args.arm == 'ACU' and args.acu_needle_teleop and args.xr_mode == 'hand' and needle_right_hand_pos_array is not None:
+                    with needle_right_hand_pos_array.get_lock():
+                        right_ee_state = list(needle_right_hand_pos_array[:])
+                        left_ee_state = []
+                        left_hand_action = []
+                        right_hand_action = []
                         current_body_state = []
                         current_body_action = []
                 else:

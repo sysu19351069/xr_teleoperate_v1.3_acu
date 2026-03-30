@@ -111,114 +111,179 @@ def build_report(*, runs: Sequence[NeedleRun], out_html: Path, title: str) -> No
     #   - ke_hat/be_hat/xe_hat: inferred in mm-domain (Ke in N/mm, Be in N*s/mm, xe in mm)
     #   - tws_ref: rad, tws_vel_ref: rad/s
 
-    # ---- Figure 1: insertion tracking ----
-    fig1 = go.Figure()
-    for run in runs:
-        t = run.t0()
-        fig1.add_trace(go.Scatter(x=t, y=_require(run, 'ins_ref'), name=f"{run.name}: ins_ref"))
-        fig1.add_trace(go.Scatter(x=t, y=_require(run, 'x_cmd'), name=f"{run.name}: x_cmd"))
-        fig1.add_trace(go.Scatter(x=t, y=_require(run, 'xm'), name=f"{run.name}: x_m"))
+    # helper: choose a dash style per run to distinguish without long legends
+    dash_cycle = ['solid', 'dash', 'dot', 'dashdot', 'longdash', 'longdashdot']
 
-    fig1.update_layout(
-        title='提插参考跟踪（ins_ref / x_cmd / x_m）',
-        xaxis_title='t (s)',
-        yaxis_title='Insertion / joint pos (mm)',
-        legend=dict(orientation='h'),
-        height=520,
+    def _dash(i: int) -> str:
+        return dash_cycle[int(i) % len(dash_cycle)]
+
+    def _cd(run: NeedleRun) -> str:
+        # short label only; do not include full path
+        return str(run.name)
+
+    def _trace(*, x, y, name: str, run_i: int, run: NeedleRun, showlegend: bool = True):
+        return go.Scatter(
+            x=x,
+            y=y,
+            name=name,
+            legendgroup=f"g{run_i}",
+            showlegend=showlegend,
+            line=dict(dash=_dash(run_i)),
+            customdata=np.full((len(x),), _cd(run), dtype=object),
+            hovertemplate="run=%{customdata}<br>t=%{x:.3f}<br>y=%{y:.6g}<extra>%{fullData.name}</extra>",
+        )
+
+    # Common compact legend style (horizontal, bottom)
+    legend_bottom = dict(
+        orientation='h',
+        x=0.0,
+        y=-0.18,
+        xanchor='left',
+        yanchor='top',
     )
 
-    # ---- Figure 1b: insertion velocity ref + commanded velocity ----
-    fig1b = go.Figure()
-    for run in runs:
-        t = run.t0()
-        fig1b.add_trace(go.Scatter(x=t, y=_require(run, 'ins_vel_ref'), name=f"{run.name}: ins_vel_ref"))
-        fig1b.add_trace(go.Scatter(x=t, y=_require(run, 'v_cmd'), name=f"{run.name}: v_cmd"))
-    fig1b.update_layout(
-        title='提插速度：参考与控制输出（ins_vel_ref / v_cmd）',
-        xaxis_title='t (s)',
-        yaxis_title='Velocity (mm/s)',
-        legend=dict(orientation='h'),
-        height=420,
-    )
-
-    # ---- Figure 2: force tracking ----
-    fig_force = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.06,
-                              subplot_titles=('接触力：pm 与 f_safe', '力误差：dF = F_r - F_e'))
-    for run in runs:
-        t = run.t0()
-        pm = _require(run, 'pm')
-        f_safe = _require(run, 'f_safe')
-        dF = _require(run, 'dF')
-        fig_force.add_trace(go.Scatter(x=t, y=pm, name=f"{run.name}: pm"), row=1, col=1)
-        # f_safe is constant but logged per-sample; plot as line
-        fig_force.add_trace(go.Scatter(x=t, y=f_safe, name=f"{run.name}: f_safe", line=dict(dash='dash')), row=1, col=1)
-        fig_force.add_trace(go.Scatter(x=t, y=dF, name=f"{run.name}: dF"), row=2, col=1)
-
-    fig_force.update_yaxes(title_text='Force (N)', row=1, col=1)
-    fig_force.update_yaxes(title_text='Force error (N)', row=2, col=1)
-    fig_force.update_xaxes(title_text='t (s)', row=2, col=1)
-    fig_force.update_layout(title='力控相关曲线', legend=dict(orientation='h'), height=650)
-
-    # ---- Figure 3: gating signals ----
-    fig2 = make_subplots(
-        rows=3,
+    # ---- Figure A: insertion & twist tracking (side-by-side) ----
+    fig_track = make_subplots(
+        rows=4,
         cols=1,
         shared_xaxes=True,
         vertical_spacing=0.03,
         subplot_titles=(
-            'mode_impedance (0/1)',
-            'hysteresis_current (N)',
-            '|dF/dt| = dfdt_abs (N/s)',
+            '提插',
+            '捻转角',
+            '提插速度',
+            '捻转角速度',
         ),
     )
-    for run in runs:
+    for run_i, run in enumerate(runs):
         t = run.t0()
-        fig2.add_trace(go.Scatter(x=t, y=_require(run, 'mode_impedance'), name=f"{run.name}: mode"), row=1, col=1)
-        fig2.add_trace(go.Scatter(x=t, y=_require(run, 'hysteresis_current'), name=f"{run.name}: hyst"), row=2, col=1)
-        fig2.add_trace(go.Scatter(x=t, y=_require(run, 'dfdt_abs'), name=f"{run.name}: dfdt"), row=3, col=1)
+        # insertion pos
+        fig_track.add_trace(_trace(x=t, y=_require(run, 'ins_ref'), name='ins_ref', run_i=run_i, run=run), row=1, col=1)
+        # fig_track.add_trace(_trace(x=t, y=_require(run, 'x_cmd'), name='x_cmd', run_i=run_i, run=run), row=1, col=1)
+        fig_track.add_trace(_trace(x=t, y=_require(run, 'xm'), name='x_m', run_i=run_i, run=run), row=1, col=1)
+        # twist angle
+        fig_track.add_trace(_trace(x=t, y=_require(run, 'tws_ref'), name='tws_ref', run_i=run_i, run=run), row=2, col=1)
+        fig_track.add_trace(_trace(x=t, y=_require(run, 'tws_meas'), name='tws_meas', run_i=run_i, run=run), row=2, col=1)
+        # insertion vel
+        fig_track.add_trace(_trace(x=t, y=_require(run, 'ins_vel_ref'), name='ins_vel_ref', run_i=run_i, run=run), row=3, col=1)
+        fig_track.add_trace(_trace(x=t, y=_require(run, 'v_cmd'), name='v_m', run_i=run_i, run=run), row=3, col=1)
+        # twist vel
+        fig_track.add_trace(_trace(x=t, y=_require(run, 'tws_vel_ref'), name='tws_vel_ref', run_i=run_i, run=run), row=4, col=1)
+        fig_track.add_trace(_trace(x=t, y=_require(run, 'tws_meas_vel'), name='tws_meas_vel', run_i=run_i, run=run), row=4, col=1)
+
+    # For figure-level legend: only show one set of signal names.
+    # If multiple runs exist, use dash style + hover(run=...) to disambiguate.
+    if len(runs) > 1:
+        # show legend only for the first run to avoid duplicates
+        for tr in fig_track.data:
+            if getattr(tr, 'legendgroup', '') != 'g0':
+                tr.showlegend = False
+
+    fig_track.update_yaxes(title_text='mm', row=1, col=1)
+    fig_track.update_yaxes(title_text='rad', row=2, col=1)
+    fig_track.update_yaxes(title_text='mm/s', row=3, col=1)
+    fig_track.update_yaxes(title_text='rad/s', row=4, col=1)
+    fig_track.update_xaxes(title_text='t (s)', row=4, col=1)
+    fig_track.update_layout(
+        title='提插与捻转跟踪',
+        legend=legend_bottom,
+        height=1000,
+        margin=dict(b=120),
+    )
+
+    # ---- Figure B: force tracking (remove dF subplot) ----
+    fig_force = go.Figure()
+    for run_i, run in enumerate(runs):
+        t = run.t0()
+        pm = _require(run, 'pm')
+        f_safe = _require(run, 'f_safe')
+        fig_force.add_trace(_trace(x=t, y=pm, name='pm', run_i=run_i, run=run, showlegend=True))
+        fig_force.add_trace(
+            go.Scatter(
+                x=t,
+                y=f_safe,
+                name='f_safe',
+                legendgroup=f"g{run_i}",
+                showlegend=(run_i == 0),
+                line=dict(dash='dash'),
+                customdata=np.full((len(t),), _cd(run), dtype=object),
+                hovertemplate="run=%{customdata}<br>t=%{x:.3f}<br>y=%{y:.6g}<extra>%{fullData.name}</extra>",
+            )
+        )
+
+    if len(runs) > 1:
+        # suppress duplicate legends for runs>0
+        for tr in fig_force.data:
+            if getattr(tr, 'legendgroup', '') != 'g0':
+                tr.showlegend = False
+
+    fig_force.update_layout(
+        title='接触力（pm）与安全阈值（f_safe）',
+        xaxis_title='t (s)',
+        yaxis_title='Force (N)',
+        legend=legend_bottom,
+        height=450,
+        margin=dict(b=110),
+    )
+
+    # ---- Figure C: gating signals ----
+    fig2 = make_subplots(
+        rows=3,
+        cols=1,
+        shared_xaxes=True,
+        vertical_spacing=0.05,
+        subplot_titles=(
+            'mode_impedance (0/1)',
+            'hysteresis_current (N)',
+            '|dF/dt| (N/s)',
+        ),
+    )
+    for run_i, run in enumerate(runs):
+        t = run.t0()
+        fig2.add_trace(_trace(x=t, y=_require(run, 'mode_impedance'), name='mode_impedance', run_i=run_i, run=run), row=1, col=1)
+        fig2.add_trace(_trace(x=t, y=_require(run, 'hysteresis_current'), name='hysteresis_current', run_i=run_i, run=run), row=2, col=1)
+        fig2.add_trace(_trace(x=t, y=_require(run, 'dfdt_abs'), name='dfdt_abs', run_i=run_i, run=run), row=3, col=1)
+
+    if len(runs) > 1:
+        for tr in fig2.data:
+            if getattr(tr, 'legendgroup', '') != 'g0':
+                tr.showlegend = False
 
     fig2.update_yaxes(title_text='-', row=1, col=1)
     fig2.update_yaxes(title_text='N', row=2, col=1)
     fig2.update_yaxes(title_text='N/s', row=3, col=1)
     fig2.update_xaxes(title_text='t (s)', row=3, col=1)
-    fig2.update_layout(title='门控与自适应迟滞', legend=dict(orientation='h'), height=820)
+    fig2.update_layout(
+        title='门控与自适应迟滞及受力变化率 (|dF/dt|)',
+        legend=legend_bottom,
+        height=800,
+        margin=dict(b=120),
+    )
 
     # ---- Figure 4: adaptive env params ----
     fig3 = make_subplots(rows=3, cols=1, shared_xaxes=True, vertical_spacing=0.03,
                          subplot_titles=('K_e_hat (N/mm)', 'B_e_hat (N·s/mm)', 'x_e_hat (mm)'))
-    for run in runs:
+    for run_i, run in enumerate(runs):
         t = run.t0()
-        fig3.add_trace(go.Scatter(x=t, y=_require(run, 'ke_hat'), name=f"{run.name}: Ke"), row=1, col=1)
-        fig3.add_trace(go.Scatter(x=t, y=_require(run, 'be_hat'), name=f"{run.name}: Be"), row=2, col=1)
-        fig3.add_trace(go.Scatter(x=t, y=_require(run, 'xe_hat'), name=f"{run.name}: xe"), row=3, col=1)
+        fig3.add_trace(_trace(x=t, y=_require(run, 'ke_hat'), name='ke_hat', run_i=run_i, run=run), row=1, col=1)
+        fig3.add_trace(_trace(x=t, y=_require(run, 'be_hat'), name='be_hat', run_i=run_i, run=run), row=2, col=1)
+        fig3.add_trace(_trace(x=t, y=_require(run, 'xe_hat'), name='xe_hat', run_i=run_i, run=run), row=3, col=1)
+
+    if len(runs) > 1:
+        for tr in fig3.data:
+            if getattr(tr, 'legendgroup', '') != 'g0':
+                tr.showlegend = False
+
     fig3.update_yaxes(title_text='N/mm', row=1, col=1)
     fig3.update_yaxes(title_text='N·s/mm', row=2, col=1)
     fig3.update_yaxes(title_text='mm', row=3, col=1)
     fig3.update_xaxes(title_text='t (s)', row=3, col=1)
-    fig3.update_layout(title='环境参数自适应估计', legend=dict(orientation='h'), height=820)
-
-    # ---- Figure 5: twist ref/vel + measured ----
-    fig4 = make_subplots(
-        rows=2,
-        cols=1,
-        shared_xaxes=True,
-        vertical_spacing=0.03,
-        subplot_titles=(
-            'twist angle: ref vs meas (rad)',
-            'twist velocity: ref vs meas (rad/s)',
-        ),
+    fig3.update_layout(
+        title='环境参数自适应估计',
+        legend=legend_bottom,
+        height=860,
+        margin=dict(b=120),
     )
-    for run in runs:
-        t = run.t0()
-        fig4.add_trace(go.Scatter(x=t, y=_require(run, 'tws_ref'), name=f"{run.name}: tws_ref"), row=1, col=1)
-        fig4.add_trace(go.Scatter(x=t, y=_require(run, 'tws_meas'), name=f"{run.name}: tws_meas"), row=1, col=1)
-        fig4.add_trace(go.Scatter(x=t, y=_require(run, 'tws_vel_ref'), name=f"{run.name}: tws_vel_ref"), row=2, col=1)
-        fig4.add_trace(go.Scatter(x=t, y=_require(run, 'tws_meas_vel'), name=f"{run.name}: tws_meas_vel"), row=2, col=1)
-
-    fig4.update_yaxes(title_text='rad', row=1, col=1)
-    fig4.update_yaxes(title_text='rad/s', row=2, col=1)
-    fig4.update_xaxes(title_text='t (s)', row=2, col=1)
-    fig4.update_layout(title='捻转：参考-测量对比', legend=dict(orientation='h'), height=750)
 
     # ---- Table: key stats ----
     stats_rows: List[List[Any]] = []
@@ -254,6 +319,8 @@ def build_report(*, runs: Sequence[NeedleRun], out_html: Path, title: str) -> No
     )
     fig_table.update_layout(title='统计指标（用于报告摘要）', height=380)
 
+    out_html.parent.mkdir(parents=True, exist_ok=True)
+
     # ---- HTML assembly ----
     meta = {
         'title': title,
@@ -275,34 +342,49 @@ def build_report(*, runs: Sequence[NeedleRun], out_html: Path, title: str) -> No
     }
 
     parts: List[str] = []
+
+    # A4-like layout (same approach as compare_teleop_runs.py)
+    parts.append(
+        """
+<style>
+  :root {
+    --page-width: 210mm; /* A4 width */
+  }
+  body { margin: 0; padding: 0; font-family: sans-serif; }
+  .page { max-width: var(--page-width); margin: 0 auto; padding: 10mm 8mm; box-sizing: border-box; }
+  pre { white-space: pre-wrap; word-break: break-word; }
+  /* make plotly figures fit the page */
+  .plotly-graph-div { width: 100% !important; }
+  @media print {
+    .page { padding: 0; }
+  }
+</style>
+        """.strip()
+    )
+    parts.append("<div class='page'>")
+
     parts.append(f'<h1>{title}</h1>')
     parts.append('<h2>输入数据与单位约定</h2>')
     parts.append('<p>说明：单位约定根据 acu_adaptive_impedance.py 的日志实现推断；若你后续统一为 SI(m) 记录，可在本脚本中同步更新。</p>')
     parts.append('<pre>' + json.dumps(meta, ensure_ascii=False, indent=2) + '</pre>')
 
-    parts.append('<h2>1) 提插参考跟踪（mm）</h2>')
-    parts.append(fig1.to_html(full_html=False, include_plotlyjs='cdn'))
+    parts.append('<h2>1) 提插与捻转跟踪（左右排版）</h2>')
+    parts.append(fig_track.to_html(full_html=False, include_plotlyjs='cdn'))
 
-    parts.append('<h2>1b) 提插速度：参考与控制输出（mm/s）</h2>')
-    parts.append(fig1b.to_html(full_html=False, include_plotlyjs=False))
-
-    parts.append('<h2>2) 力控相关曲线（N）</h2>')
+    parts.append('<h2>2) 力控曲线（去除力误差 dF）</h2>')
     parts.append(fig_force.to_html(full_html=False, include_plotlyjs=False))
 
-    parts.append('<h2>3) 自适应门控参数（mode、迟滞、|dF/dt|）</h2>')
+    parts.append('<h2>3) 自适应门控参数（包含 df/dt）</h2>')
     parts.append(fig2.to_html(full_html=False, include_plotlyjs=False))
 
     parts.append('<h2>4) 环境自适应参数（K_e_hat / B_e_hat / x_e_hat）</h2>')
     parts.append(fig3.to_html(full_html=False, include_plotlyjs=False))
 
-    parts.append('<h2>5) 捻转参考（rad）与测量（rad）/速度（rad/s）对比</h2>')
-    parts.append('<p>说明：tws_meas/tws_meas_vel 来自机器人当前关节 q[7] 的测量与差分估计；tws_ref/tws_vel_ref 来自手部重定向输出。</p>')
-    parts.append(fig4.to_html(full_html=False, include_plotlyjs=False))
-
-    parts.append('<h2>6) 统计摘要</h2>')
+    parts.append('<h2>5) 统计摘要</h2>')
     parts.append(fig_table.to_html(full_html=False, include_plotlyjs=False))
 
-    out_html.parent.mkdir(parents=True, exist_ok=True)
+    parts.append('</div>')
+
     out_html.write_text('\n'.join(parts), encoding='utf-8')
 
 
@@ -316,12 +398,12 @@ def main() -> None:
 
     csv_paths = [Path(p) for p in (args.csv or []) if str(p).strip()]
     if not csv_paths:
-        default = Path('./teleop/acu_adaptive_impedance_retargeting_summary.csv')
+        default = Path('./teleop/acu_adaptive_impedance_retargeting_summary-6.csv')
         if default.exists():
             csv_paths = [default]
         else:
             # also allow CWD-generated default from acu_adaptive_impedance.py
-            alt = Path('./acu_adaptive_impedance_retargeting_summary.csv')
+            alt = Path('./acu_adaptive_impedance_retargeting_summary-6.csv')
             if alt.exists():
                 csv_paths = [alt]
 

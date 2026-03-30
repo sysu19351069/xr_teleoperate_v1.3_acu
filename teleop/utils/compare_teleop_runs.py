@@ -29,6 +29,9 @@ import numpy as np
 # Global option: if provided by main(), used by build_report() for MPC time-axis scaling.
 MPC_TIME_SCALE: float = 1.8
 
+# Global option: drop the last portion of MPC samples (often idle/invalid tail)
+MPC_TAIL_DROP_RATIO: float = 0.0
+
 
 def _load_npz(path: str | Path) -> dict[str, Any]:
     p = Path(path)
@@ -146,6 +149,38 @@ def build_report(*, mpc: RunData, ik: RunData, out_html: Path, title: str) -> No
     import plotly.graph_objects as go
     from plotly.subplots import make_subplots
 
+    # Optional: drop invalid/idle tail of MPC trajectory by ratio (e.g. 0.2 drops last 20%).
+    # This operates on sample index (no time-based trimming) and keeps arrays consistent.
+    try:
+        r = float(MPC_TAIL_DROP_RATIO)
+        if r > 0.0 and mpc.t.size >= 2:
+            r = float(np.clip(r, 0.0, 0.95))
+            n = int(mpc.t.shape[0])
+            n_keep = max(2, int(round((1.0 - r) * n)))
+            if n_keep < n:
+                mpc = RunData(
+                    name=mpc.name,
+                    meta=dict(mpc.meta),
+                    t=mpc.t[:n_keep],
+                    ee_p=mpc.ee_p[:n_keep, :],
+                    xr_p=mpc.xr_p[:n_keep, :],
+                    err_pos=mpc.err_pos[:n_keep],
+                    err_ori=mpc.err_ori[:n_keep],
+                    q_meas8=(mpc.q_meas8[:n_keep, :] if mpc.q_meas8 is not None and mpc.q_meas8.shape[0] >= n_keep else mpc.q_meas8),
+                    err_proj=(mpc.err_proj[:n_keep] if mpc.err_proj is not None and mpc.err_proj.shape[0] >= n_keep else mpc.err_proj),
+                    err_des=(mpc.err_des[:n_keep] if mpc.err_des is not None and mpc.err_des.shape[0] >= n_keep else mpc.err_des),
+                    err_end_pos=(mpc.err_end_pos[:n_keep] if mpc.err_end_pos is not None and mpc.err_end_pos.shape[0] >= n_keep else mpc.err_end_pos),
+                )
+                try:
+                    mpc.meta = dict(mpc.meta)
+                    mpc.meta["report_mpc_tail_drop_ratio"] = float(r)
+                    mpc.meta["report_mpc_tail_keep_n"] = int(n_keep)
+                    mpc.meta["report_mpc_tail_total_n"] = int(n)
+                except Exception:
+                    pass
+    except Exception:
+        pass
+
     # time alignment: shift each run so starts at t=0
     t_mpc_raw = mpc.t0_aligned()
     t_ik = ik.t0_aligned()
@@ -233,38 +268,31 @@ def build_report(*, mpc: RunData, ik: RunData, out_html: Path, title: str) -> No
         margin=dict(l=0, r=0, t=50, b=0),
     )
 
-    # 误差时间序列：2x2
+    # 误差时间序列：上下排版（去掉对数视图）
     fig_err = make_subplots(
         rows=2,
-        cols=2,
+        cols=1,
+        shared_xaxes=True,
+        vertical_spacing=0.12,
         subplot_titles=(
-            "位置误差：MPC(投影) vs IK(端点)（t从0对齐）",
+            "位置误差（t从0对齐）",
             "姿态误差角距离 (deg)",
-            "位置误差（对数视图）",
-            "姿态误差（对数视图）",
         ),
     )
 
     # MPC position error: show projection only (fallback to err_pos)
     mpc_pos = mpc.err_proj if mpc.err_proj is not None else mpc.err_pos
+
     fig_err.add_trace(go.Scatter(x=t_mpc, y=mpc_pos, name="MPC err_proj", line=dict(color="#1f77b4")), row=1, col=1)
     fig_err.add_trace(go.Scatter(x=t_ik, y=ik.err_pos, name="IK err_end", line=dict(color="#d62728")), row=1, col=1)
 
-    fig_err.add_trace(go.Scatter(x=t_mpc, y=np.rad2deg(mpc.err_ori), name="MPC", line=dict(color="#1f77b4"), showlegend=False), row=1, col=2)
-    fig_err.add_trace(go.Scatter(x=t_ik, y=np.rad2deg(ik.err_ori), name="IK", line=dict(color="#d62728"), showlegend=False), row=1, col=2)
-
-    fig_err.add_trace(go.Scatter(x=t_mpc, y=np.maximum(mpc_pos, 1e-9), name="MPC", line=dict(color="#1f77b4"), showlegend=False), row=2, col=1)
-    fig_err.add_trace(go.Scatter(x=t_ik, y=np.maximum(ik.err_pos, 1e-9), name="IK", line=dict(color="#d62728"), showlegend=False), row=2, col=1)
-
-    fig_err.add_trace(go.Scatter(x=t_mpc, y=np.maximum(np.rad2deg(mpc.err_ori), 1e-6), name="MPC", line=dict(color="#1f77b4"), showlegend=False), row=2, col=2)
-    fig_err.add_trace(go.Scatter(x=t_ik, y=np.maximum(np.rad2deg(ik.err_ori), 1e-6), name="IK", line=dict(color="#d62728"), showlegend=False), row=2, col=2)
+    fig_err.add_trace(go.Scatter(x=t_mpc, y=np.rad2deg(mpc.err_ori), name="MPC", line=dict(color="#1f77b4"), showlegend=False), row=2, col=1)
+    fig_err.add_trace(go.Scatter(x=t_ik, y=np.rad2deg(ik.err_ori), name="IK", line=dict(color="#d62728"), showlegend=False), row=2, col=1)
 
     fig_err.update_yaxes(title_text="位置误差 (m)", row=1, col=1)
-    fig_err.update_yaxes(title_text="姿态误差 (deg)", row=1, col=2)
-    fig_err.update_yaxes(title_text="位置误差 (m)", type="log", row=2, col=1)
-    fig_err.update_yaxes(title_text="姿态误差 (deg)", type="log", row=2, col=2)
-    fig_err.update_xaxes(title_text="t (s)")
-    fig_err.update_layout(title="误差随时间对比", legend=dict(orientation="h"), height=700)
+    fig_err.update_yaxes(title_text="姿态误差 (deg)", row=2, col=1)
+    fig_err.update_xaxes(title_text="t (s)", row=2, col=1)
+    fig_err.update_layout(title="误差随时间对比", legend=dict(orientation="h"), height=650)
 
     # 分布对比：箱线图
     fig_dist = make_subplots(rows=1, cols=2, subplot_titles=("位置误差分布 (m)", "姿态误差分布 (deg)"))
@@ -328,18 +356,34 @@ def build_report(*, mpc: RunData, ik: RunData, out_html: Path, title: str) -> No
     try:
         if (mpc.q_meas8 is not None) or (ik.q_meas8 is not None):
             joint_names = [f"J{i}" for i in range(8)]
+
+            # Layout: 2 columns x 4 rows (instead of 8x1) to reduce page height.
+            n_rows, n_cols = 4, 2
+            subplot_titles = []
+            for r in range(n_rows):
+                for c in range(n_cols):
+                    j = r * n_cols + c
+                    if j < len(joint_names):
+                        subplot_titles.append(f"|Δq| per step (rad/step) - {joint_names[j]}")
+
             fig_joint = make_subplots(
-                rows=8,
-                cols=1,
+                rows=n_rows,
+                cols=n_cols,
                 shared_xaxes=True,
-                vertical_spacing=0.02,
-                subplot_titles=[f"|Δq| per step (rad/step) - {jn}" for jn in joint_names],
+                vertical_spacing=0.06,
+                horizontal_spacing=0.07,
+                subplot_titles=subplot_titles,
             )
+
+            def _rc_from_j(j: int) -> tuple[int, int]:
+                # row-major fill
+                return (j // n_cols) + 1, (j % n_cols) + 1
 
             if mpc.q_meas8 is not None:
                 mpc_dq = _joint_jitter_series(mpc.q_meas8)
                 t_mpc_dq = t_mpc[1 : 1 + mpc_dq.shape[0]] if t_mpc.size >= 2 else np.arange(mpc_dq.shape[0])
                 for j in range(min(8, mpc_dq.shape[1])):
+                    rr, cc = _rc_from_j(j)
                     fig_joint.add_trace(
                         go.Scatter(
                             x=t_mpc_dq,
@@ -348,14 +392,15 @@ def build_report(*, mpc: RunData, ik: RunData, out_html: Path, title: str) -> No
                             line=dict(color="#1f77b4"),
                             showlegend=(j == 0),
                         ),
-                        row=j + 1,
-                        col=1,
+                        row=rr,
+                        col=cc,
                     )
 
             if ik.q_meas8 is not None:
                 ik_dq = _joint_jitter_series(ik.q_meas8)
                 t_ik_dq = t_ik[1 : 1 + ik_dq.shape[0]] if t_ik.size >= 2 else np.arange(ik_dq.shape[0])
                 for j in range(min(8, ik_dq.shape[1])):
+                    rr, cc = _rc_from_j(j)
                     fig_joint.add_trace(
                         go.Scatter(
                             x=t_ik_dq,
@@ -364,14 +409,23 @@ def build_report(*, mpc: RunData, ik: RunData, out_html: Path, title: str) -> No
                             line=dict(color="#d62728"),
                             showlegend=(j == 0),
                         ),
-                        row=j + 1,
-                        col=1,
+                        row=rr,
+                        col=cc,
                     )
 
-            fig_joint.update_xaxes(title_text="t (s)", row=8, col=1)
-            for r in range(1, 9):
-                fig_joint.update_yaxes(title_text="rad/step", row=r, col=1)
-            fig_joint.update_layout(title="关节角变化/抖动趋势（|Δq|）", height=1400, legend=dict(orientation="h"))
+            # Axis labels: keep it compact; only label x on the bottom row.
+            for c in range(1, n_cols + 1):
+                fig_joint.update_xaxes(title_text="t (s)", row=n_rows, col=c)
+            for r in range(1, n_rows + 1):
+                for c in range(1, n_cols + 1):
+                    fig_joint.update_yaxes(title_text="rad/step", row=r, col=c)
+
+            fig_joint.update_layout(
+                title="关节角变化/抖动趋势（|Δq|）",
+                height=900,
+                legend=dict(orientation="h"),
+                margin=dict(t=80),
+            )
     except Exception:
         fig_joint = None
 
@@ -412,11 +466,37 @@ def build_report(*, mpc: RunData, ik: RunData, out_html: Path, title: str) -> No
         fig_s.update_xaxes(title_text="s (normalized arc length)", row=1, col=1)
         fig_s.update_xaxes(title_text="s (normalized arc length)", row=1, col=2)
         fig_s.update_xaxes(title_text="s (normalized arc length)", row=1, col=3)
-        fig_s.update_layout(title="基于弧长参数 s 的对齐对比（MPC vs IK）", height=380, legend=dict(orientation="h"))
+        fig_s.update_layout(
+            title="基于弧长参数 s 的对齐对比（MPC vs IK）",
+            height=420,
+            legend=dict(orientation="h", x=0.0, y=-0.25, xanchor="left", yanchor="top"),
+            margin=dict(b=110),
+        )
     except Exception:
         fig_s = None
 
     html_parts = []
+
+    # A4-like layout: constrain content width and set print-friendly defaults
+    html_parts.append(
+        """
+<style>
+  :root {
+    --page-width: 210mm; /* A4 width */
+  }
+  body { margin: 0; padding: 0; font-family: sans-serif; }
+  .page { max-width: var(--page-width); margin: 0 auto; padding: 10mm 8mm; box-sizing: border-box; }
+  pre { white-space: pre-wrap; word-break: break-word; }
+  /* make plotly figures fit the page */
+  .plotly-graph-div { width: 100% !important; }
+  @media print {
+    .page { padding: 0; }
+  }
+</style>
+        """.strip()
+    )
+    html_parts.append("<div class='page'>")
+
     html_parts.append(f"<h1>{title}</h1>")
     html_parts.append("<h2>实验元信息</h2>")
     html_parts.append("<pre>" + json.dumps({"mpc": mpc.meta, "ik": ik.meta}, ensure_ascii=False, indent=2) + "</pre>")
@@ -446,6 +526,8 @@ def build_report(*, mpc: RunData, ik: RunData, out_html: Path, title: str) -> No
         html_parts.append("<p>说明：使用 q_meas8 计算逐步差分幅值 |Δq|（rad/step），用于观察关节角变化/抖动趋势。</p>")
         html_parts.append(fig_joint.to_html(full_html=False, include_plotlyjs=False))
 
+    html_parts.append("</div>")
+
     out_html.parent.mkdir(parents=True, exist_ok=True)
     out_html.write_text("\n".join(html_parts), encoding="utf-8")
 
@@ -457,7 +539,8 @@ def main() -> None:
     ap.add_argument("--log-dir", default="./teleop/teleop_compare_logs", help="默认日志目录（用于自动选择最新 mpc/ik npz）")
     ap.add_argument("--out", default="./teleop_compare_report.html", help="输出 HTML 路径")
     ap.add_argument("--title", default="Teleop MPC vs IK 对比报告", help="报告标题")
-    ap.add_argument("--mpc-time-scale", type=float, default=1.2, help="对 MPC 的时间轴做线性缩放，使其总时长约等于 IK 时长的该倍数（默认1.8；不裁剪样本点）。")
+    ap.add_argument("--mpc-time-scale", type=float, default=1.4, help="对 MPC 的时间轴做线性缩放，使其总时长约等于 IK 时长的该倍数（默认1.8；不裁剪样本点）。")
+    ap.add_argument("--mpc-tail-drop", type=float, default=0.1, help="按比例丢弃 MPC 尾部样本点（无效轨迹），如0.2表示丢弃最后20%%。默认0不丢弃。")
     args = ap.parse_args()
 
     global MPC_TIME_SCALE
@@ -465,6 +548,12 @@ def main() -> None:
         MPC_TIME_SCALE = float(args.mpc_time_scale)
     except Exception:
         MPC_TIME_SCALE = 1.8
+
+    global MPC_TAIL_DROP_RATIO
+    try:
+        MPC_TAIL_DROP_RATIO = float(args.mpc_tail_drop)
+    except Exception:
+        MPC_TAIL_DROP_RATIO = 0.0
 
     def _pick_latest(pattern: str) -> str:
         log_dir = Path(str(args.log_dir))

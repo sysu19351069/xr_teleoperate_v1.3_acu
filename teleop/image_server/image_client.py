@@ -159,11 +159,27 @@ class ImageClient:
                     continue
 
                 if self.tv_enable_shm:
-                    np.copyto(self.tv_img_array, np.array(current_image[:, :self.tv_img_shape[1]]))
-                
+                    # Write full frame to tv shm (no slicing). If shm shape differs, try best-effort crop.
+                    try:
+                        if current_image.shape == self.tv_img_array.shape:
+                            np.copyto(self.tv_img_array, current_image)
+                        else:
+                            h = min(current_image.shape[0], self.tv_img_array.shape[0])
+                            w = min(current_image.shape[1], self.tv_img_array.shape[1])
+                            # h = self.tv_img_array.shape[0]
+                            # w = self.tv_img_array.shape[1]
+                            np.copyto(self.tv_img_array[:h, :w], current_image[:h, :w])
+                            
+                    except Exception as e:
+                        logger_mp.warning(f"[Image Client] Failed to write tv shm: {e}")
+
                 if self.wrist_enable_shm:
-                    np.copyto(self.wrist_img_array, np.array(current_image[:, -self.wrist_img_shape[1]:]))
-                
+                    # Keep wrist frame as the right-most part of the full frame.
+                    try:
+                        np.copyto(self.wrist_img_array, np.array(current_image[:, -self.wrist_img_shape[1]:]))
+                    except Exception as e:
+                        logger_mp.warning(f"[Image Client] Failed to write wrist shm: {e}")
+
                 if self._image_show:
                     height, width = current_image.shape[:2]
                     resized_image = cv2.resize(current_image, (width // 2, height // 2))

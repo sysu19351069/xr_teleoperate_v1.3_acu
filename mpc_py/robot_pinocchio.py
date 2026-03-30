@@ -303,10 +303,10 @@ class CasadiSingleArmIK:
         self.smooth_cost = cs.sumsqr(self.var_q - self.var_q_last)
 
         self.opti.subject_to(self.opti.bounded(
-            np.array([-3.14  , -1.1775, -1.31  , -3.14  , -1.3   , -3.14  , -0.   ,
-       -3.14  ]),
+            np.array([-6.28319  , -2.35619, -2.61799  , -6.28319  , -2.56563   , -6.28319  , -0.   ,
+       -6.28319 ]),
             self.var_q,
-            np.array([3.14  , 1.1775, 1.31  , 3.14  , 1.3   , 3.14  , 0.00   , 3.14  ]))
+            np.array([6.28319  , 2.35619, 2.61799  , 6.28319  , 2.56563   , 6.28319  , 0.00   , 6.28319  ]))
         )
 
         # self.opti.minimize(50 * self.translational_cost + 5 * self.rotation_cost + 0.02 * self.regularization_cost + 0.1 * self.smooth_cost)

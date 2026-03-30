@@ -188,6 +188,15 @@ class TeleopCompareDataLogger:
         self._t0 = time.time()
         self._rows: list[dict] = []
 
+        # --- MPC orientation error policy (segment-based) ---
+        # When doing MPC path-following, we want to measure orientation error against the
+        # current tracked segment's *end* orientation (target_quat), not the latest XR.
+        # Also, when a segment switches, we freeze the last segment-end orientation error
+        # for one tick to avoid a jump caused by reference update ordering.
+        self._last_pf_seg_i: int | None = None
+        self._freeze_next_ori_err: bool = False
+        self._last_ori_err_rad: float | None = None
+
     def add(
         self,
         *,
@@ -220,7 +229,36 @@ class TeleopCompareDataLogger:
 
         err_p = ee_p - xr_p
         err_pos_norm = float(np.linalg.norm(err_p))
-        err_ori_rad = float(_quat_angle(ee_quat_xyzw, xr_quat_xyzw))
+
+        # Orientation error:
+        # - Default: compare to XR quat
+        # - If target_quat is available (MPC-PF): compare to segment-end quat
+        # - On segment switch: freeze last orientation error for one sample (to avoid using
+        #   a just-updated XR ref or a not-yet-consistent target)
+        err_ori_ref = target_q_arr if target_q_arr is not None else xr_quat_xyzw
+        err_ori_rad_raw = float(_quat_angle(ee_quat_xyzw, err_ori_ref))
+
+        seg_i = None
+        if isinstance(pf_dbg, dict):
+            try:
+                seg_i = int(pf_dbg.get("seg_i")) if pf_dbg.get("seg_i") is not None else None
+            except Exception:
+                seg_i = None
+
+        if seg_i is not None and (self._last_pf_seg_i is None):
+            self._last_pf_seg_i = seg_i
+
+        if seg_i is not None and (self._last_pf_seg_i is not None) and (seg_i != self._last_pf_seg_i):
+            # segment switched: freeze last last-segment error for the next sample
+            self._freeze_next_ori_err = True
+            self._last_pf_seg_i = seg_i
+
+        if self._freeze_next_ori_err and (self._last_ori_err_rad is not None):
+            err_ori_rad = float(self._last_ori_err_rad)
+            self._freeze_next_ori_err = False
+        else:
+            err_ori_rad = float(err_ori_rad_raw)
+            self._last_ori_err_rad = err_ori_rad
 
         # PF errors: projection / lookahead / segment-end
         err_proj = None

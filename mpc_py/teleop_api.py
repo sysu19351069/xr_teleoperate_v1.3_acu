@@ -108,12 +108,12 @@ class WaypointPath:
     def __init__(
         self,
         max_points: int = 120,
-        min_dist: float = 0.003,
-        min_ang: float = np.deg2rad(1.0),
-        reach_eps: float = 0.001,
-        win_fwd: int = 10,
+        min_dist: float = 0.05,
+        min_ang: float = np.deg2rad(5.0),
+        reach_eps: float = 0.01,
+        win_fwd: int = 6,
         win_back: int = 1,
-        max_track_steps: int = 30,
+        max_track_steps: int = 5,
     ):
         self._wpts: Deque[Waypoint] = deque()
         self.max_points = int(max_points)
@@ -163,6 +163,12 @@ class WaypointPath:
         if len(self._wpts) < 2:
             return False
 
+        # Do not pop if it would leave us with <2 points (would make PF return None forever
+        # until new points arrive).
+        if len(self._wpts) <= 2:
+            self._reset_track_counter()
+            return False
+
         # If the tracked segment is the current front segment, we can safely drop its start point.
         # If active_i > 0, we only pop points strictly before active segment elsewhere.
         if self._active_i == 0:
@@ -181,6 +187,12 @@ class WaypointPath:
         """Return [i0, i1] segment index window for local projection search."""
         if len(self._wpts) < 2:
             return 0, -1
+
+        # Defensive clamp: _active_i must always be a valid segment start index
+        # (0..len-2). If it drifts out of range, the window can become empty and
+        # select_segment_by_projection() will return None even though len(_wpts)>2.
+        self._active_i = int(np.clip(self._active_i, 0, len(self._wpts) - 2))
+
         i0 = max(0, self._active_i - self.win_back)
         i1 = min(len(self._wpts) - 2, self._active_i + self.win_fwd)
         return i0, i1
@@ -259,9 +271,13 @@ class WaypointPath:
         if len(self._wpts) < 2:
             return None
 
+        # Local window search first
         i0, i1 = self._segment_index_window()
+
+        # If window is empty for any reason, fall back to a full search to avoid
+        # returning None while we still have a valid polyline.
         if i1 < i0:
-            return None
+            i0, i1 = 0, len(self._wpts) - 2
 
         best_d = float("inf")
         best_key = float("inf")
@@ -282,15 +298,18 @@ class WaypointPath:
                 best_proj = proj
                 best_s = s_clamped
 
-        self._active_i = best_i
-        # print(self._active_i)
+        if best_proj is None:
+            return None
+
+        self._active_i = int(best_i)
         self._bump_track_counter(best_i)
-        # if stuck for too long, force-pop and re-select once
+
+        # If stuck for too long, force-pop and re-select once
         if self._force_pop_if_stuck():
-            # after pop, try reselect on the updated front
             if len(self._wpts) < 2:
                 return None
             return self.select_segment_by_projection(cur_p)
+
         return best_i, best_proj, best_s
 
     def get_target_pose_for_segment_end(self, i: int) -> Tuple[np.ndarray, np.ndarray]:
@@ -531,6 +550,8 @@ class TeleopAcuMPC:
 
             ref = self._path.select_segment_by_projection(cur_p)
             if ref is None:
+                # print("here 555")
+                # print(len(self._path._wpts))
                 return None
 
             seg_i, proj, s = ref
@@ -538,6 +559,7 @@ class TeleopAcuMPC:
             p_des, _quat_des, s_des = self._path.get_lookahead_target_on_segment(seg_i=seg_i, proj_s=s, cur_p=cur_p)
             target_p, target_q = self._path.get_target_pose_for_segment_end(seg_i)
 
+        # print(len(self._path._wpts))
         # include orientation in target_pose
         R = _quat_to_rot(target_q)
         target_pose = pin.SE3(np.asarray(R).copy(), np.asarray(target_p).reshape(3).copy())

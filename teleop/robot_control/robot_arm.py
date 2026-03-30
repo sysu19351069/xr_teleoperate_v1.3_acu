@@ -1161,8 +1161,13 @@ class Acu_ArmController:
         self.simulation_mode = simulation_mode
         self.motion_mode = motion_mode
 
-        self.q_target = np.zeros(8)
+        # self.q_target = np.zeros(8)
+        if self.simulation_mode:
+            self.q_target = np.zeros(8)
+        else:
+            self.q_target = np.array([0.0, 0.29175, 1.31388, 0.0, 1.51938, 3.14159, 0.0, 0.0]) 
         self.tauff_target = np.zeros(8)
+        self.dq_target = np.zeros(8)
 
         # Gains (tune for your hardware)
         self.kp_high = 200.0
@@ -1182,7 +1187,12 @@ class Acu_ArmController:
         self._gradual_time = None
 
         # initialize dds factory & channels (kept consistent with other controllers)
-        ChannelFactoryInitialize(1)
+        # ChannelFactoryInitialize(1)
+        if self.simulation_mode:
+            ChannelFactoryInitialize(1)
+        else:
+            ChannelFactoryInitialize(0)
+
         if self.motion_mode:
             self.lowcmd_publisher = ChannelPublisher(kTopicLowCommand_Motion, Acu_LowCmd)
         else:
@@ -1275,19 +1285,24 @@ class Acu_ArmController:
         while True:
             start_time = time.time()
             with self.ctrl_lock:
+                arm_dq_target = None  # optional, not currently used in control loop but can be implemented if needed
                 arm_q_target = self.q_target
                 arm_tauff_target = self.tauff_target
+                if self.dq_target is not None:
+                    arm_dq_target = self.dq_target
 
-            if self.simulation_mode:
-                cliped_arm_q_target = arm_q_target
-            else:
-                cliped_arm_q_target = self.clip_arm_q_target(arm_q_target, velocity_limit=self.arm_velocity_limit)
+            # if self.simulation_mode:
+            #     cliped_arm_q_target = arm_q_target
+            # else:
+            #     cliped_arm_q_target = self.clip_arm_q_target(arm_q_target, velocity_limit=self.arm_velocity_limit)
+            
+            cliped_arm_q_target = arm_q_target
 
             for idx, id in enumerate(Acu_JointArmIndex):
                 # write only up to available indices
                 try:
                     self.msg.motor_cmd[id].q = cliped_arm_q_target[idx]
-                    self.msg.motor_cmd[id].dq = 0
+                    self.msg.motor_cmd[id].dq = 0 if arm_dq_target is None else arm_dq_target[idx]
                     self.msg.motor_cmd[id].tau = arm_tauff_target[idx]
                 except Exception:
                     pass
@@ -1320,10 +1335,11 @@ class Acu_ArmController:
             sleep_time = max(0, (self.control_dt - all_t_elapsed))
             time.sleep(sleep_time)
 
-    def ctrl_dual_arm(self, q_target, tauff_target):
+    def ctrl_dual_arm(self, q_target, tauff_target, dq_target=None):
         with self.ctrl_lock:
             self.q_target = q_target
             self.tauff_target = tauff_target
+            self.dq_target = dq_target  # optional, not currently used in control loop but can be implemented if needed
 
     def get_mode_machine(self):
         return self.lowstate_subscriber.Read().mode_machine
@@ -1354,7 +1370,11 @@ class Acu_ArmController:
         max_attempts = 100
         current_attempts = 0
         with self.ctrl_lock:
-            self.q_target = np.zeros(8)
+            if self.simulation_mode:
+                self.q_target = np.zeros(8)
+            else:
+                self.q_target = np.array([0.0, 0.29175, 1.31388, 0.0, 1.51938, 3.14159, 0.0, 0.0]) 
+                 # example home position with transmission joint at 90 degrees
         tolerance = 0.02
         while current_attempts < max_attempts:
             current_q = self.get_current_dual_arm_q()

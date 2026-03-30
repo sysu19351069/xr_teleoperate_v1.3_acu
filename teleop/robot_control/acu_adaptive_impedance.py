@@ -785,6 +785,8 @@ class AcuNeedleTeleopImpedanceRunner:
         self._tws_prev_meas: Optional[float] = None
         self._tws_prev_meas_t: Optional[float] = None
 
+        self.xm_dot_last: Optional[float] = None
+
     def start_session(self, now: Optional[float] = None):
         """Mark the start of a retargeting test session (e.g., after needle_ref_enabled becomes True)."""
         if now is None:
@@ -846,6 +848,7 @@ class AcuNeedleTeleopImpedanceRunner:
         self._tws_meas_vel_buf.clear()
         self._tws_prev_meas = None
         self._tws_prev_meas_t = None
+        self.xm_dot_last = None
 
     def configure_io(self, arm_ctrl=None, needle_lock=None, needle_action_array=None, needle_meta_array=None):
         self.arm_ctrl = arm_ctrl if arm_ctrl is not None else self.arm_ctrl
@@ -985,7 +988,17 @@ class AcuNeedleTeleopImpedanceRunner:
             self._last_cmd_v = 0.0
             self._last_cmd_ts = float(now)
         xm = float(self._last_cmd_x)
-        xm_dot = float(self._last_cmd_v)
+        dq = np.asarray(self.arm_ctrl.get_current_dual_arm_dq(), dtype=float).reshape(-1)[:8]
+        xm_dot = float(dq[self.joint_index] * 1e3)  # use measured velocity for better responsiveness in trajectory mode
+
+        # xm = float(q[-1]) if q.size >= 8 else float('nan')
+        # if self.xm_dot_last is not None and self._tws_prev_meas_t is not None:
+        #     dt_tw = float(max(1e-6, float(now) - float(self._tws_prev_meas_t)))
+        #     xm_dot = float((xm - float(self.xm_dot_last)) / dt_tw)
+        # else:
+        #     xm_dot = 0.0
+        # self.xm_dot_last = float(xm_dot)
+        # self._tws_prev_meas_t = float(now)
 
         out = self.step(
             ins_ref=ins_ref,
@@ -999,12 +1012,17 @@ class AcuNeedleTeleopImpedanceRunner:
         sol_q = self._base_q8.copy()
         sol_q[self.joint_index] = float(out["x_cmd"])
         # keep last two joints from retargeting (compat with existing pipeline)
-        sol_q[-2] = float(ins_ref) * 1e-3  # scale down to m
+        # sol_q[-2] = float(ins_ref) * 1e-3  # scale down to m
+        sol_q[-2] = float(out['x_cmd'] if not np.isnan(out['x_cmd']) else ins_ref ) * 1e-3
+        print(float(out['x_cmd']))
         sol_q[-1] = float(tws_ref)
         sol_tauff = np.zeros_like(sol_q)
-        self.arm_ctrl.ctrl_dual_arm(sol_q, sol_tauff)
+        dq = np.zeros_like(sol_q)
+        dq[-2] = float(out['v_cmd'])
+        dq[-1] = float(tws_vel_ref)
+        self.arm_ctrl.ctrl_dual_arm(sol_q, sol_tauff, dq)
         
-        self.arm_ctrl.get_current_dual_arm_dq().reshape(-1)[:8]
+        # self.arm_ctrl.get_current_dual_arm_dq().reshape(-1)[:8]
 
 
         # update last commanded state so next step uses commands as (xm, xm_dot)
